@@ -4,12 +4,9 @@
 // Contact me via Email(dlnathos321@gmail.com) or Twitter(@dailingnan)
 //
 
-
-#import "Constants.h"
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import "CCDirector.h"
-#include "CGPointExtension.h"
 
 #define SIGN(A) (A < 0 ? -1 : (A ==0 ? 0: 1))
 

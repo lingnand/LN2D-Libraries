@@ -7,3 +7,9 @@
 [submodule "Libraries/objc-simple-bindings"]
 	path = Libraries/objc-simple-bindings
 	url = https://github.com/mruegenberg/objc-simple-bindings
+[submodule "Libraries/rube-b2djson"]
+	path = Libraries/rube-b2djson
+	url = https://github.com/iforce2d/b2dJson
+[submodule "Libraries/box2d"]
+	path = Libraries/box2d
+	url = https://github.com/ansman/box2d
