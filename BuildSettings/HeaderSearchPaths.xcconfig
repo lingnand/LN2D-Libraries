@@ -1,7 +1,7 @@
 LIBROOT="$(SOURCE_ROOT)"/../LN2D-Libraries/Libraries
 
 COCOS2DLIB=$(LIBROOT)/cocos2d-iphone
-COCOS2D=$(COCOS2DLIB)/cocos2d $(COCOS2DLIB)/external/kazmath/include
+COCOS2D=$(COCOS2DLIB)/cocos2d $(COCOS2DLIB)/external/kazmath/include $(COCOS2DLIB)/cocos2d/Platforms
 REKIT=$(LIBROOT)/rekit/REKit
 OBJC_SIMPLE_BINDINGS=$(LIBROOT)/objc-simple-bindings
 LN_ADDITIONS=$(LIBROOT)/ln-additions/**

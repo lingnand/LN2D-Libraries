@@ -33,7 +33,7 @@
 #pragma mark - Properties
 
 - (CGPoint)actualVelocity {
-    return ccpSub(self.velocity, self.world.referenceVelocity);
+    return ccpSub(self.velocity, ((SimplePhysicsEngine *)self.world).referenceVelocity);
 }
 
 #pragma mark - Legacy opposite point calculation (not used)

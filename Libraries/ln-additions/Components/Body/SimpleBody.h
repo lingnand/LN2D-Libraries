@@ -15,7 +15,7 @@
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic,readonly) CGPoint actualVelocity;
 /** Convariant PhysicsEngine */
-@property(nonatomic,assign) SimplePhysicsEngine *world;
+//@property(nonatomic,assign) SimplePhysicsEngine *world;
 
-+ (id)bodyWithPhysicsEngine:(SimplePhysicsEngine *)world;
+//+ (id)bodyWithPhysicsEngine:(SimplePhysicsEngine *)world;
 @end
