@@ -1,0 +1,535 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		A8C6D4AE24DA5F62EE93FE05 /* NSObject+REObserver.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D9FF7B028DBA383E9B87 /* NSObject+REObserver.m */; };
+		A8C6D861C0F72D64E1B8B847 /* REUtil.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D96073E4F349D0C27AC2 /* REUtil.m */; };
+		A8C6D98BD9C1DE16F23AE95C /* NSObject+REResponder.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D1E3C45D2DD378737B17 /* NSObject+REResponder.m */; };
+		A8C6D9C1A55A1B6E3B537670 /* NSObject+SimpleBindings.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D0723359138C4DC6682E /* NSObject+SimpleBindings.m */; };
+		AED9EBD61792060000DD92CF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED9EBD51792060000DD92CF /* Foundation.framework */; };
+		AED9EBDC1792063100DD92CF /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED9EBD51792060000DD92CF /* Foundation.framework */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		AED9EDF6179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 509807081175041800EA7266;
+			remoteInfo = "build all libs";
+		};
+		AED9EDF8179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 504225700FC0B39C00B992F7;
+			remoteInfo = box2d;
+		};
+		AED9EDFA179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 50B2C4D10E100AEA00AE9530;
+			remoteInfo = Chipmunk;
+		};
+		AED9EDFC179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5018F24D0DFDEAC400C013A5;
+			remoteInfo = cocos2d;
+		};
+		AED9EDFE179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A0EFA7AC169CDF9C006D1B22;
+			remoteInfo = cocos2d_box2d;
+		};
+		AED9EE00179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A0EFA886169CDFA4006D1B22;
+			remoteInfo = cocos2d_chipmunk;
+		};
+		AED9EE02179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 502C65EE0DFEF3DD00E4107D;
+			remoteInfo = "cocos2d-documentation";
+		};
+		AED9EE04179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 50CB2FCA1004C8B100B7A750;
+			remoteInfo = CocosDenshion;
+		};
+		AED9EE06179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A02900ED15B5FA9E00D64F82;
+			remoteInfo = CocosBuilderReader;
+		};
+		AED9EE08179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A031B73915D9BD0800E1986C;
+			remoteInfo = jsbindings;
+		};
+		AED9EE0A179215D800DD92CF /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = A04A1FEB13B826B300ABAFB7;
+			remoteInfo = kazmath;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		AED9EBBB1792058B00DD92CF /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/${PRODUCT_NAME}";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AED9EBD91792063100DD92CF /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "include/${PRODUCT_NAME}";
+			dstSubfolderSpec = 16;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		A8C6D0723359138C4DC6682E /* NSObject+SimpleBindings.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+SimpleBindings.m"; sourceTree = "<group>"; };
+		A8C6D1010C5DA08F961B9313 /* NSObject+REResponder.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+REResponder.h"; sourceTree = "<group>"; };
+		A8C6D1E3C45D2DD378737B17 /* NSObject+REResponder.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+REResponder.m"; sourceTree = "<group>"; };
+		A8C6D2DAD47EBEA0151C12CB /* NSObject+REObserver.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+REObserver.h"; sourceTree = "<group>"; };
+		A8C6D582BAA7285E18D90B75 /* HeaderSearchPaths.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = HeaderSearchPaths.xcconfig; sourceTree = "<group>"; };
+		A8C6D96073E4F349D0C27AC2 /* REUtil.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = REUtil.m; sourceTree = "<group>"; };
+		A8C6D9FF7B028DBA383E9B87 /* NSObject+REObserver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSObject+REObserver.m"; sourceTree = "<group>"; };
+		A8C6DAC18A0A1A9CCC5CEEB4 /* NSObject+SimpleBindings.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SimpleBindings.h"; sourceTree = "<group>"; };
+		A8C6DD9E15ACC3F5BDB70CB8 /* REKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REKit.h; sourceTree = "<group>"; };
+		A8C6DE325EBFBEBFB48402BA /* REUtil.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = REUtil.h; sourceTree = "<group>"; };
+		AED9EBBD1792058B00DD92CF /* libREKit.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libREKit.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED9EBD51792060000DD92CF /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
+		AED9EBDB1792063100DD92CF /* libobjc-simple-bindings.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libobjc-simple-bindings.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "cocos2d-ios.xcodeproj"; path = "cocos2d-iphone/cocos2d-ios.xcodeproj"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		AED9EBBA1792058B00DD92CF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AED9EBD61792060000DD92CF /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AED9EBD81792063100DD92CF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AED9EBDC1792063100DD92CF /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		A8C6D4E1831AC771740D790C /* REKit */ = {
+			isa = PBXGroup;
+			children = (
+				A8C6D2DAD47EBEA0151C12CB /* NSObject+REObserver.h */,
+				A8C6D9FF7B028DBA383E9B87 /* NSObject+REObserver.m */,
+				A8C6D1010C5DA08F961B9313 /* NSObject+REResponder.h */,
+				A8C6D1E3C45D2DD378737B17 /* NSObject+REResponder.m */,
+				A8C6DD9E15ACC3F5BDB70CB8 /* REKit.h */,
+				A8C6DE325EBFBEBFB48402BA /* REUtil.h */,
+				A8C6D96073E4F349D0C27AC2 /* REUtil.m */,
+			);
+			name = REKit;
+			path = REKit/REKit;
+			sourceTree = "<group>";
+		};
+		A8C6DDA8E1EEDC0F5FBD01A3 /* objc-simple-bindings */ = {
+			isa = PBXGroup;
+			children = (
+				A8C6DAC18A0A1A9CCC5CEEB4 /* NSObject+SimpleBindings.h */,
+				A8C6D0723359138C4DC6682E /* NSObject+SimpleBindings.m */,
+			);
+			path = "objc-simple-bindings";
+			sourceTree = "<group>";
+		};
+		A8C6DE0180E7995FA67FAEE6 /* BuildSettings */ = {
+			isa = PBXGroup;
+			children = (
+				A8C6D582BAA7285E18D90B75 /* HeaderSearchPaths.xcconfig */,
+			);
+			path = BuildSettings;
+			sourceTree = "<group>";
+		};
+		AED9EB751792020F00DD92CF = {
+			isa = PBXGroup;
+			children = (
+				AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */,
+				AED9EBBE1792058B00DD92CF /* Frameworks */,
+				A8C6D4E1831AC771740D790C /* REKit */,
+				A8C6DDA8E1EEDC0F5FBD01A3 /* objc-simple-bindings */,
+				A8C6DE0180E7995FA67FAEE6 /* BuildSettings */,
+			);
+			sourceTree = "<group>";
+		};
+		AED9EBBE1792058B00DD92CF /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AED9EBD51792060000DD92CF /* Foundation.framework */,
+				AED9EBDB1792063100DD92CF /* libobjc-simple-bindings.a */,
+				AED9EBBD1792058B00DD92CF /* libREKit.a */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AED9EDE9179215D700DD92CF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				AED9EDF7179215D800DD92CF /* libbuild all libs.a */,
+				AED9EDF9179215D800DD92CF /* libbox2d.a */,
+				AED9EDFB179215D800DD92CF /* libChipmunk.a */,
+				AED9EDFD179215D800DD92CF /* libcocos2d.a */,
+				AED9EDFF179215D800DD92CF /* libcocos2d_box2d.a */,
+				AED9EE01179215D800DD92CF /* libcocos2d_chipmunk.a */,
+				AED9EE03179215D800DD92CF /* libcocos2d-documentation.a */,
+				AED9EE05179215D800DD92CF /* libCocosDenshion.a */,
+				AED9EE07179215D800DD92CF /* libCocosBuilderReader.a */,
+				AED9EE09179215D800DD92CF /* libjsbindings.a */,
+				AED9EE0B179215D800DD92CF /* libkazmath.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		AED9EBBC1792058B00DD92CF /* REKit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AED9EBC81792058B00DD92CF /* Build configuration list for PBXNativeTarget "REKit" */;
+			buildPhases = (
+				AED9EBB91792058B00DD92CF /* Sources */,
+				AED9EBBA1792058B00DD92CF /* Frameworks */,
+				AED9EBBB1792058B00DD92CF /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = REKit;
+			productName = REKit;
+			productReference = AED9EBBD1792058B00DD92CF /* libREKit.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		AED9EBDA1792063100DD92CF /* objc-simple-bindings */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AED9EBE41792063100DD92CF /* Build configuration list for PBXNativeTarget "objc-simple-bindings" */;
+			buildPhases = (
+				AED9EBD71792063100DD92CF /* Sources */,
+				AED9EBD81792063100DD92CF /* Frameworks */,
+				AED9EBD91792063100DD92CF /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "objc-simple-bindings";
+			productName = "objc-simple-bindings";
+			productReference = AED9EBDB1792063100DD92CF /* libobjc-simple-bindings.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		AED9EB761792020F00DD92CF /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0460;
+				ORGANIZATIONNAME = LnStudio;
+			};
+			buildConfigurationList = AED9EB791792020F00DD92CF /* Build configuration list for PBXProject "LN-Libraries" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = AED9EB751792020F00DD92CF;
+			productRefGroup = AED9EB751792020F00DD92CF;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = AED9EDE9179215D700DD92CF /* Products */;
+					ProjectRef = AED9EDE8179215D700DD92CF /* cocos2d-ios.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				AED9EBBC1792058B00DD92CF /* REKit */,
+				AED9EBDA1792063100DD92CF /* objc-simple-bindings */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		AED9EDF7179215D800DD92CF /* libbuild all libs.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libbuild all libs.a";
+			remoteRef = AED9EDF6179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EDF9179215D800DD92CF /* libbox2d.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libbox2d.a;
+			remoteRef = AED9EDF8179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EDFB179215D800DD92CF /* libChipmunk.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libChipmunk.a;
+			remoteRef = AED9EDFA179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EDFD179215D800DD92CF /* libcocos2d.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcocos2d.a;
+			remoteRef = AED9EDFC179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EDFF179215D800DD92CF /* libcocos2d_box2d.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcocos2d_box2d.a;
+			remoteRef = AED9EDFE179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE01179215D800DD92CF /* libcocos2d_chipmunk.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libcocos2d_chipmunk.a;
+			remoteRef = AED9EE00179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE03179215D800DD92CF /* libcocos2d-documentation.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "libcocos2d-documentation.a";
+			remoteRef = AED9EE02179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE05179215D800DD92CF /* libCocosDenshion.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCocosDenshion.a;
+			remoteRef = AED9EE04179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE07179215D800DD92CF /* libCocosBuilderReader.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libCocosBuilderReader.a;
+			remoteRef = AED9EE06179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE09179215D800DD92CF /* libjsbindings.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libjsbindings.a;
+			remoteRef = AED9EE08179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		AED9EE0B179215D800DD92CF /* libkazmath.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libkazmath.a;
+			remoteRef = AED9EE0A179215D800DD92CF /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXSourcesBuildPhase section */
+		AED9EBB91792058B00DD92CF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A8C6D4AE24DA5F62EE93FE05 /* NSObject+REObserver.m in Sources */,
+				A8C6D98BD9C1DE16F23AE95C /* NSObject+REResponder.m in Sources */,
+				A8C6D861C0F72D64E1B8B847 /* REUtil.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AED9EBD71792063100DD92CF /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A8C6D9C1A55A1B6E3B537670 /* NSObject+SimpleBindings.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		AED9EB8A1792020F00DD92CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+			};
+			name = Debug;
+		};
+		AED9EB8B1792020F00DD92CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 6.1;
+				SDKROOT = iphoneos;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		AED9EBC91792058B00DD92CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DSTROOT = /tmp/REKit.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "REKit/REKit-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		AED9EBCA1792058B00DD92CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DSTROOT = /tmp/REKit.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "REKit/REKit-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+		AED9EBE51792063100DD92CF /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DSTROOT = /tmp/objc_simple_bindings.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "objc-simple-bindings/objc-simple-bindings-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		AED9EBE61792063100DD92CF /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_OBJC_ARC = YES;
+				DSTROOT = /tmp/objc_simple_bindings.dst;
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "objc-simple-bindings/objc-simple-bindings-Prefix.pch";
+				OTHER_LDFLAGS = "-ObjC";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		AED9EB791792020F00DD92CF /* Build configuration list for PBXProject "LN-Libraries" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AED9EB8A1792020F00DD92CF /* Debug */,
+				AED9EB8B1792020F00DD92CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AED9EBC81792058B00DD92CF /* Build configuration list for PBXNativeTarget "REKit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AED9EBC91792058B00DD92CF /* Debug */,
+				AED9EBCA1792058B00DD92CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AED9EBE41792063100DD92CF /* Build configuration list for PBXNativeTarget "objc-simple-bindings" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AED9EBE51792063100DD92CF /* Debug */,
+				AED9EBE61792063100DD92CF /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = AED9EB761792020F00DD92CF /* Project object */;
+}

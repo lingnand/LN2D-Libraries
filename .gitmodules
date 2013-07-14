@@ -1,0 +1,9 @@
+[submodule "Libraries/cocos2d-iphone"]
+	path = Libraries/cocos2d-iphone
+	url = https://github.com/cocos2d/cocos2d-iphone
+[submodule "Libraries/rekit"]
+	path = Libraries/rekit
+	url = https://github.com/zuccoi/REKit
+[submodule "Libraries/objc-simple-bindings"]
+	path = Libraries/objc-simple-bindings
+	url = https://github.com/mruegenberg/objc-simple-bindings
