@@ -18,17 +18,25 @@
 
 - (void)setObject:(CCComponent *)comp forKeyedSubscript:(id)key;
 
-- (void)set:(CCComponent *)component ref:(const void *)ref;
+- (void)setComponent:(CCComponent *)component forRef:(const void *)ref;
 
 - (id)componentForRef:(const void *)ref;
 
 - (void)removeComponentForRef:(const void *)ref;
 
-- (void)add:(CCComponent *)component;
+- (id)componentForClass:(Class)class;
 
-- (void)set:(CCComponent *)component tag:(NSInteger)tag;
+- (void)setComponent:(CCComponent *)component forClass:(Class)class;
 
-- (NSArray *)all;
+- (id)componentForSelector:(SEL)selector;
+
+- (NSArray *)componentsForSelector:(SEL)selector;
+
+- (void)addComponent:(CCComponent *)component;
+
+- (void)setComponent:(CCComponent *)component forTag:(NSInteger)tag;
+
+- (NSArray *)allComponents;
 
 - (NSArray *)filteredComponentsUsingPredicate:(NSPredicate *)predicate;
 
@@ -40,11 +48,13 @@
 
 - (void)setObject:(CCComponent *)component atIndexedSubscript:(NSInteger)tag;
 
-- (void)set:(CCComponent *)component key:(id)key;
+- (void)setComponent:(CCComponent *)component forKey:(id)key;
 
 - (id)copyWithZone:(NSZone *)zone;
 
 - (id)componentForKey:(id)key;
 
 - (void)removeComponentForKey:(id)key;
+
+- (id)componentsForClass:(Class)class;
 @end

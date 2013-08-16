@@ -94,12 +94,13 @@
     return self;
 }
 
-- (void)dealloc {
+//- (void)dealloc {
     // remove the subsituent components
-    for (GridLine *line in self) {
-        [self cleanPropertiesWithLine:line];
-    }
-}
+    // NOTICE! using  weak references should automatically nil-ing the properties now
+//    for (GridLine *line in self) {
+//        [self cleanPropertiesWithLine:line];
+//    }
+//}
 
 #pragma mark - Common properties
 

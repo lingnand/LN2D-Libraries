@@ -12,7 +12,7 @@
 
 @implementation SpawnDispatcher {
 }
-@synthesize enabled = _enabled;
+@synthesize enabled=_enabled;
 
 - (id)initWithTagSet:(NSIndexSet *)indexSet {
     self = [super init];
@@ -35,15 +35,12 @@
     return nil;
 }
 
-- (void)setEnabled:(BOOL)enabled {
-    if (enabled != _enabled) {
-        _enabled = enabled;
-        if (_enabled) {
-            [self scheduleUpdate];
-        } else {
-            [self unscheduleUpdate];
-        }
-    }
+- (void)enable {
+    [self scheduleUpdate];
+}
+
+- (void)disable {
+    [self unscheduleUpdate];
 }
 
 -(NSArray *) instances {

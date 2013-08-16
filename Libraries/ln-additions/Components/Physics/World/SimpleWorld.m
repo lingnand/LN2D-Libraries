@@ -5,15 +5,15 @@
     @author lingnan
 */
 
-#import "SimplePhysicsEngine.h"
+#import "SimpleWorld.h"
 
 
-@implementation SimplePhysicsEngine {
+@implementation SimpleWorld {
 
 }
 
-+(id)engineWithReferenceVelocity:(CGPoint)vref {
-    SimplePhysicsEngine *engine = [self engine];
++(id)worldWithReferenceVelocity:(CGPoint)vref {
+    SimpleWorld *engine = [self world];
     engine.referenceVelocity = vref;
     return engine;
 }

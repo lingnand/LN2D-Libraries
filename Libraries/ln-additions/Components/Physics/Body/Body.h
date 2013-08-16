@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class PhysicsEngine;
+@class World;
 
 
 @interface Body : CCComponent
@@ -19,9 +19,16 @@
 * in the subtypes of body, this data object should be allowed to be a covariant
 * (a more specific subtype)
 */
-@property(nonatomic,assign) PhysicsEngine *world;
+@property(nonatomic, weak) World *world;
+/** override this property to indicate the right world class type to be coupled with
+ * this body class */
+@property(nonatomic, readonly) Class worldClass;
 
-+ (id)bodyWithPhysicsEngine:(PhysicsEngine *)world;
++ (id)bodyWithPhysicsEngine:(World *)world;
 
 + (id)body;
+
+- (void)worldChangedFrom:(World *)ow to:(World *)nw;
+
+- (void)setClosestWorld:(World *)world;
 @end

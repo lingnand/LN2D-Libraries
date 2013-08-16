@@ -9,7 +9,7 @@
 #import "CCComponent.h"
 #import "SimpleBody.h"
 #import "Mask.h"
-#import "CollisionHandler.h"
+#import "ContactListener.h"
 
 
 typedef NS_ENUM(NSInteger , CollisionState) {
@@ -18,7 +18,7 @@ typedef NS_ENUM(NSInteger , CollisionState) {
     CollisionStateMax
 };
 
-@interface SimpleCollisionHandler : CollisionHandler
+@interface SimpleContactListener : ContactListener
 @property(nonatomic, strong) Mask *wallMask;
 @property(nonatomic) CGFloat restitution;
 @property(nonatomic) CGPoint gravity;

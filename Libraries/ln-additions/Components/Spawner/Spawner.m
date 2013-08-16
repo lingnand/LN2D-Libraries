@@ -51,8 +51,6 @@
     if ([self.delegate fullyOutsideScreen]) {
         if (self.passedScreen) {
             self.delegate.visible = NO;
-            // presumably stop the body
-            self.delegate.body.enabled = NO;
         }
     } else {
         if (!self.passedScreen)
@@ -75,8 +73,6 @@
     if (self.spawnBlock) {
         self.spawnBlock();
     }
-    // presumably we should start the body
-    self.delegate.body.enabled = YES;
 }
 
 - (BOOL)active {

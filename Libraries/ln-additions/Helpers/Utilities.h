@@ -97,4 +97,6 @@ CGPoint ccpFromRatio(CGPoint ratio) {
     return ccp(ratio.x * [CCDirector sharedDirector].winSize.width, ratio.y * [CCDirector sharedDirector].winSize.height);
 }
 
+#pragma mark - Block definitions
 
+#define BLOCK_SAFE_RUN(block, ...) {if (block) block(__VA_ARGS__);}

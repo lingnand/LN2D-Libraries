@@ -12,7 +12,7 @@
 
 @property(nonatomic) GridDimension type;
 @property(nonatomic) CGFloat gap;
-@property (nonatomic,assign) GridNode *grid;
+@property (nonatomic, weak) GridNode *grid;
 @property (nonatomic, readonly) CGFloat width;
 
 /** @group Group creation */

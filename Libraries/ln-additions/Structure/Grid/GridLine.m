@@ -176,15 +176,16 @@
     return _mask;
 }
 
-- (void)dealloc {
+//- (void)dealloc {
     // need to remove self from all other nodes being observed
     // just set all the delegate to nil and the underlying nodes will handle the rest
     // also need to remove the underlying nodes from the canvas at least as when the line structure is destroyed
     // the underlying nodes shouldn't remain on the screen
-    for (GridCell *cell in self) {
-        [self stopUpdateForCell:cell];
-    }
-}
+    // NOTICE: switching the property to weak should ensure all the cell's property set to nil automatically now
+//    for (GridCell *cell in self) {
+//        [self stopUpdateForCell:cell];
+//    }
+//}
 
 #pragma mark - Properties
 

@@ -5,11 +5,8 @@
     @author lingnan
 */
 
-#import "CCComponent.h"
-#import "CollisionHandler.h"
+#import <Foundation/Foundation.h>
 
 
-@implementation CollisionHandler {
-
-}
+@interface ContactListener : CCComponent
 @end

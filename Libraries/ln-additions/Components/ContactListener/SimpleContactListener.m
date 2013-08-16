@@ -5,18 +5,18 @@
 //
 
 
-#import "SimpleCollisionHandler.h"
+#import "SimpleContactListener.h"
 #import "CCNode+LnAdditions.h"
 #import "Utilities.h"
 
 
 #define TIME_STAY_LIMIT 0.5
 
-@interface SimpleCollisionHandler ()
+@interface SimpleContactListener ()
 @property(nonatomic) ccTime elapsed;
 @end
 
-@implementation SimpleCollisionHandler {
+@implementation SimpleContactListener {
 }
 
 + (id)collisionHandlerWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution {

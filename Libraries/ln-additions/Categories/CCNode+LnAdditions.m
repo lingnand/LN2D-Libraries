@@ -12,9 +12,6 @@
 // dynamically access the components array
 static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit";
 static char const *const nodeDataKey = "CCNodeExtension.UserData";
-static char const *const maskComponentKey = "CCNodeExtension.MaskComponent";
-static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
-//static char const *const nodeContentSizeKey = "ContentSize";
 
 @implementation CCNode (LnAdditions)
 @dynamic components;
@@ -131,7 +128,7 @@ static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
     return self.components;
 }
 
-#pragma mark - Data
+#pragma mark - Data (deprecated)
 
 - (id)data {
     return objc_getAssociatedObject(self, nodeDataKey);
@@ -150,7 +147,7 @@ static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
 
 // default returns a normal body
 - (id)body {
-    Body *m = [self.components componentForRef:moverComponentKey];
+    Body *m = [self.components componentForClass:[Body class]];
     if (!m) {
         m = [SimpleBody body];
         self.body = m;
@@ -159,7 +156,7 @@ static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
 }
 
 - (void)setBody:(Body *)body {
-    [self.components set:body ref:moverComponentKey];
+    [self.components setComponent:body forClass:[Body class]];
 }
 
 // velocity is the one thing that should be supported across bodies
@@ -176,7 +173,7 @@ static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
 // defualt returns a rectMask
 - (Mask *)mask {
     // lazily instantiate
-    Mask *m = [self.components componentForRef:maskComponentKey];
+    Mask *m = [self.components componentForClass:[Mask class]];
     if (!m) {
         m = [RectMask mask];
         self.mask = m;
@@ -185,7 +182,7 @@ static char const *const moverComponentKey = "CCNodeExtension.MoverComponent";
 }
 
 - (void)setMask:(Mask *)mask {
-    [self.components set:mask ref:maskComponentKey];
+    [self.components setComponent:mask forClass:[Mask class]];
 }
 
 /** converting a rect in the current nodespace to the world nodespace */

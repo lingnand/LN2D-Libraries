@@ -17,7 +17,7 @@
 // if width>=0, width will be set to the value and the line's dynamicity is changed to false
 // if width<0, width will be set to the defaultWidth, and dynamicity is changed to true
 @property(nonatomic) CGFloat width;
-@property (nonatomic,assign) GridGroup *group;
+@property (nonatomic, weak) GridGroup *group;
 @property(nonatomic) CGFloat position;
 @property(nonatomic) GridDimension type;
 @property(nonatomic) NSUInteger index;

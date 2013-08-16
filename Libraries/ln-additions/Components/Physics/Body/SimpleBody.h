@@ -8,14 +8,10 @@
 #import <Foundation/Foundation.h>
 #import "Body.h"
 
-@class SimplePhysicsEngine;
+@class SimpleWorld;
 
 
 @interface SimpleBody : Body
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic,readonly) CGPoint actualVelocity;
-/** Convariant PhysicsEngine */
-//@property(nonatomic,assign) SimplePhysicsEngine *world;
-
-//+ (id)bodyWithPhysicsEngine:(SimplePhysicsEngine *)world;
 @end

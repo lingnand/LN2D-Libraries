@@ -6,12 +6,12 @@
 */
 
 #import <Foundation/Foundation.h>
-#import "PhysicsEngine.h"
+#import "World.h"
 
 
-@interface SimplePhysicsEngine : PhysicsEngine
+@interface SimpleWorld : World
 /** The reference velocity for the the on-screen velocity */
 @property(nonatomic) CGPoint referenceVelocity;
 
-+ (id)engineWithReferenceVelocity:(CGPoint)vref;
++ (id)worldWithReferenceVelocity:(CGPoint)vref;
 @end

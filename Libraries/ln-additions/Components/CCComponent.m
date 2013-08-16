@@ -43,14 +43,33 @@
     if (delegate != _delegate) {
         if (delegate) {
             _delegate = delegate;
-            [self onAddComponent];
             self.enabled = YES;
+            [self onAddComponent];
         } else {
-            self.enabled = NO;
             [self onRemoveComponent];
+            self.enabled = NO;
             _delegate = delegate;
         }
     }
+}
+
+- (void)setEnabled:(BOOL)enabled {
+    if (enabled != _enabled) {
+        _enabled = enabled;
+        if (_enabled) {
+            [self enable];
+        } else {
+            [self disable];
+        }
+    }
+}
+
+- (void)disable {
+
+}
+
+- (void)enable {
+
 }
 
 + (id)component {

@@ -6,17 +6,22 @@
 
 
 #import "CCComponentKit.h"
+#import "CHBidirectionalDictionary.h"
 
 
 @interface CCComponentKit ()
 @property(nonatomic, strong) NSMutableDictionary *componentDict;
+/** two tables for storing additional responsibilities for classes and selectors */
+@property(nonatomic, strong) NSMutableDictionary *classTable;
 @property(nonatomic, strong) NSMutableDictionary *forwardTable;
+@property(nonatomic, strong) NSMutableSet *classQueue;
+@property(nonatomic, strong) NSMutableSet *forwardQueue;
 @end
 
 @implementation CCComponentKit {
 
 }
-@synthesize delegate=_delegate;
+@synthesize delegate = _delegate;
 @synthesize enabled = _enabled;
 
 #pragma mark - Config interface (for Database) / deprecated
@@ -28,17 +33,23 @@
         [config enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
             Class pClass = NSClassFromString(key);
             NSAssert([pClass isKindOfClass:[CCComponent class]] && [pClass conformsToProtocol:@protocol(ConfigurableObject)], @"the configuration is not for a valid component class! configuration = %@", config);
-            [self add:[pClass initWithConfig:obj]];
+            [self addComponent:[pClass initWithConfig:obj]];
         }];
     }
 
     return self;
 }
 
+#pragma mark - Lifecycle
+
+- (void)setEnabled:(BOOL)enabled {
+    [self.allComponents setValue:[NSNumber numberWithBool:enabled] forKey:@"enabled"];
+}
+
 #pragma mark - Tag interface (NSNumber)
 
--(void)set:(CCComponent *)component tag:(NSInteger)tag {
-    [self set:component key:[NSNumber numberWithInt:tag]];
+- (void)setComponent:(CCComponent *)component forTag:(NSInteger)tag {
+    [self setComponent:component forKey:[NSNumber numberWithInt:tag]];
 }
 
 - (id)componentForTag:(NSInteger)tag {
@@ -53,19 +64,43 @@
     return [self componentForTag:tag];
 }
 
--(void)setObject:(CCComponent *)component atIndexedSubscript:(NSInteger)tag {
-    [self set:component tag:tag];
+- (void)setObject:(CCComponent *)component atIndexedSubscript:(NSInteger)tag {
+    [self setComponent:component forTag:tag];
 }
 
 #pragma mark - Key interface (id)
 
--(void)set:(CCComponent *)component key:(id)key {
+- (void)setComponent:(CCComponent *)component forKey:(id)key {
     self.componentDict[key] = component;
     // procedure for adding the component
     component.delegate = self.delegate;
+    // check through all the holes...
+    // forward Queue
+    if (self.forwardQueue.count) {
+        NSMutableSet *fq = [NSMutableSet setWithCapacity:self.forwardQueue.count];
+        for (NSValue *v in self.forwardQueue) {
+            SEL selector = v.pointerValue;
+            if ([component respondsToSelector:selector])
+                [self setComponent:component forSelector:selector];
+            else
+                [fq addObject:v];
+        }
+        self.forwardQueue = fq;
+    }
+    // class Queue
+    if (self.classQueue.count) {
+        NSMutableSet *cq = [NSMutableSet setWithCapacity:self.classQueue.count];
+        for (Class c in self.classQueue) {
+            if ([component isKindOfClass:c])
+                [self setComponent:component forClass:c];
+            else
+                [cq addObject:c];
+        }
+        self.classQueue = cq;
+    }
 }
 
--(id)componentForKey:(id)key {
+- (id)componentForKey:(id)key {
     return self.componentDict[key];
 }
 
@@ -73,8 +108,9 @@
     CCComponent *component = self.componentDict[key];
     [self.componentDict removeObjectForKey:key];
     component.delegate = nil;
-    // also need to get it out our forwarding table
+    // remove the component from the tables as well
     [self.forwardTable removeObjectsForKeys:[self.forwardTable allKeysForObject:component]];
+    [self.classTable removeObjectsForKeys:[self.classTable allKeysForObject:component]];
 }
 
 - (id)objectForKeyedSubscript:(id)key {
@@ -92,32 +128,98 @@
     @param ref
         A pointer (presumably const) that identifies as a unique key. Example: using a static const char *
 */
--(void)set:(CCComponent *)component ref:(const void *)ref {
-    [self set:component key:[NSValue valueWithPointer:ref]];
+- (void)setComponent:(CCComponent *)component forRef:(const void *)ref {
+    [self setComponent:component forKey:[NSValue valueWithPointer:ref]];
 }
 
--(id)componentForRef:(const void *)ref {
+- (id)componentForRef:(const void *)ref {
     return [self componentForKey:[NSValue valueWithPointer:ref]];
 }
 
--(void)removeComponentForRef:(const void *)ref {
+- (void)removeComponentForRef:(const void *)ref {
     [self removeComponentForKey:[NSValue valueWithPointer:ref]];
+}
+
+#pragma mark - Class interface (select component by class)
+/**
+* To accelerate access we can store the component as [class] => [component] once a
+* search is made; the only problem is that we'd also need to remove this newly created
+* pair once the component is removed; as a result when a component gets removed you
+* have to loop through the whole dictionary to get the component and remove that as well
+*
+*/
+
+/**
+* To improve the performance, all dynamic queries about components should be performed
+* before the query recorded if it returns nil. So that when a new component is added
+* we can fill this hole (reason: a query made once is more than likely to have be made
+* again)
+*/
+
+- (id)componentForClass:(Class)class {
+    CCComponent *comp = [self.classTable objectForKey:class];
+    if (!comp && ![self.classQueue containsObject:class]) {
+        if ((comp = [[self componentsForClass:class] lastObject]))
+            [self setComponent:comp forClass:class];
+        else
+            [self.classQueue addObject:class];
+    }
+    return comp;
+}
+
+- (id)componentsForClass:(Class)class {
+    return [self filteredComponentsUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+        return [evaluatedObject isKindOfClass:class];
+    }]];
+}
+
+/** responsibility assigning method */
+- (void)setComponent:(CCComponent *)component forClass:(Class)class {
+    self.classTable[class] = component;
+}
+
+#pragma mark - Selector interface (select component by selector)
+
+- (id)componentForSelector:(SEL)selector {
+    // first get the component in question
+    NSValue *se = [NSValue valueWithPointer:selector];
+    CCComponent *comp = [self.forwardTable objectForKey:se];
+    // search for all the components that respond to this selector and choose the first one as the
+    // default one
+    // cache this is the forwarding table
+    if (!comp && ![self.forwardQueue containsObject:se]) {
+        if ((comp = [[self componentsForSelector:selector] lastObject]))
+            [self setComponent:comp forSelector:selector];
+        else
+            [self.forwardQueue addObject:se];
+    }
+    return comp;
+}
+
+- (NSArray *)componentsForSelector:(SEL)selector {
+    return [self filteredComponentsUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
+        return [evaluatedObject respondsToSelector:selector];
+    }]];
+}
+
+-(void)setComponent:(CCComponent *)component forSelector:(SEL)selector {
+    self.forwardTable[[NSValue valueWithPointer:selector]] = component;
 }
 
 #pragma mark - General interface
 
 // the component will be lost if not referenced else well
--(void)add:(CCComponent *)component  {
+- (void)addComponent:(CCComponent *)component {
     uintptr_t p = (uintptr_t) component;
-    [self set:component ref:(void const *) p];
+    [self setComponent:component forRef:(void const *) p];
 }
 
--(NSArray *)all {
+- (NSArray *)allComponents {
     return self.componentDict.allValues;
 }
 
--(NSArray *)filteredComponentsUsingPredicate:(NSPredicate *)predicate {
-    return [self.all filteredArrayUsingPredicate:predicate];
+- (NSArray *)filteredComponentsUsingPredicate:(NSPredicate *)predicate {
+    return [self.allComponents filteredArrayUsingPredicate:predicate];
 }
 
 #pragma mark - Facilities
@@ -130,10 +232,27 @@
 }
 
 - (NSMutableDictionary *)forwardTable {
-    if (!_forwardTable) {
+    if (!_forwardTable)
         _forwardTable = [NSMutableDictionary dictionary];
-    }
     return _forwardTable;
+}
+
+- (NSMutableDictionary *)classTable {
+    if (!_classTable)
+        _classTable = [NSMutableDictionary dictionary];
+    return _classTable;
+}
+
+- (NSMutableSet *)forwardQueue {
+    if (!_forwardQueue)
+        _forwardQueue = [NSMutableSet set];
+    return _forwardQueue;
+}
+
+- (NSMutableSet *)classQueue {
+    if (!_classQueue)
+        _classQueue = [NSMutableSet set];
+    return _classQueue;
 }
 
 - (void)setDelegate:(CCNode *)delegate {
@@ -142,12 +261,6 @@
         _delegate = delegate;
         [self.componentDict.allValues setValue:_delegate forKey:@"delegate"];
     }
-}
-
-- (void)setEnabled:(BOOL)enabled {
-    // loop through all the components
-    _enabled = enabled;
-    [self.componentDict.allValues setValue:[NSNumber numberWithBool:_enabled] forKey:@"enabled"];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -163,20 +276,7 @@
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    // if there's already some cache
-    NSValue *index = [NSValue valueWithPointer:aSelector];
-    id component = self.forwardTable[index];
-    if (!component) {
-        // we will check through every component in the collection to get one that's able to respond to the message
-        for (id comp in self.componentDict.allValues) {
-            if ([comp respondsToSelector:aSelector]) {
-                component = comp;
-                self.forwardTable[index] = comp;
-                break;
-            }
-        }
-    }
-    return component;
+    return [self componentForSelector:aSelector];
 }
 
 

@@ -13,3 +13,6 @@
 [submodule "Libraries/box2d"]
 	path = Libraries/box2d
 	url = https://github.com/ansman/box2d
+[submodule "Libraries/chdatastructures"]
+	path = Libraries/chdatastructures
+	url = https://github.com/davedelong/CHDataStructures

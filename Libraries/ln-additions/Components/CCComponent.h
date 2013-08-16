@@ -9,8 +9,12 @@
 
 @interface CCComponent :NSObject <NSCopying>
 
-@property (nonatomic, unsafe_unretained) CCNode *delegate;
+@property (nonatomic, weak) CCNode *delegate;
 @property (nonatomic) BOOL enabled;
+
+- (void)disable;
+
+- (void)enable;
 
 + (id)component;
 

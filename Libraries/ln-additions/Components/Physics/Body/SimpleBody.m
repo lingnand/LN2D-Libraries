@@ -7,33 +7,35 @@
 
 #import "CCComponent.h"
 #import "SimpleBody.h"
-#import "SimplePhysicsEngine.h"
+#import "SimpleWorld.h"
 
 @implementation SimpleBody {
 
 }
-@synthesize enabled = _enabled;
 
 #pragma mark - SimpleBody creation
 
 
 #pragma mark - LifeCycle
 
-- (void)setEnabled:(BOOL)enabled {
-    if (_enabled != enabled) {
-        _enabled = enabled;
-        if (_enabled) {
-            [self scheduleUpdate];
-        } else {
-            [self unscheduleUpdate];
-        }
-    }
+- (void)onAddComponent {
+    [super onAddComponent];
+    [self scheduleUpdate];
+}
+
+- (void)onRemoveComponent {
+    [super onRemoveComponent];
+    [self unscheduleUpdate];
 }
 
 #pragma mark - Properties
 
 - (CGPoint)actualVelocity {
-    return ccpSub(self.velocity, ((SimplePhysicsEngine *)self.world).referenceVelocity);
+    return ccpSub(self.velocity, ((SimpleWorld *)self.world).referenceVelocity);
+}
+
+- (Class)worldClass {
+    return [SimpleWorld class];
 }
 
 #pragma mark - Legacy opposite point calculation (not used)
