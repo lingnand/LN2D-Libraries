@@ -31,6 +31,14 @@
     return self;
 }
 
+- (void)activate {
+    [self scheduleUpdate];
+}
+
+- (void)deactivate {
+    [self unscheduleUpdate];
+}
+
 - (void)update:(ccTime)delta {
     // we'd like to have a correct behavior for specifying the period (as number of seconds before releasing the next object
     self.elapsed += delta;

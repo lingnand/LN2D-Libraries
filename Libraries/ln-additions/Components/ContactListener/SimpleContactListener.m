@@ -19,7 +19,7 @@
 @implementation SimpleContactListener {
 }
 
-+ (id)collisionHandlerWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution {
++ (id)listenerWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution {
     return [[self alloc] initWithGravity:gravity wallMask:mask restitution:restitution];
 }
 
@@ -35,7 +35,7 @@
 
 - (void)onAddComponent {
     // check for compatibility of the mover class
-    _currentCollisionState = self.collidedWithWall ? CollisionStateOnGround : CollisionStateInAir;
+    _currentContactState = self.contactWithWall ? ContactStateOnGround : ContactStateInAir;
     [self scheduleUpdate];
 }
 
@@ -63,7 +63,7 @@
     CGPoint collideVec = ccp(0, 0);
     // first adjust the x direction
     self.delegate.position = ccpAdd(self.delegate.position, ccp(ds.x, 0));
-    while (self.collidedWithWall && actual_ds_mag.x > 0) {
+    while (self.contactWithWall && actual_ds_mag.x > 0) {
 //        CCLOG(@"Collided");
         collideVec.x = 1;
         self.delegate.position = ccpAdd(self.delegate.position, ccp(-actual_ds_direction.x * self.restitution, 0));
@@ -71,7 +71,7 @@
     }
     // then adjust the y direction
     self.delegate.position = ccpAdd(self.delegate.position, ccp(0, ds.y));
-    while (self.collidedWithWall && actual_ds_mag.y > 0) {
+    while (self.contactWithWall && actual_ds_mag.y > 0) {
 //        CCLOG(@"Collided");
         collideVec.y = 1;
         self.delegate.position = ccpAdd(self.delegate.position, ccp(0, -actual_ds_direction.y * self.restitution));
@@ -82,16 +82,16 @@
 
     if (collideVec.x || collideVec.y) {
         self.elapsed = 0;
-        _currentCollisionState = CollisionStateOnGround;
+        _currentContactState = ContactStateOnGround;
     } else {
         self.elapsed += delta;
         if (self.elapsed > TIME_STAY_LIMIT) {
-            _currentCollisionState = CollisionStateInAir;
+            _currentContactState = ContactStateInAir;
         }
     }
 }
 
-- (BOOL)collidedWithWall {
+- (BOOL)contactWithWall {
     return [self.delegate.mask intersects:self.wallMask];
 }
 

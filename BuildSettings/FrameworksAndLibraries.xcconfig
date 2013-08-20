@@ -23,8 +23,9 @@ FORCE_LOAD_COCOS2D = -force_load "$(BUILT_PRODUCTS_DIR)/libcocos2d.a"
 FORCE_LOAD_LN_ADDITIONS = -force_load "$(BUILT_PRODUCTS_DIR)/libln-additions.a"
 FORCE_LOAD_REKIT = -force_load "$(BUILT_PRODUCTS_DIR)/librekit.a"
 FORCE_LOAD_SIMPLE_BINDINGS = -force_load "$(BUILT_PRODUCTS_DIR)/libobjc-simple-bindings.a"
+FORCE_LOAD_AQTOOLKIT = -force_load "$(BUILT_PRODUCTS_DIR)/libaqtoolkit.a"
 
-FW_IOS = $(FW_SysConfig) $(FW_AVFoundation) $(FW_CoreGraphics) $(FW_CoreText) $(FW_CoreLocation) $(FW_MediaPlayer) $(FW_OpenGLES) $(FORCE_LOAD_COCOS2D) $(FORCE_LOAD_LN_ADDITIONS) $(FORCE_LOAD_REKIT) $(FORCE_LOAD_SIMPLE_BINDINGS)
+FW_IOS = $(FW_SysConfig) $(FW_AVFoundation) $(FW_CoreGraphics) $(FW_CoreText) $(FW_CoreLocation) $(FW_MediaPlayer) $(FW_OpenGLES) $(FORCE_LOAD_COCOS2D) $(FORCE_LOAD_LN_ADDITIONS) $(FORCE_LOAD_REKIT) $(FORCE_LOAD_SIMPLE_BINDINGS) $(FORCE_LOAD_AQTOOLKIT)
 
 
 // iOS Weak Frameworks

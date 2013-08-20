@@ -22,10 +22,10 @@
 }
 
 + (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg {
-    return [self spawnerWithSpawnPointGenerator:pg block:nil];
+    return [self spawnerWithSpawnPointGenerator:pg spawnCallback:nil];
 }
 
-+ (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg block:(SpawnBlock)block {
++ (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg spawnCallback:(SpawnBlock)block {
     return [[self alloc] initWithSpawnPointGenerator:pg block:block];
 }
 
@@ -38,24 +38,12 @@
     return self;
 }
 
-- (void)onAddComponent {
-    // maybe we should set the host's visibility to NO so as to match the active  attribute
-    self.delegate.visible = NO;
+- (void)activate {
+    // this is a component that requires deliberate triggering (so there's really no enable
+    // or disable needed
 }
 
-- (void)onRemoveComponent {
-    [self unscheduleUpdate];
-}
-
-- (void)update:(ccTime)delta {
-    if ([self.delegate fullyOutsideScreen]) {
-        if (self.passedScreen) {
-            self.delegate.visible = NO;
-        }
-    } else {
-        if (!self.passedScreen)
-            self.passedScreen = YES;
-    }
+- (void)deactivate {
 }
 
 - (void)spawn {
@@ -68,15 +56,9 @@
 
 - (void)spawnAtPoint:(CGPoint)point {
     self.delegate.position = point;
-    self.delegate.visible = YES;
-    self.passedScreen = NO;
     if (self.spawnBlock) {
         self.spawnBlock();
     }
-}
-
-- (BOOL)active {
-    return self.delegate.visible;
 }
 
 - (id)copyWithZone:(NSZone *)zone {

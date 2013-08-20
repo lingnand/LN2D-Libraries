@@ -12,22 +12,22 @@
 #import "ContactListener.h"
 
 
-typedef NS_ENUM(NSInteger , CollisionState) {
-    CollisionStateInAir,
-    CollisionStateOnGround,
-    CollisionStateMax
+typedef NS_ENUM(NSInteger , ContactState) {
+    ContactStateInAir,
+    ContactStateOnGround,
+    ContactStateMax
 };
 
 @interface SimpleContactListener : ContactListener
 @property(nonatomic, strong) Mask *wallMask;
 @property(nonatomic) CGFloat restitution;
 @property(nonatomic) CGPoint gravity;
-@property(nonatomic, readonly) CollisionState currentCollisionState;
+@property(nonatomic, readonly) ContactState currentContactState;
 
 - (id)initWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution;
 
-+ (id)collisionHandlerWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution;
++ (id)listenerWithGravity:(CGPoint)gravity wallMask:(Mask *)mask restitution:(CGFloat)restitution;
 
-- (BOOL)collidedWithWall;
+- (BOOL)contactWithWall;
 
 @end

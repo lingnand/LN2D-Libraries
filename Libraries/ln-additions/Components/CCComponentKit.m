@@ -156,26 +156,29 @@
 * again)
 */
 
-- (id)componentForClass:(Class)class {
-    CCComponent *comp = [self.classTable objectForKey:class];
-    if (!comp && ![self.classQueue containsObject:class]) {
-        if ((comp = [[self componentsForClass:class] lastObject]))
-            [self setComponent:comp forClass:class];
+- (id)componentForClass:(Class)aClass {
+    CCComponent *comp = [self.classTable objectForKey:aClass];
+    if (!comp && ![self.classQueue containsObject:aClass]) {
+        if ((comp = [[self componentsForClass:aClass] lastObject]))
+            [self setComponent:comp forClass:aClass];
         else
-            [self.classQueue addObject:class];
+            [self.classQueue addObject:aClass];
     }
     return comp;
 }
 
-- (id)componentsForClass:(Class)class {
+- (id)componentsForClass:(Class)aClass {
     return [self filteredComponentsUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject isKindOfClass:class];
+        return [evaluatedObject isKindOfClass:aClass];
     }]];
 }
 
 /** responsibility assigning method */
-- (void)setComponent:(CCComponent *)component forClass:(Class)class {
-    self.classTable[class] = component;
+- (void)setComponent:(CCComponent *)component forClass:(Class)aClass {
+    if ([self.componentDict allKeysForObject:component].count == 0) {
+        [self addComponent:component];
+    }
+    self.classTable[aClass] = component;
 }
 
 #pragma mark - Selector interface (select component by selector)
@@ -203,6 +206,10 @@
 }
 
 -(void)setComponent:(CCComponent *)component forSelector:(SEL)selector {
+    if ([self.componentDict allKeysForObject:component].count == 0) {
+        [self addComponent:component];
+    }
+    // this component might not have been added into the components dictionary
     self.forwardTable[[NSValue valueWithPointer:selector]] = component;
 }
 

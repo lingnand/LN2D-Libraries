@@ -14,12 +14,11 @@ typedef void (^SpawnBlock)();
 
 
 @interface Spawner : CCComponent
-@property(nonatomic, readonly) BOOL active;
 @property(nonatomic, copy) SpawnBlock spawnBlock;
 
 + (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg;
 
-+ (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg block:(SpawnBlock)block;
++ (id)spawnerWithSpawnPointGenerator:(RandomPointGenerator *)pg spawnCallback:(SpawnBlock)block;
 
 - (void)spawn;
 

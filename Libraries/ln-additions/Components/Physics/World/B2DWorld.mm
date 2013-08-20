@@ -48,12 +48,30 @@
 
 #define DEFAULT_PTM_RATIO 1.5
 
-+ (id)worldWithB2World:(b2World *)world {
-    return [[self alloc] initWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
++ (id)worldWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
+    return [[self alloc] initWithB2World:world ptmRatio:ptmRatio];
 }
+
++ (NSMutableDictionary *)worldMap {
+    static NSMutableDictionary *worldMap = nil;
+    if (!worldMap) {
+        worldMap = [NSMutableDictionary dictionary];
+    }
+    return worldMap;
+}
+
++ (id)worldWithB2World:(b2World *)world {
+    return [self worldWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
+}
+
 
 + (id)worldWithGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
     return [[self alloc] initWithGravity:gravity ptmRatio:ptmRatio];
+}
+
++ (id)worldFromB2World:(b2World *)world {
+    id w = [self.class worldMap][[NSValue valueWithPointer:world]];
+    return [w isKindOfClass:[self class]] ? w : nil;
 }
 
 - (id)initWithGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
@@ -61,15 +79,17 @@
 }
 
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
-    self = [super init];
-    if (self) {
+    // we should ensure that there's only ever one such world being initiated
+    if (!(self = [self.class worldFromB2World:world]) && (self = [super init])) {
+        // create a new world
+        [self.class worldMap][[NSValue valueWithPointer:world]] = self;
         self.world = world;
-        // defining PTM ratio
-        _ptmRatio = ptmRatio;
         // set up the contact listener
         self.worldContactListener = new B2DWorldContactListener();
         self.world->SetContactListener(self.worldContactListener);
     }
+    // defining PTM ratio
+    self.ptmRatio = ptmRatio;
     return self;
 }
 
@@ -107,29 +127,26 @@
     return b2Vec2(p.x/self.ptmRatio, p.y/self.ptmRatio);
 }
 
-- (b2Vec2) b2Vec2FromX:(float)x  y:(float)y
-{
+- (b2Vec2) b2Vec2FromX:(float)x  y:(float)y {
     return b2Vec2(x/self.ptmRatio, y/self.ptmRatio);
 }
 
 /**
  * Convert CGPoint to b2Vec2 honoring self.ptmRatio
  */
-- (CGPoint) CGPointFromb2Vec2:(b2Vec2)p
-{
-    return CGPointMake(p.x * self.ptmRatio, p.y*self.ptmRatio);
+- (CGPoint) CGPointFromb2Vec2:(b2Vec2)p {
+    return CGPointMake(p.x * self.ptmRatio, p.y * self.ptmRatio);
 }
-
 
 - (void)dealloc {
     self.world = nil;
 }
 
-- (void)enable {
+- (void)activate {
     [self scheduleUpdate];
 }
 
-- (void)disable {
+- (void)deactivate {
     [self unscheduleUpdate];
 }
 
@@ -140,13 +157,9 @@
 
     // step the world
     self.world->Step(timeStep, velocityIterations, positionIterations);
-    // update all the associated bodies
-    [self iterateBodiesWithBlock:^(B2DBody *body) {
-        [body updateCCFromPhysics];
-    }];
 }
 
-- (void)iterateBodiesWithBlock:(B2DBodyCallBack)callback {
+- (void)iterateBodiesWithBlock:(B2DBodyCallback)callback {
     for (b2Body* b = self.world->GetBodyList(); b; b = b->GetNext()) {
         // get the object
         callback([B2DBody bodyFromB2Body:b]);

@@ -9,4 +9,7 @@
 
 
 @interface ContactListener : CCComponent
+
++(id)listener;
+
 @end

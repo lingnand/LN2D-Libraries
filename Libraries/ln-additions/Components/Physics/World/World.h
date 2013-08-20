@@ -8,10 +8,6 @@
 #import <Foundation/Foundation.h>
 #import "CCComponent.h"
 
-extern NSString *BodyWorldRequestNotification;
-extern NSString *WorldAddedNotification;
-extern NSString *WorldRemovedNotification;
-
 @interface World : CCComponent
 +(id)world;
 

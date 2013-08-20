@@ -9,9 +9,9 @@
 #import "CCComponent.h"
 #import "NSDictionary+LnAdditions.h"
 
-@protocol SpawnableObject
--(BOOL)active;
--(void)spawn;
+@protocol RespawnableObject
+-(void)respawn;
+-(BOOL)respawnable;
 @end
 
 
@@ -20,5 +20,5 @@
 @property(nonatomic, readonly) NSArray *activeInstances;
 - (id)initWithTagSet:(NSIndexSet *)indexSet;
 
--(id<SpawnableObject>)spawnInactiveInstance;
+-(id <RespawnableObject>)spawnInactiveInstance;
 @end

@@ -11,10 +11,25 @@
 
 @property (nonatomic, weak) CCNode *delegate;
 @property (nonatomic) BOOL enabled;
+/** the difference between enabled and activated:
+* enabled is a toggle that user can control; whereas
+* the activated flag indicates whethter the component is
+* actually activated:
+* In more detail: if (enabled == NO); the component should guarantee to be not activated
+* if (enabled == YES); the component might or might not be activated depending on the
+* necessary conditions
+* */
+@property (nonatomic, readonly) BOOL activated;
 
-- (void)disable;
+/** this is triggered when 'activated' flag turns from YES to NO*/
+- (void)deactivate;
 
-- (void)enable;
+/** this is triggered when 'activated' flag turns from NO to YES*/
+- (void)activate;
+
++ (NSSet *)keyPathsForValuesAffectingActivated;
+
+- (void)update:(ccTime)step;
 
 + (id)component;
 

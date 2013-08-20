@@ -8,14 +8,10 @@
 #import "CCComponent.h"
 #import "Body.h"
 #import "World.h"
+#import "NSObject+Properties.h"
 
 @implementation Body {
 
-}
-+ (id)bodyWithPhysicsEngine:(World *)world {
-    Body *b = [self body];
-    b.world = world;
-    return b;
 }
 
 + (id)body {
@@ -23,15 +19,41 @@
 }
 
 - (Class)worldClass {
-    return [World class];
+    // the type string is in the format of T@"<ClassName>"
+    const char *type = [self typeOfPropertyNamed:@"world"];
+    NSString *cn = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
+//    NSLog(@"%@", cn);
+    NSArray *comps = [cn componentsSeparatedByString:@"\""];
+//    NSLog(@"%@", comps);
+    if (comps.count != 3)
+        return nil;
+    NSString *className = comps[1];
+    return NSClassFromString(className);
+//    NSString *name = [[NSString stringWithCString:type encoding:NSASCIIStringEncoding] copy];
+//    NSString *className = [NSString stringWithString:name];
+//    NSLog(@"className is %@", className);
+//    const char *p = strchr(type, '"');
+//    NSLog(@"the string is %s", p);
+//    if (p == NULL)
+//        return nil;
+//    p += 1;
+//    const char *e = strchr(type, '"');
+//    if (e == NULL || e == p)
+//        return nil;
+//    int len = (int)(e-p);
+//    char *className = malloc(len + 1);
+//    memcpy(className, p, len);
+//    className[len] = '\0';
+//    NSLog(@"%@", name);
+//    free(className);
 }
 
 
 - (void)setWorld:(World *)world {
-    if (_world != world ) {
+    if (_world != world) {
         NSAssert(!world || [world isKindOfClass:self.worldClass], @"incompatible world being assigned!");
-        [self worldChangedFrom:_world to:world];
         _world = world;
+        [self worldChangedFrom:_world to:world];
     }
 }
 
@@ -42,10 +64,14 @@
                                                       object:ow];
     // need to add the observer for the new world
     if (nw)
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(worldRemoved:)
-                                                     name:[self.worldClass worldRemovedNotificationName]
-                                                   object:nw];
+        [[NSNotificationCenter defaultCenter] addObserverForName:[self.worldClass worldRemovedNotificationName]
+                                                          object:nw
+                                                           queue:[NSOperationQueue mainQueue]
+                                                      usingBlock:^(NSNotification *note) {
+                                                          // requesting new world to set myself
+                                                          [[NSNotificationCenter defaultCenter] postNotificationName:[self.worldClass bodyWorldRequestNotificationName]
+                                                                                                              object:self];
+                                                      }];
 }
 
 - (void)setClosestWorld:(World *)world {
@@ -69,20 +95,12 @@
     // requesting world component
     [[NSNotificationCenter defaultCenter] postNotificationName:[self.worldClass bodyWorldRequestNotificationName] object:self];
     // observing for world changes
-    [[NSNotificationCenter defaultCenter] addObserver:self
-                                             selector:@selector(worldAdded:)
-                                                 name:[self.worldClass worldAddedNotificationName]
-                                               object:nil];
-}
-
-- (void)worldAdded:(NSNotification *)notification {
-    World *world = notification.object;
-    [self setClosestWorld:world];
-}
-
-- (void)worldRemoved:(NSNotification *)notification {
-    // requesting new world to set myself
-    [[NSNotificationCenter defaultCenter] postNotificationName:[self.worldClass bodyWorldRequestNotificationName] object:self];
+    [[NSNotificationCenter defaultCenter] addObserverForName:[self.worldClass worldAddedNotificationName]
+                                                      object:nil
+                                                       queue:[NSOperationQueue mainQueue]
+                                                  usingBlock:^(NSNotification *note) {
+                                                      [self setClosestWorld:note.object];
+                                                  }];
 }
 
 - (void)onRemoveComponent {

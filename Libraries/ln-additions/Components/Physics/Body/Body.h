@@ -20,11 +20,8 @@
 * (a more specific subtype)
 */
 @property(nonatomic, weak) World *world;
-/** override this property to indicate the right world class type to be coupled with
- * this body class */
+/** gives back the class of the world attribute for this world obj*/
 @property(nonatomic, readonly) Class worldClass;
-
-+ (id)bodyWithPhysicsEngine:(World *)world;
 
 + (id)body;
 

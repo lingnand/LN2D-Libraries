@@ -6,7 +6,7 @@
 */
 
 #import "CCComponent.h"
-#include "B2DBody.h"
+#import "B2DBody.h"
 #import "B2DWorld.h"
 
 @interface B2DBody()
@@ -18,34 +18,23 @@
     b2BodyDef *_bodyDef;
 }
 
-+ (id)bodyWithB2Body:(b2Body *)body world:(B2DWorld *)world {
-    B2DBody *b = [self bodyWithB2Body:body];
-    b.world = world;
-    return b;
-}
 
 + (id)bodyWithB2Body:(b2Body *)body {
-    // two situation
-    // 1. if the b2body is already linked to a b2dbody
-    B2DBody *b = [self bodyFromB2Body:body];
-    if (!b) {
-        b = [[self alloc] initWithB2Body:body];
-    }
-    return b;
+    return [[self alloc] initWithB2Body:body];
 }
 
-+ (B2DBody *)bodyFromB2Body:(b2Body *)body {
-    void *bu = body->GetUserData();
-    B2DBody *b = nil;
-    if (bu) {
-        NSAssert([(__bridge id)bu isKindOfClass:[B2DBody class]], @"Unrecognized userdata (should be a B2DBody)");
-        b = (__bridge id)bu;
-    }
-    return b;
++ (id)bodyFromB2Body:(b2Body *)body {
+    if (!body)
+        return nil;
+    id b = (__bridge id) body->GetUserData();
+    // the following step will attempt to ignore the existing
+    // pointer if it is not of current class
+    return [b isKindOfClass:[self class]] ? b : nil;
 }
 
 - (id)initWithB2Body:(b2Body *)body {
-    if (self = [super init]) {
+    NSAssert(body, @"Cannot initialize a B2DBody with a NULL b2Body pointer");
+    if (!(self = [self.class bodyFromB2Body:body]) && (self = [super init])) {
         self.body = body;
     }
     return self;
@@ -53,21 +42,29 @@
 
 - (void)setBody:(b2Body *)body {
     if (_body != body) {
-        // make sure that the body's userdata points to myself
-        // remove self from the old body
-        [(B2DWorld *) self.world destroyBody:self.body];
-        // should we delete the body?
-        // get the current body def before setting body to nil
-        self.bodyDef = self.currentBodyDef;
+        if (_body) {
+            _body->SetUserData(nil);
+            // should we destroy the body?
+//            [(B2DWorld *) self.world destroyBody:_body];
+            // should we delete the body?
+            // delete _body;
+            // save the bodyDef if the body is going to be niled.
+            if (!body)
+                self.bodyDef = self.currentBodyDef;
+        }
+        _body = body;
         if (body) {
             body->SetUserData((__bridge void *) self);
             self.bodyDef = nil;
-        } else {
-            self.bodyDef = self.currentBodyDef;
-            // handle the fixtures ??
-            // handle the joints ??
         }
-        _body = body;
+        // handle the syncing between body and world
+        if (!self.bodyWorldInSync) {
+            if (body)
+                // set the world
+                self.world = [B2DWorld worldWithB2World:body->GetWorld()];
+            else
+                self.world = nil;
+        }
     }
 }
 
@@ -92,7 +89,6 @@
 - (void)setPosition:(b2Vec2)position {
     if (self.body) {
         self.body->SetTransform(position, self.angle);
-        // now applying the position change to the CC side as well
     } else {
         self.bodyDef->position = position;
     }
@@ -107,6 +103,15 @@
         self.body->SetTransform(self.position, angle);
     else
         self.bodyDef->angle = angle;
+}
+
+// velocity in the CC sense
+- (CGPoint)velocity {
+    return [(B2DWorld *)self.world CGPointFromb2Vec2:self.linearVelocity];
+}
+
+- (void)setVelocity:(CGPoint)velocity {
+    self.linearVelocity = [(B2DWorld *) self.world b2Vec2FromCGPoint:velocity];
 }
 
 - (b2Vec2)linearVelocity {
@@ -219,27 +224,25 @@
         self.bodyDef->gravityScale = gravityScale;
 }
 
-- (Class)worldClass {
-    return [B2DWorld class];
-}
-
 - (void)worldChangedFrom:(World *)ow to:(World *)nw {
     [super worldChangedFrom:ow to:nw];
     // need to wire the internal body
-    B2DWorld *o = (B2DWorld *) ow;
-    B2DWorld *n = (B2DWorld *) nw;
-    if (o && self.body) {
-        self.body = nil;
+    if (!self.bodyWorldInSync) {
+        if (nw)
+            // get the def to add to the new world
+            self.body = [(B2DWorld *) nw createBody:self.currentBodyDef];
+        else
+            self.body = nil;
     }
-    if (n) {
-        // get the def to add to the new world
-        self.body = [n createBody:self.currentBodyDef];
-    }
+}
 
+- (BOOL)bodyWorldInSync {
+   return (!self.body && !self.world) || ([B2DWorld worldFromB2World:self.body->GetWorld()] == self.world);
 }
 
 - (void)dealloc {
     self.bodyDef = nil;
+    self.body = nil;
 }
 
 - (b2BodyDef *)currentBodyDef {
@@ -272,28 +275,40 @@
 }
 
 #pragma mark - Update
-// 1. override position change details so that when ever a sprite's position
-// is changed, it's equal to moving in the physical world
-// we can achieve this through a KVO
 
-- (void)enable {
-    [super enable];
+- (BOOL)activated {
+    return [super activated] && self.body != nil;
+}
+
++ (NSSet *)keyPathsForValuesAffectingActivated {
+    NSMutableSet *set = [NSMutableSet setWithSet:[super keyPathsForValuesAffectingActivated]];
+    [set addObject:@"body"];
+    return set;
+}
+
+- (void)activate {
+    [super activate];
+    // we didn't add the Initial option because the b2body position has a higher priority
     [self.delegate addObserver:self
                     forKeyPath:@"position"
-                       options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionInitial
+                       options:NSKeyValueObservingOptionNew
                        context:nil];
+    [self scheduleUpdate];
 }
 
-- (void)disable {
-    [super disable];
+- (void)deactivate {
+    [super deactivate];
     [self.delegate removeObserver:self forKeyPath:@"position"];
+    [self unscheduleUpdate];
 }
+
+#pragma mark - Unit conversion (depending on the world)
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
                       ofObject:(id)object
                         change:(NSDictionary *)change
                        context:(void *)context {
-    if ([keyPath isEqualToString:@"position"]) {
+    if ([keyPath isEqualToString:@"position"] && self.body) {
         // first get the position relative to the world
         // set the relative position in the physical world
         self.body->SetTransform([(B2DWorld *)self.world b2Vec2FromCGPoint:self.positionInWorld], self.body->GetAngle());
@@ -325,11 +340,13 @@
     return CGAffineTransformInvert([self delegateToWorldTransform]);
 }
 
-- (void) updateCCFromPhysics {
-    CGPoint ccpos = [(B2DWorld *)self.world CGPointFromb2Vec2:self.body->GetPosition()];
-    self.delegate.position = CGPointApplyAffineTransform(ccpos, [self worldToDelegateTransform]);
-    // this might not consider the relative rotation of layered relationships
-    self.delegate.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
+- (void)update:(ccTime)step {
+    if (self.body) {
+        CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
+        self.delegate.position = CGPointApplyAffineTransform(ccpos, [self worldToDelegateTransform]);
+        // this might not consider the relative rotation of layered relationships
+        self.delegate.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
+    }
 }
 
 @end

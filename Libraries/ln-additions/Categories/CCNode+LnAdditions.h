@@ -6,7 +6,6 @@
 
 
 #import <Foundation/Foundation.h>
-
 #import "CCComponentKit.h"
 #import "Mask.h"
 #import "SimpleBody.h"
@@ -64,6 +63,8 @@
 - (id)objectAtIndexedSubscript:(NSInteger)tag;
 
 - (void)setObject:(CCNode *)node atIndexedSubscript:(NSInteger)tag;
+
+- (CGPoint)anchorPointFromDeltaPoint:(CGPoint)delta;
 
 /** @group Curries */
 - (id)nodeWithAnchorPoint:(CGPoint)anchor;

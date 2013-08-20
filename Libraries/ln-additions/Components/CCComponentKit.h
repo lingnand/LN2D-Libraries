@@ -24,9 +24,9 @@
 
 - (void)removeComponentForRef:(const void *)ref;
 
-- (id)componentForClass:(Class)class;
+- (id)componentForClass:(Class)aClass;
 
-- (void)setComponent:(CCComponent *)component forClass:(Class)class;
+- (void)setComponent:(CCComponent *)component forClass:(Class)aClass;
 
 - (id)componentForSelector:(SEL)selector;
 
@@ -56,5 +56,5 @@
 
 - (void)removeComponentForKey:(id)key;
 
-- (id)componentsForClass:(Class)class;
+- (id)componentsForClass:(Class)aClass;
 @end

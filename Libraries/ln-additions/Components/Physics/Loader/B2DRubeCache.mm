@@ -9,17 +9,12 @@
 #include "b2dJson.h"
 #include "b2dJsonImage.h"
 #import "B2DWorld.h"
-#import "RUBEImage.h"
+#import "B2DRUBEImageBody.h"
 #import "B2DBody.h"
 #import "CCNode+LnAdditions.h"
 
-@interface B2DRubeCache()
-@property (nonatomic, strong) NSMutableDictionary *RUBEImages;
-@end
-
 @implementation B2DRubeCache {
     b2dJson *_json;
-    int _imagesSize;
 }
 
 /**
@@ -81,9 +76,8 @@
         std::string errMsg;
 
         b2World *b2world = _json->readFromFile([fullpath UTF8String], errMsg);
-
-        if (b2world) {
-            CCLOG(@"Loaded JSON ok");
+        NSAssert(b2world, [NSString stringWithUTF8String:errMsg.c_str()]);
+        CCLOG(@"Loaded JSON ok");
 
 //            // Set up a debug draw so we can see what's going on in the physics engine.
 //            // The scale for rendering will be handled by the layer scale, which will affect
@@ -100,84 +94,37 @@
 //            // This body is needed if we want to use a mouse joint to drag things around.
 //            b2BodyDef bd;
 //            m_mouseJointGroundBody = m_world->CreateBody( &bd );
-            _world = [B2DWorld worldWithB2World:b2world];
+        _world = [B2DWorld worldWithB2World:b2world];
 
-            _RUBEImages = [NSMutableDictionary dictionary];
-            _imagesSize = -1;
-        }
-        else
-                CCLOG([NSString stringWithUTF8String:errMsg.c_str()]); //if this warning bothers you, turn off "Typecheck calls to printf/scanf" in the project build settings
     }
     return self;
 }
 
-// a set of getter methods to get image, fixtures, bodies and joints
 
-/** given the name of the *image*, return the ccsprite associated with that image */
-- (CCSprite *)spriteForName:(NSString *)name {
-    RUBEImage *image = [self RUBEImageForName:name];
-
-    CCSprite* sprite = nil;
-    // try to load the sprite image, and ignore if it fails
-    if (image) {
-        sprite = [CCSprite spriteWithSpriteFrameName:image.name];
-        // add the sprite to this layer and set the render order
-        // note the renderOrder in RUBE is float
-        sprite.zOrder = image.zOrder;
-
-        // these will not change during simulation so we can set them now
-        // this scale is the height of the image in WORLD units
-        // scale / PTM_RATIO / sprite.contentSize.height
-        [sprite setScale:image.scale / self.world.ptmRatio / sprite.contentSize.height];
-        [sprite setFlipX:image.flip];
-        [sprite setColor:image.colorTint];
-        [sprite setOpacity:image.opacity];
-
-        // load the body component
-        sprite.body = image.body;
-    }
-
-    return sprite;
-}
-
-- (RUBEImage *)RUBEImageForName:(NSString *)name {
-    RUBEImage *image = self.RUBEImages[name];
-    if (!image) {
-        b2dJsonImage *img = _json->getImageByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-        CCLOG(@"Loading image: %s", img->file.c_str());
-        image = [self addRUBEImageFromB2dJsonImage:img];
-    }
-    return image;
+- (B2DRUBEImageBody *)RUBEImageBodyForName:(NSString *)name {
+    b2dJsonImage *img = _json->getImageByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
+    CCLOG(@"Loading image: %s", img->file.c_str());
+    return [B2DRUBEImageBody bodyWithJsonImage:img];
 }
 
 - (B2DBody *)bodyForName:(NSString *)name {
     b2Body *body = _json->getBodyByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-    return [B2DBody bodyWithB2Body:body world:self.world];
+    return [B2DBody bodyWithB2Body:body];
 }
 
-- (RUBEImage *)addRUBEImageFromB2dJsonImage:(b2dJsonImage *)img {
-    RUBEImage *image = nil;
-    if (img) {
-        // construct the corresponding body
-
-        image = [RUBEImage imageWithB2dJsonImage:img];
-        image.body.world = self.world;
-        self.RUBEImages[image.name] = image;
+- (NSArray *)allRUBEImageBodies {
+    // ask the json to spit out all the images
+    std::vector<b2dJsonImage*> b2dImages;
+    _json->getAllImages(b2dImages);
+    NSMutableArray *arr = [NSMutableArray array];
+    for (uint i = 0; i < b2dImages.size(); i++) {
+        [arr addObject:[B2DRUBEImageBody bodyWithJsonImage:b2dImages[i]]];
     }
-    return image;
+    return arr;
 }
 
-- (NSArray *)allRUBEImages {
-    if (self.RUBEImages.count != _imagesSize) {
-        // ask the json to spit out all the images
-        std::vector<b2dJsonImage*> b2dImages;
-        _imagesSize = b2dImages.size();
-        _json->getAllImages(b2dImages);
-        for (uint i = 0; i < b2dImages.size(); i++) {
-            [self addRUBEImageFromB2dJsonImage:b2dImages[i]];
-        }
-    }
-    return self.RUBEImages.allValues;
+- (void)dealloc {
+    delete _json;
 }
 
 

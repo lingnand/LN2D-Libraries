@@ -60,6 +60,21 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     [self addChild:node z:0 tag:tag];
 }
 
+#pragma mark - Anchor point related operations
+
+/**
+* This method will return the new anchor point calculated from traversing
+* from the current anchor point by the 'delta' amount of point
+* The size of the node is measured by the contentSize
+* That's why this method might only be useful if the content size is defined
+*/
+- (CGPoint)anchorPointFromDeltaPoint:(CGPoint)delta {
+    CGFloat width = self.contentSize.width;
+    CGFloat height = self.contentSize.height;
+    return ccpAdd(self.anchorPoint,
+            ccp(width ? delta.x/ width : 0, height ? delta.y/ height : 0));
+}
+
 #pragma mark - Operations
 // chained methods
 -(id)nodeWithAnchorPoint:(CGPoint)anchor {

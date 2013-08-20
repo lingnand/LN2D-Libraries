@@ -11,19 +11,29 @@
 #import "B2DContact.h"
 
 
-typedef void (^B2DContactCallBack) (B2DContact *);
+typedef void (^B2DContactCallback) (B2DContact *);
 
-@interface B2DContactCallBackClosure : NSObject
-@property(nonatomic, copy) B2DContactCallBack beginContact;
-@property(nonatomic, copy) B2DContactCallBack endContact;
-@property(nonatomic, copy) B2DContactCallBack preSolve;
-@property(nonatomic, copy) B2DContactCallBack postSolve;
+@interface B2DContactCallbackClosure : NSObject
+@property(nonatomic, copy) B2DContactCallback beginContact;
+@property(nonatomic, copy) B2DContactCallback endContact;
+@property(nonatomic, copy) B2DContactCallback preSolve;
+@property(nonatomic, copy) B2DContactCallback postSolve;
 
-+ (id)callBackClosureWithBeginContact:(B2DContactCallBack)beginContact endContact:(B2DContactCallBack)endContact preSolve:(B2DContactCallBack)preSolve postSolve:(B2DContactCallBack)postSolve;
++ (id)closureWithBeginContact:(B2DContactCallback)beginContact
+                   endContact:(B2DContactCallback)endContact
+                     preSolve:(B2DContactCallback)preSolve
+                    postSolve:(B2DContactCallback)postSolve;
+
++ (id)closureWithBeginContact:(B2DContactCallback)beginContact
+                   endContact:(B2DContactCallback)endContact;
+
++ (id)closureWithBeginContact:(B2DContactCallback)beginContact;
 @end
 
 @interface B2DContactListener : ContactListener
 
+
++ (id)listenerWithDictionary:(NSDictionary *)dictionary;
 
 - (void)beginContact:(B2DContact *)contact;
 
@@ -33,11 +43,13 @@ typedef void (^B2DContactCallBack) (B2DContact *);
 
 - (void)postSolve:(B2DContact *)contact;
 
-- (void)setCallBackClosure:(B2DContactCallBackClosure *)closure forPredicate:(NSPredicate *)predicate;
+- (void)setCallbackClosure:(B2DContactCallbackClosure *)closure forPredicate:(NSPredicate *)predicate;
 
-- (void)setObject:(B2DContactCallBackClosure *)closure forKeyedSubscript:(NSPredicate *)predicate;
+- (void)setObject:(B2DContactCallbackClosure *)closure forKeyedSubscript:(NSPredicate *)predicate;
 
-- (B2DContactCallBackClosure *)objectForKeyedSubscript:(NSPredicate *)predicate;
+- (void)addEntriesFromDictionary:(NSDictionary *)dictionary;
 
-- (B2DContactCallBackClosure *)callBackClosureForPredicate:(NSPredicate *)predicate;
+- (B2DContactCallbackClosure *)objectForKeyedSubscript:(NSPredicate *)predicate;
+
+- (B2DContactCallbackClosure *)callbackClosureForPredicate:(NSPredicate *)predicate;
 @end

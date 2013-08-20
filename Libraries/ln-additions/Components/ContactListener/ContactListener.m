@@ -12,4 +12,8 @@
 @implementation ContactListener {
 
 }
++ (id)listener {
+    return [self new];
+}
+
 @end

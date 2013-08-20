@@ -14,4 +14,5 @@
 @interface SimpleBody : Body
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic,readonly) CGPoint actualVelocity;
+@property(nonatomic, weak) SimpleWorld *world;
 @end

@@ -20,6 +20,10 @@ typedef enum {
 
 - (void)addIdPropertyWithName:(NSString *)name defaultValue:(id)value readonly:(BOOL)readonly;
 
+- (id)objectForKeyedSubscript:(NSString *)key;
+
+- (void)setObject:(id)object forKeyedSubscript:(NSString *)key;
+
 - (void)addIntPropertyWithName:(NSString *)name defaultValue:(int)value readonly:(BOOL)readonly;
 
 - (void)bind:(NSString *)binding toKeyPath:(NSString *)keyPath ofObject:(id)observableController pairs:(NSDictionary *)pairs option:(KVBindingOption)option;

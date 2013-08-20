@@ -6,14 +6,11 @@
 */
 
 
-#ifndef __B2DBody_H_
-#define __B2DBody_H_
-
-#include <iostream>
 #import "Body.h"
-#include "b2Math.h"
-#include "b2Body.h"
-#include "b2World.h"
+#import "b2Math.h"
+#import "b2Body.h"
+
+@class B2DWorld;
 
 
 // we'll preseve using the original b2d units and syntax
@@ -31,15 +28,14 @@
 @property (nonatomic) BOOL bullet;
 @property (nonatomic) BOOL active;
 @property (nonatomic) float gravityScale;
+@property(nonatomic, weak) B2DWorld *world;
 
-+ (id)bodyWithB2Body:(b2Body *)body world:(B2DWorld *)world;
+
+- (id)initWithB2Body:(b2Body *)body;
 
 + (id)bodyWithB2Body:(b2Body *)body;
 
-+ (B2DBody *)bodyFromB2Body:(b2Body *)body;
-
-- (void)updateCCFromPhysics;
++ (id)bodyFromB2Body:(b2Body *)body;
 @end
 
 
-#endif //__B2DBody_H_

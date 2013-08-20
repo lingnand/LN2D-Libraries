@@ -25,6 +25,21 @@
     }
 }
 
+#pragma mark - Dynamic associative array
+
+- (id)objectForKeyedSubscript:(NSString *)key {
+    return [self valueForKey:key];
+}
+
+- (void)setObject:(id)object forKeyedSubscript:(NSString *)key {
+    // two situations: 1. the object already has the given property
+    if ([self respondsToSelector:NSSelectorFromString(key)]) {
+        [self setValue:object forKey:key];
+    } else {
+        [self addIdPropertyWithName:key defaultValue:object readonly:NO];
+    }
+}
+
 - (void)addIntPropertyWithName:(NSString *)name defaultValue:(int)value  readonly:(BOOL)readonly {
     __block int property = value;
     [self respondsToSelector:NSSelectorFromString(name) withKey:self usingBlock:^{
