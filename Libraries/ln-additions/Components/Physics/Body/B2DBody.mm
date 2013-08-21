@@ -330,7 +330,7 @@
 - (CGAffineTransform)delegateToWorldTransform {
     CGAffineTransform t = [self.delegate nodeToParentTransform];
 
-    for (CCNode *p = self.delegate.parent; p != self.world.delegate; p = p.parent)
+    for (CCNode *p = self.delegate.parent; p && p != self.world.delegate; p = p.parent)
         t = CGAffineTransformConcat(t, [p nodeToParentTransform]);
 
     return t;

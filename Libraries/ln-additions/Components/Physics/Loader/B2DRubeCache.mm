@@ -9,7 +9,7 @@
 #include "b2dJson.h"
 #include "b2dJsonImage.h"
 #import "B2DWorld.h"
-#import "B2DRUBEImageBody.h"
+#import "B2DRUBEImage.h"
 #import "B2DBody.h"
 #import "CCNode+LnAdditions.h"
 
@@ -101,10 +101,10 @@
 }
 
 
-- (B2DRUBEImageBody *)RUBEImageBodyForName:(NSString *)name {
+- (B2DRUBEImage *)RUBEImageBodyForName:(NSString *)name {
     b2dJsonImage *img = _json->getImageByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
     CCLOG(@"Loading image: %s", img->file.c_str());
-    return [B2DRUBEImageBody bodyWithJsonImage:img];
+    return [B2DRUBEImage bodyWithJsonImage:img];
 }
 
 - (B2DBody *)bodyForName:(NSString *)name {
@@ -118,7 +118,7 @@
     _json->getAllImages(b2dImages);
     NSMutableArray *arr = [NSMutableArray array];
     for (uint i = 0; i < b2dImages.size(); i++) {
-        [arr addObject:[B2DRUBEImageBody bodyWithJsonImage:b2dImages[i]]];
+        [arr addObject:[B2DRUBEImage bodyWithJsonImage:b2dImages[i]]];
     }
     return arr;
 }

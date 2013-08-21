@@ -10,35 +10,22 @@
 #import "NSObject+LnAdditions.h"
 
 
-@interface CCComponentKit : CCComponent <ConfigurableObject>
+@interface CCComponentKit : CCComponent
 
-- (id)initWithConfig:(id)config;
+/** Key interface */
 
-- (id)objectForKeyedSubscript:(id)key;
+- (void)setComponent:(CCComponent *)component forKey:(id)key;
 
-- (void)setObject:(CCComponent *)comp forKeyedSubscript:(id)key;
+- (id)componentForKey:(id)key;
 
-- (void)setComponent:(CCComponent *)component forRef:(const void *)ref;
+- (void)removeComponentForKey:(id)key;
 
-- (id)componentForRef:(const void *)ref;
+- (id)objectForKeyedSubscript:(id)name;
 
-- (void)removeComponentForRef:(const void *)ref;
+- (void)setObject:(CCComponent *)comp forKeyedSubscript:(id)name;
 
-- (id)componentForClass:(Class)aClass;
-
-- (void)setComponent:(CCComponent *)component forClass:(Class)aClass;
-
-- (id)componentForSelector:(SEL)selector;
-
-- (NSArray *)componentsForSelector:(SEL)selector;
-
-- (void)addComponent:(CCComponent *)component;
-
+/** Tag interface */
 - (void)setComponent:(CCComponent *)component forTag:(NSInteger)tag;
-
-- (NSArray *)allComponents;
-
-- (NSArray *)filteredComponentsUsingPredicate:(NSPredicate *)predicate;
 
 - (id)componentForTag:(NSInteger)tag;
 
@@ -48,13 +35,22 @@
 
 - (void)setObject:(CCComponent *)component atIndexedSubscript:(NSInteger)tag;
 
-- (void)setComponent:(CCComponent *)component forKey:(id)key;
+/** Class interface */
+- (id)componentForClass:(Class)aClass;
+
+- (void)setComponent:(CCComponent *)component forClass:(Class)aClass;
+
+/** Selector interface */
+- (id)componentForSelector:(SEL)selector;
+
+- (void)setComponent:(CCComponent *)component forSelector:(SEL)selector;
+
+/** General interface */
+- (void)addComponent:(CCComponent *)component;
+
+- (NSSet *)allComponents;
+
+- (NSSet *)filteredComponentsUsingPredicate:(NSPredicate *)predicate;
 
 - (id)copyWithZone:(NSZone *)zone;
-
-- (id)componentForKey:(id)key;
-
-- (void)removeComponentForKey:(id)key;
-
-- (id)componentsForClass:(Class)aClass;
 @end

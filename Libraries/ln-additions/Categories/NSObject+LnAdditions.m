@@ -5,10 +5,10 @@
 //
 
 #import "NSString+LnAddition.h"
-#import "NSObject+REObserver.h"
 #import "NSObject+REResponder.h"
 #import "NSObject+SimpleBindings.h"
 #import "NSObject+LnAdditions.h"
+#import "NSObject+Properties.h"
 
 @implementation NSObject (LnAdditions)
 
@@ -25,8 +25,25 @@
     }
 }
 
-#pragma mark - Dynamic associative array
+#pragma mark - Dynamic property class inspection
+- (Class)classForPropertyNamed:(NSString *)name {
+    // the type string is in the format of T@"<ClassName>"
+    const char *type = [self typeOfPropertyNamed:name];
+    NSString *cn = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
+//    NSLog(@"%@", cn);
+    // first search for a T@; if there isn't such a thing, it means it's not a property
+    // of object type
+    Class c = nil;
+    if ([cn hasPrefix:@"T@"]) {
+        NSArray *comps = [cn componentsSeparatedByString:@"\""];
+        if (comps.count == 3)
+            c = NSClassFromString(comps[1]);
+    }
+    return c;
+}
 
+
+#pragma mark - Dynamic associative array
 - (id)objectForKeyedSubscript:(NSString *)key {
     return [self valueForKey:key];
 }

@@ -20,6 +20,8 @@ typedef enum {
 
 - (void)addIdPropertyWithName:(NSString *)name defaultValue:(id)value readonly:(BOOL)readonly;
 
+- (Class)classForPropertyNamed:(NSString *)name;
+
 - (id)objectForKeyedSubscript:(NSString *)key;
 
 - (void)setObject:(id)object forKeyedSubscript:(NSString *)key;

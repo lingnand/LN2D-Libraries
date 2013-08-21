@@ -9,6 +9,7 @@
 #import "CCComponentKit.h"
 #import "Mask.h"
 #import "SimpleBody.h"
+#import "CCNode.h"
 
 
 @protocol CCNodeConfigTable

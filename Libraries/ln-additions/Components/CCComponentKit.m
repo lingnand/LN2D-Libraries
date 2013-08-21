@@ -7,44 +7,77 @@
 
 #import "CCComponentKit.h"
 #import "CHBidirectionalDictionary.h"
-
+#import "NSPredicate+LnAdditions.h"
+#import "NSDictionary+LnAdditions.h"
 
 @interface CCComponentKit ()
-@property(nonatomic, strong) NSMutableDictionary *componentDict;
-/** two tables for storing additional responsibilities for classes and selectors */
-@property(nonatomic, strong) NSMutableDictionary *classTable;
-@property(nonatomic, strong) NSMutableDictionary *forwardTable;
-@property(nonatomic, strong) NSMutableSet *classQueue;
-@property(nonatomic, strong) NSMutableSet *forwardQueue;
+@property(nonatomic, strong) NSMutableDictionary *generalTable;
+@property(nonatomic, strong) NSMutableDictionary *predicateTable;
+@property(nonatomic, strong) NSMutableSet *predicateQueue;
+@property(nonatomic, strong) NSMutableSet *componentStore;
 @end
 
 @implementation CCComponentKit {
 
 }
 @synthesize delegate = _delegate;
-@synthesize enabled = _enabled;
-
-#pragma mark - Config interface (for Database) / deprecated
-
-- (id)initWithConfig:(id)config {
-    self = [self init];
-    if (self) {
-        // load up all the sub directories as components and add those things to myself
-        [config enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            Class pClass = NSClassFromString(key);
-            NSAssert([pClass isKindOfClass:[CCComponent class]] && [pClass conformsToProtocol:@protocol(ConfigurableObject)], @"the configuration is not for a valid component class! configuration = %@", config);
-            [self addComponent:[pClass initWithConfig:obj]];
-        }];
-    }
-
-    return self;
-}
 
 #pragma mark - Lifecycle
 
 - (void)setEnabled:(BOOL)enabled {
     [self.allComponents setValue:[NSNumber numberWithBool:enabled] forKey:@"enabled"];
 }
+
+#pragma mark - Central add and remove
+
+// check if the component has been added
+- (BOOL)containsComponent:(CCComponent *)comp {
+    return [self.componentStore containsObject:comp];
+}
+
+- (void)removeComponent:(CCComponent *)comp {
+    if ([self containsComponent:comp]) {
+        [self.generalTable removeObjectsForKeys:[self.generalTable allKeysForObject:comp]];
+        [self.predicateTable removeObjectsForKeys:[self.predicateTable allKeysForObject:comp]];
+        [self.componentStore removeObject:comp];
+        // we are assuming that the component is already present in this kit
+        comp.delegate = nil;
+    }
+}
+
+
+/** Without any kind of wiring up, just doing the backhouse wiring for
+ * the component */
+- (void)addComponent:(CCComponent *)component {
+    if (![self containsComponent:component]) {
+        component.delegate = self.delegate;
+        // need to go through the adding procedure
+        // procedure for adding the component
+        // check through all the holes...
+        // forward Queue
+        if (self.predicateQueue.count) {
+            NSMutableSet *fq = [NSMutableSet setWithCapacity:self.predicateQueue.count];
+            for (NSPredicate *p in self.predicateQueue) {
+                if ([p evaluateWithObject:component])
+                        // add the mmapping in the predicate table
+                    self.predicateTable[p] = component;
+                else
+                    [fq addObject:p];
+            }
+            self.predicateQueue = fq;
+        }
+        [self.componentStore addObject:component];
+    }
+}
+
+- (NSSet *)allComponents {
+    return self.componentStore.copy;
+}
+
+- (NSSet *)filteredComponentsUsingPredicate:(NSPredicate *)predicate {
+    return [self.componentStore filteredSetUsingPredicate:predicate];
+}
+
 
 #pragma mark - Tag interface (NSNumber)
 
@@ -68,205 +101,118 @@
     [self setComponent:component forTag:tag];
 }
 
-#pragma mark - Key interface (id)
+#pragma mark - General store interface (id)
 
 - (void)setComponent:(CCComponent *)component forKey:(id)key {
-    self.componentDict[key] = component;
-    // procedure for adding the component
-    component.delegate = self.delegate;
-    // check through all the holes...
-    // forward Queue
-    if (self.forwardQueue.count) {
-        NSMutableSet *fq = [NSMutableSet setWithCapacity:self.forwardQueue.count];
-        for (NSValue *v in self.forwardQueue) {
-            SEL selector = v.pointerValue;
-            if ([component respondsToSelector:selector])
-                [self setComponent:component forSelector:selector];
-            else
-                [fq addObject:v];
-        }
-        self.forwardQueue = fq;
-    }
-    // class Queue
-    if (self.classQueue.count) {
-        NSMutableSet *cq = [NSMutableSet setWithCapacity:self.classQueue.count];
-        for (Class c in self.classQueue) {
-            if ([component isKindOfClass:c])
-                [self setComponent:component forClass:c];
-            else
-                [cq addObject:c];
-        }
-        self.classQueue = cq;
-    }
+    [self addComponent:component];
+    self.generalTable[key] = component;
+
 }
 
 - (id)componentForKey:(id)key {
-    return self.componentDict[key];
+    return self.generalTable[key];
 }
 
 - (void)removeComponentForKey:(id)key {
-    CCComponent *component = self.componentDict[key];
-    [self.componentDict removeObjectForKey:key];
-    component.delegate = nil;
-    // remove the component from the tables as well
-    [self.forwardTable removeObjectsForKeys:[self.forwardTable allKeysForObject:component]];
-    [self.classTable removeObjectsForKeys:[self.classTable allKeysForObject:component]];
+    [self removeComponent:[self componentForKey:key]];
 }
 
 - (id)objectForKeyedSubscript:(id)key {
-    return self.componentDict[key];
+    return [self componentForKey:key];
 }
 
 - (void)setObject:(CCComponent *)comp forKeyedSubscript:(id)key {
-    self.componentDict[key] = comp;
+    [self setComponent:comp forKey:key];
 }
 
-#pragma mark - Reference interface (for specific reference)
+#pragma mark - Predicate Lock interface
 
-/**
-    The general method for retrieving components through const pointers
-    @param ref
-        A pointer (presumably const) that identifies as a unique key. Example: using a static const char *
-*/
-- (void)setComponent:(CCComponent *)component forRef:(const void *)ref {
-    [self setComponent:component forKey:[NSValue valueWithPointer:ref]];
-}
-
-- (id)componentForRef:(const void *)ref {
-    return [self componentForKey:[NSValue valueWithPointer:ref]];
-}
-
-- (void)removeComponentForRef:(const void *)ref {
-    [self removeComponentForKey:[NSValue valueWithPointer:ref]];
-}
-
-#pragma mark - Class interface (select component by class)
-/**
-* To accelerate access we can store the component as [class] => [component] once a
-* search is made; the only problem is that we'd also need to remove this newly created
-* pair once the component is removed; as a result when a component gets removed you
-* have to loop through the whole dictionary to get the component and remove that as well
-*
-*/
-
-/**
-* To improve the performance, all dynamic queries about components should be performed
-* before the query recorded if it returns nil. So that when a new component is added
-* we can fill this hole (reason: a query made once is more than likely to have be made
-* again)
-*/
-
-- (id)componentForClass:(Class)aClass {
-    CCComponent *comp = [self.classTable objectForKey:aClass];
-    if (!comp && ![self.classQueue containsObject:aClass]) {
-        if ((comp = [[self componentsForClass:aClass] lastObject]))
-            [self setComponent:comp forClass:aClass];
+- (id)componentForPredicate:(NSPredicate *)predicate {
+    CCComponent *comp = self.predicateTable[predicate];
+    if (!comp && ![self.predicateQueue containsObject:predicate]) {
+        if ((comp = [self filteredComponentsUsingPredicate:predicate].anyObject))
+            // we obtained the comp ref so we should match up the accessor system
+            self.predicateTable[predicate] = comp;
         else
-            [self.classQueue addObject:aClass];
+            [self.predicateQueue addObject:predicate];
     }
     return comp;
 }
 
-- (id)componentsForClass:(Class)aClass {
-    return [self filteredComponentsUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject isKindOfClass:aClass];
-    }]];
+/** This method will set the comp to the predicate and ensure that there's no
+ * other component that matches up with the given predicate */
+- (void)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock {
+    NSAssert([lock evaluateWithObject:comp], @"Assigning a component that does not evaluate with the predicate to true");
+    // no need to remove any component
+    if (![self.predicateQueue containsObject:lock]) {
+        // we are not sure if there's already any components that
+        // are of this class...
+        // we have to remove all these components and then assign again
+        for (CCComponent *c in [self filteredComponentsUsingPredicate:lock]) {
+            if (c != comp)
+                [self removeComponent:c];
+        }
+    }
+    [self addComponent:comp];
+    self.predicateTable[lock] = comp;
+}
+
+#pragma mark - Class interface (select component by class, derived from predicate lock)
+
+- (id)componentForClass:(Class)aClass {
+    return [self componentForPredicate:[NSPredicate predicateWithKindOfClassFilter:aClass]];
 }
 
 /** responsibility assigning method */
 - (void)setComponent:(CCComponent *)component forClass:(Class)aClass {
-    if ([self.componentDict allKeysForObject:component].count == 0) {
-        [self addComponent:component];
-    }
-    self.classTable[aClass] = component;
+    [self setComponent:component forPredicateLock:[NSPredicate predicateWithKindOfClassFilter:aClass]];
 }
 
 #pragma mark - Selector interface (select component by selector)
 
 - (id)componentForSelector:(SEL)selector {
-    // first get the component in question
-    NSValue *se = [NSValue valueWithPointer:selector];
-    CCComponent *comp = [self.forwardTable objectForKey:se];
-    // search for all the components that respond to this selector and choose the first one as the
-    // default one
-    // cache this is the forwarding table
-    if (!comp && ![self.forwardQueue containsObject:se]) {
-        if ((comp = [[self componentsForSelector:selector] lastObject]))
-            [self setComponent:comp forSelector:selector];
-        else
-            [self.forwardQueue addObject:se];
-    }
-    return comp;
+    return [self componentForPredicate:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
-- (NSArray *)componentsForSelector:(SEL)selector {
-    return [self filteredComponentsUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject respondsToSelector:selector];
-    }]];
-}
-
--(void)setComponent:(CCComponent *)component forSelector:(SEL)selector {
-    if ([self.componentDict allKeysForObject:component].count == 0) {
-        [self addComponent:component];
-    }
-    // this component might not have been added into the components dictionary
-    self.forwardTable[[NSValue valueWithPointer:selector]] = component;
-}
-
-#pragma mark - General interface
-
-// the component will be lost if not referenced else well
-- (void)addComponent:(CCComponent *)component {
-    uintptr_t p = (uintptr_t) component;
-    [self setComponent:component forRef:(void const *) p];
-}
-
-- (NSArray *)allComponents {
-    return self.componentDict.allValues;
-}
-
-- (NSArray *)filteredComponentsUsingPredicate:(NSPredicate *)predicate {
-    return [self.allComponents filteredArrayUsingPredicate:predicate];
+- (void)setComponent:(CCComponent *)component forSelector:(SEL)selector {
+    [self setComponent:component forPredicateLock:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
 #pragma mark - Facilities
 
-- (NSMutableDictionary *)componentDict {
-    if (!_componentDict) {
-        _componentDict = [NSMutableDictionary dictionary];
+- (NSMutableDictionary *)generalTable {
+    if (!_generalTable) {
+        _generalTable = [NSMutableDictionary dictionary];
     }
-    return _componentDict;
+    return _generalTable;
 }
 
-- (NSMutableDictionary *)forwardTable {
-    if (!_forwardTable)
-        _forwardTable = [NSMutableDictionary dictionary];
-    return _forwardTable;
+- (NSMutableDictionary *)predicateTable {
+    if (!_predicateTable) {
+        _predicateTable = [NSMutableDictionary dictionary];
+    }
+    return _predicateTable;
 }
 
-- (NSMutableDictionary *)classTable {
-    if (!_classTable)
-        _classTable = [NSMutableDictionary dictionary];
-    return _classTable;
+- (NSMutableSet *)predicateQueue {
+    if (!_predicateQueue) {
+        _predicateQueue = [NSMutableSet set];
+    }
+    return _predicateQueue;
 }
 
-- (NSMutableSet *)forwardQueue {
-    if (!_forwardQueue)
-        _forwardQueue = [NSMutableSet set];
-    return _forwardQueue;
-}
-
-- (NSMutableSet *)classQueue {
-    if (!_classQueue)
-        _classQueue = [NSMutableSet set];
-    return _classQueue;
+- (NSMutableSet *)componentStore {
+    if (!_componentStore) {
+        _componentStore = [NSMutableSet set];
+    }
+    return _componentStore;
 }
 
 - (void)setDelegate:(CCNode *)delegate {
     // need to set all the delegates for the components within
     if (delegate != _delegate) {
         _delegate = delegate;
-        [self.componentDict.allValues setValue:_delegate forKey:@"delegate"];
+        [self.generalTable.allValues setValue:_delegate forKey:@"delegate"];
     }
 }
 
@@ -274,8 +220,25 @@
     CCComponentKit *copy = [[[self class] allocWithZone:zone] init];
 
     if (copy != nil) {
-        [self.componentDict enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            copy.componentDict[key] = [obj copy];
+        // NOTE: the following implementation is based on the assumption
+        // that the only additional operation in addComponent is to
+        // wire up the delegate; since a new componentKit does not point
+        // to any delegate so we don't really need to go through that
+        // operation
+
+        // we need to copy all the components (drudgery...!)
+        // I. copy all comps not referenced by the generalTable
+        // we first obtain the set that cannot be referenced by the key/value pairs
+        NSMutableSet *unKeyedComps = self.componentStore.mutableCopy;
+        [unKeyedComps minusSet:self.generalTable.valueSet];
+        for (CCComponent *c in unKeyedComps) {
+            [copy.componentStore addObject:c.copy];
+        }
+        // II. copy all key/value pairs
+        [self.generalTable enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
+            id c = [obj copy];
+            copy.generalTable[key] = c;
+            [copy.componentStore addObject:c];
         }];
     }
 

@@ -10,12 +10,13 @@
 		A8C6D2A09A4A8A8CB18291F4 /* World.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DC21EACCF5668AEDA623 /* World.m */; };
 		A8C6D40AA0A56FAE353EC8BE /* B2DBody.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D70071875596675CCA8C /* B2DBody.mm */; };
 		A8C6D452E176187429D228B7 /* B2DWorld.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DC5FCBC6500485BC5EDF /* B2DWorld.mm */; };
+		A8C6D5893F3FB83B5E059377 /* NSPredicate+LnAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D26A320F470AB9401734 /* NSPredicate+LnAdditions.m */; };
 		A8C6D7692DDD5209EF7F6DE6 /* B2DWorldContactListener.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D2B3598E9B2F7E64AD8F /* B2DWorldContactListener.mm */; };
 		A8C6D7A38CCB6C15289C8EED /* B2DContact.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D915D0BD5EF629839D86 /* B2DContact.mm */; };
 		A8C6D8AEDB0A0DAD4CD032C8 /* SimpleWorld.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D57DE056246E3B581913 /* SimpleWorld.m */; };
 		A8C6DA28B036A81DFF02BD73 /* B2DContactListener.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DB3AD83D8F37C914C52A /* B2DContactListener.mm */; };
 		A8C6DB4FF14B97F447E99C87 /* B2DRubeCache.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DF2B9ADEBE8086035079 /* B2DRubeCache.mm */; };
-		A8C6DF746523817E3548343C /* B2DRUBEImageBody.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D0497CE5CC400355E763 /* B2DRUBEImageBody.mm */; };
+		A8C6DF746523817E3548343C /* B2DRUBEImage.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D0497CE5CC400355E763 /* B2DRUBEImage.mm */; };
 		AE8FDD4E1793038C0054D812 /* b2dJson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD431793038C0054D812 /* b2dJson.cpp */; };
 		AE8FDD501793038C0054D812 /* b2dJsonImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD471793038C0054D812 /* b2dJsonImage.cpp */; };
 		AE8FDD511793038C0054D812 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD4D1793038C0054D812 /* jsoncpp.cpp */; };
@@ -314,8 +315,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		A8C6D0497CE5CC400355E763 /* B2DRUBEImageBody.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DRUBEImageBody.mm; sourceTree = "<group>"; };
+		A8C6D0497CE5CC400355E763 /* B2DRUBEImage.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DRUBEImage.mm; sourceTree = "<group>"; };
 		A8C6D1BCD54B88A09582289F /* B2DRubeCache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DRubeCache.h; sourceTree = "<group>"; };
+		A8C6D26A320F470AB9401734 /* NSPredicate+LnAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+LnAdditions.m"; sourceTree = "<group>"; };
 		A8C6D2B3598E9B2F7E64AD8F /* B2DWorldContactListener.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DWorldContactListener.mm; sourceTree = "<group>"; };
 		A8C6D37591F32482F16C7F90 /* B2DContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DContactListener.h; sourceTree = "<group>"; };
 		A8C6D4D577882336BA3F93D7 /* B2DWorldContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DWorldContactListener.h; sourceTree = "<group>"; };
@@ -324,8 +326,9 @@
 		A8C6D70071875596675CCA8C /* B2DBody.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DBody.mm; sourceTree = "<group>"; };
 		A8C6D87E62523D8ADA27EB38 /* B2DWorld.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DWorld.h; sourceTree = "<group>"; };
 		A8C6D915D0BD5EF629839D86 /* B2DContact.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DContact.mm; sourceTree = "<group>"; };
+		A8C6DACCFCECC935C1BB8054 /* NSPredicate+LnAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSPredicate+LnAdditions.h"; sourceTree = "<group>"; };
 		A8C6DB3AD83D8F37C914C52A /* B2DContactListener.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DContactListener.mm; sourceTree = "<group>"; };
-		A8C6DBB81BC807FB0387A6E2 /* B2DRUBEImageBody.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DRUBEImageBody.h; sourceTree = "<group>"; };
+		A8C6DBB81BC807FB0387A6E2 /* B2DRUBEImage.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DRUBEImage.h; sourceTree = "<group>"; };
 		A8C6DC21EACCF5668AEDA623 /* World.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = World.m; sourceTree = "<group>"; };
 		A8C6DC5FCBC6500485BC5EDF /* B2DWorld.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DWorld.mm; sourceTree = "<group>"; };
 		A8C6DD272624D126949FCDC9 /* SimpleWorld.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleWorld.h; sourceTree = "<group>"; };
@@ -685,8 +688,8 @@
 			children = (
 				A8C6DF2B9ADEBE8086035079 /* B2DRubeCache.mm */,
 				A8C6D1BCD54B88A09582289F /* B2DRubeCache.h */,
-				A8C6D0497CE5CC400355E763 /* B2DRUBEImageBody.mm */,
-				A8C6DBB81BC807FB0387A6E2 /* B2DRUBEImageBody.h */,
+				A8C6D0497CE5CC400355E763 /* B2DRUBEImage.mm */,
+				A8C6DBB81BC807FB0387A6E2 /* B2DRUBEImage.h */,
 			);
 			path = Loader;
 			sourceTree = "<group>";
@@ -1211,6 +1214,8 @@
 				AED9EF491792254400DD92CF /* NSObject+LnAdditions.m */,
 				AED9EF4A1792254400DD92CF /* NSString+LnAddition.h */,
 				AED9EF4B1792254400DD92CF /* NSString+LnAddition.m */,
+				A8C6D26A320F470AB9401734 /* NSPredicate+LnAdditions.m */,
+				A8C6DACCFCECC935C1BB8054 /* NSPredicate+LnAdditions.h */,
 			);
 			path = Categories;
 			sourceTree = "<group>";
@@ -1854,10 +1859,11 @@
 				A8C6D2A09A4A8A8CB18291F4 /* World.m in Sources */,
 				A8C6D40AA0A56FAE353EC8BE /* B2DBody.mm in Sources */,
 				A8C6DB4FF14B97F447E99C87 /* B2DRubeCache.mm in Sources */,
-				A8C6DF746523817E3548343C /* B2DRUBEImageBody.mm in Sources */,
+				A8C6DF746523817E3548343C /* B2DRUBEImage.mm in Sources */,
 				A8C6DA28B036A81DFF02BD73 /* B2DContactListener.mm in Sources */,
 				A8C6D7692DDD5209EF7F6DE6 /* B2DWorldContactListener.mm in Sources */,
 				A8C6D7A38CCB6C15289C8EED /* B2DContact.mm in Sources */,
+				A8C6D5893F3FB83B5E059377 /* NSPredicate+LnAdditions.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

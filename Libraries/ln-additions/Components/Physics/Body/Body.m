@@ -9,9 +9,10 @@
 #import "Body.h"
 #import "World.h"
 #import "NSObject+Properties.h"
+#include "NSObject+LnAdditions.h"
 
 @implementation Body {
-
+    Class _worldClass;
 }
 
 + (id)body {
@@ -19,39 +20,15 @@
 }
 
 - (Class)worldClass {
-    // the type string is in the format of T@"<ClassName>"
-    const char *type = [self typeOfPropertyNamed:@"world"];
-    NSString *cn = [NSString stringWithCString:type encoding:NSUTF8StringEncoding];
-//    NSLog(@"%@", cn);
-    NSArray *comps = [cn componentsSeparatedByString:@"\""];
-//    NSLog(@"%@", comps);
-    if (comps.count != 3)
-        return nil;
-    NSString *className = comps[1];
-    return NSClassFromString(className);
-//    NSString *name = [[NSString stringWithCString:type encoding:NSASCIIStringEncoding] copy];
-//    NSString *className = [NSString stringWithString:name];
-//    NSLog(@"className is %@", className);
-//    const char *p = strchr(type, '"');
-//    NSLog(@"the string is %s", p);
-//    if (p == NULL)
-//        return nil;
-//    p += 1;
-//    const char *e = strchr(type, '"');
-//    if (e == NULL || e == p)
-//        return nil;
-//    int len = (int)(e-p);
-//    char *className = malloc(len + 1);
-//    memcpy(className, p, len);
-//    className[len] = '\0';
-//    NSLog(@"%@", name);
-//    free(className);
+    if (!_worldClass) {
+        _worldClass = [self classForPropertyNamed:@"world"];
+    }
+    return _worldClass;
 }
 
 
 - (void)setWorld:(World *)world {
     if (_world != world) {
-        NSAssert(!world || [world isKindOfClass:self.worldClass], @"incompatible world being assigned!");
         _world = world;
         [self worldChangedFrom:_world to:world];
     }

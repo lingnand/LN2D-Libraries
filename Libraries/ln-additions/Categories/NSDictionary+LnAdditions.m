@@ -18,6 +18,10 @@ id cValueForKey (NSDictionary *self, SEL sel) {
     return [NSSet setWithArray:self.allKeys];
 }
 
+-(NSSet *)valueSet {
+    return [NSSet setWithArray:self.allValues];
+}
+
 -(BOOL) hasKey:(id)key {
     return [self objectForKey:key] != nil;
 }

@@ -14,12 +14,12 @@
 /** On-screen velocity */
 @property(nonatomic) CGPoint velocity;
 /**
-* @abstract Connection to the physical world
-* @discussion the world object is essentially a data object requried by the body,
-* in the subtypes of body, this data object should be allowed to be a covariant
-* (a more specific subtype)
+* The world object is read as a readonly property because it is strictly
+* defined as *THE CLOSEST ASSIGNABLE WORLD* that fits into slot. There
+* in fact isn't any sort of manual tinkering required by the user (the
+* user shouldn't as well)
 */
-@property(nonatomic, weak) World *world;
+@property(nonatomic, readonly, weak) World *world;
 /** gives back the class of the world attribute for this world obj*/
 @property(nonatomic, readonly) Class worldClass;
 

@@ -10,6 +10,8 @@
 @interface NSDictionary (LnAdditions)
 -(NSSet *)keySet;
 
+- (NSSet *)valueSet;
+
 -(BOOL)hasKey:(id)key;
 
 -(BOOL)hasAllKeys:(id)key1,...;
