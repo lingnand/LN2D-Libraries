@@ -11,6 +11,11 @@
 #import "B2DContact.h"
 
 
+/**
+* Note: the association of the NSPredicate follows the peculiarity of NSPredicate class
+* If you'd like to retrieve/manage a NSPredicate later make sure use the format version
+* of NSPredicate and not the block version
+*/
 typedef void (^B2DContactCallback) (B2DContact *);
 
 @interface B2DContactCallbackClosure : NSObject
@@ -46,6 +51,8 @@ typedef void (^B2DContactCallback) (B2DContact *);
 - (void)setCallbackClosure:(B2DContactCallbackClosure *)closure forPredicate:(NSPredicate *)predicate;
 
 - (void)setObject:(B2DContactCallbackClosure *)closure forKeyedSubscript:(NSPredicate *)predicate;
+
+- (void)removeCallbackClosureForPredicate:(NSPredicate *)predicate;
 
 - (void)addEntriesFromDictionary:(NSDictionary *)dictionary;
 

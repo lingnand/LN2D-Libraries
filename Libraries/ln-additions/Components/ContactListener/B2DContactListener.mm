@@ -92,6 +92,10 @@
     [self setCallbackClosure:closure forPredicate:predicate];
 }
 
+- (void)removeCallbackClosureForPredicate:(NSPredicate *)predicate {
+    [self.contactCallBacks removeObjectForKey:predicate];
+}
+
 - (void)addEntriesFromDictionary:(NSDictionary *)dictionary {
     [self.contactCallBacks addEntriesFromDictionary:dictionary];
 }

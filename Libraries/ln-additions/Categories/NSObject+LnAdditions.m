@@ -87,6 +87,11 @@
     }
 }
 
+#pragma mark - Some methods to support NSPredicate with only format..?
+
+- (BOOL)respondsToSelectorName:(NSString *)name {
+    return [self respondsToSelector:NSSelectorFromString(name)];
+}
 
 
 @end

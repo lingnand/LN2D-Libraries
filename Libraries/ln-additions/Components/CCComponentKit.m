@@ -14,6 +14,7 @@
 @property(nonatomic, strong) NSMutableDictionary *generalTable;
 @property(nonatomic, strong) NSMutableDictionary *predicateTable;
 @property(nonatomic, strong) NSMutableSet *predicateQueue;
+@property(nonatomic, strong) NSMutableSet *predicateLocks;
 @property(nonatomic, strong) NSMutableSet *componentStore;
 @end
 
@@ -38,7 +39,9 @@
 - (void)removeComponent:(CCComponent *)comp {
     if ([self containsComponent:comp]) {
         [self.generalTable removeObjectsForKeys:[self.generalTable allKeysForObject:comp]];
-        [self.predicateTable removeObjectsForKeys:[self.predicateTable allKeysForObject:comp]];
+        NSArray *predicates = [self.predicateTable allKeysForObject:comp];
+        [self.predicateLocks minusSet:[NSSet setWithArray:predicates]];
+        [self.predicateTable removeObjectsForKeys:predicates];
         [self.componentStore removeObject:comp];
         // we are assuming that the component is already present in this kit
         comp.delegate = nil;
@@ -48,7 +51,15 @@
 
 /** Without any kind of wiring up, just doing the backhouse wiring for
  * the component */
-- (void)addComponent:(CCComponent *)component {
+- (BOOL)addComponent:(CCComponent *)component {
+    if ([self componentMatchingLock:component])
+        return NO;
+    [self intakeComponent:component];
+    return YES;
+}
+
+/** Wiring up for the component; without consideration for locks */
+- (void)intakeComponent:(CCComponent *)component {
     if (![self containsComponent:component]) {
         component.delegate = self.delegate;
         // need to go through the adding procedure
@@ -81,8 +92,8 @@
 
 #pragma mark - Tag interface (NSNumber)
 
-- (void)setComponent:(CCComponent *)component forTag:(NSInteger)tag {
-    [self setComponent:component forKey:[NSNumber numberWithInt:tag]];
+- (BOOL)setComponent:(CCComponent *)component forTag:(NSInteger)tag {
+    return [self setComponent:component forKey:[NSNumber numberWithInt:tag]];
 }
 
 - (id)componentForTag:(NSInteger)tag {
@@ -103,10 +114,11 @@
 
 #pragma mark - General store interface (id)
 
-- (void)setComponent:(CCComponent *)component forKey:(id)key {
-    [self addComponent:component];
-    self.generalTable[key] = component;
-
+- (BOOL)setComponent:(CCComponent *)component forKey:(id)key {
+    BOOL r = [self addComponent:component];
+    if (r)
+        self.generalTable[key] = component;
+    return r;
 }
 
 - (id)componentForKey:(id)key {
@@ -127,35 +139,67 @@
 
 #pragma mark - Predicate Lock interface
 
+- (BOOL)componentMatchingLock:(CCComponent *)comp {
+    for (NSPredicate *p in self.predicateLocks) {
+        if ([p evaluateWithObject:comp])
+            return YES;
+    }
+    return NO;
+}
+
 - (id)componentForPredicate:(NSPredicate *)predicate {
-    CCComponent *comp = self.predicateTable[predicate];
-    if (!comp && ![self.predicateQueue containsObject:predicate]) {
-        if ((comp = [self filteredComponentsUsingPredicate:predicate].anyObject))
-            // we obtained the comp ref so we should match up the accessor system
-            self.predicateTable[predicate] = comp;
-        else
-            [self.predicateQueue addObject:predicate];
+    CCComponent *comp = nil;
+    if ([self isCachablePredicate:predicate]) {
+        comp = self.predicateTable[predicate];
+        if (!comp && ![self.predicateQueue containsObject:predicate]) {
+            if ((comp = [self filteredComponentsUsingPredicate:predicate].anyObject))
+                    // we obtained the comp ref so we should match up the accessor system
+                self.predicateTable[predicate] = comp;
+            else
+                [self.predicateQueue addObject:predicate];
+        }
+    } else {
+        // we don't bother for caching if it's block based: we can't cache
+        // block based predicate
+        comp = [self filteredComponentsUsingPredicate:predicate].anyObject;
     }
     return comp;
+}
+
+- (BOOL)isCachablePredicate:(NSPredicate *)predicate {
+    return ![predicate.predicateFormat hasPrefix:@"BLOCKPREDICATE"];
 }
 
 /** This method will set the comp to the predicate and ensure that there's no
  * other component that matches up with the given predicate */
 - (void)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock {
     NSAssert([lock evaluateWithObject:comp], @"Assigning a component that does not evaluate with the predicate to true");
-    // no need to remove any component
-    if (![self.predicateQueue containsObject:lock]) {
+    BOOL cachable = [self isCachablePredicate:lock];
+    // if there's the same predicate in the lock set, that means this predicate has been enforced and
+    // sod we only need to remove that particular associated component
+    if (cachable && [self.predicateLocks containsObject:lock]) {
+        CCComponent *oldComp = self.predicateTable[lock];
+        if (oldComp == comp)
+            return;
+        [self removeComponent:oldComp];
+    } else if (![self.predicateQueue containsObject:lock]) {
         // we are not sure if there's already any components that
-        // are of this class...
+        // match this predicate (because there's no note in the queue)
         // we have to remove all these components and then assign again
         for (CCComponent *c in [self filteredComponentsUsingPredicate:lock]) {
             if (c != comp)
                 [self removeComponent:c];
         }
     }
-    [self addComponent:comp];
-    self.predicateTable[lock] = comp;
+    // remove the lock first (otherwise we cannot add the component
+    [self intakeComponent:comp];
+    if (cachable)
+        self.predicateTable[lock] = comp;
+    [self.predicateLocks addObject:lock];
 }
+
+// To remove a given lock you can only achieve through remove the component (since some predicates
+// might not be comparable)
 
 #pragma mark - Class interface (select component by class, derived from predicate lock)
 
@@ -164,7 +208,7 @@
 }
 
 /** responsibility assigning method */
-- (void)setComponent:(CCComponent *)component forClass:(Class)aClass {
+- (void)setComponent:(CCComponent *)component forClassLock:(Class)aClass {
     [self setComponent:component forPredicateLock:[NSPredicate predicateWithKindOfClassFilter:aClass]];
 }
 
@@ -174,7 +218,7 @@
     return [self componentForPredicate:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
-- (void)setComponent:(CCComponent *)component forSelector:(SEL)selector {
+- (void)setComponent:(CCComponent *)component forSelectorLock:(SEL)selector {
     [self setComponent:component forPredicateLock:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
@@ -208,11 +252,20 @@
     return _componentStore;
 }
 
+- (NSMutableSet *)predicateLocks {
+    if (!_predicateLocks) {
+        _predicateLocks = [NSMutableSet set];
+    }
+    return _predicateLocks;
+}
+
 - (void)setDelegate:(CCNode *)delegate {
     // need to set all the delegates for the components within
     if (delegate != _delegate) {
         _delegate = delegate;
-        [self.generalTable.allValues setValue:_delegate forKey:@"delegate"];
+        for (CCComponent *comp in self.allComponents) {
+            comp.delegate = delegate;
+        }
     }
 }
 
@@ -240,6 +293,8 @@
             copy.generalTable[key] = c;
             [copy.componentStore addObject:c];
         }];
+        // III. copy the locks
+        copy.predicateLocks = self.predicateLocks.mutableCopy;
     }
 
     return copy;

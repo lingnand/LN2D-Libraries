@@ -10,15 +10,15 @@
 
 @implementation NSPredicate (LnAdditions)
 
-+ (id)predicateWithKindOfClassFilter:(Class)aClass {
-    return [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject isKindOfClass:aClass];
-    }];
+/** All filters are:
+ * - comparable
+ * This ensures that the NSPredicate instance can be used as a key
+ * */
+ + (id)predicateWithKindOfClassFilter:(Class)aClass {
+    return [NSPredicate predicateWithFormat:@"SELF isKindOfClass: %@", aClass];
 }
 
 + (id)predicateWithRespondsToSelectorFilter:(SEL)selector {
-    return [NSPredicate predicateWithBlock:^BOOL(id evaluatedObject, NSDictionary *bindings) {
-        return [evaluatedObject respondsToSelector:selector];
-    }];
+    return [NSPredicate predicateWithFormat:@"SELF respondsToSelectorName: %@", NSStringFromSelector(selector)];
 }
 @end

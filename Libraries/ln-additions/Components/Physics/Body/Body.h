@@ -19,7 +19,7 @@
 * in fact isn't any sort of manual tinkering required by the user (the
 * user shouldn't as well)
 */
-@property(nonatomic, readonly, weak) World *world;
+@property(nonatomic, weak) World *world;
 /** gives back the class of the world attribute for this world obj*/
 @property(nonatomic, readonly) Class worldClass;
 

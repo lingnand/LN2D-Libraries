@@ -19,7 +19,8 @@
 */
 @interface B2DRUBEImage : CCComponent
 
-@property (nonatomic, strong) CCSprite *image;
+@property (nonatomic, readonly, strong) CCSprite *image;
+@property (nonatomic, readonly, strong) B2DBody *attachedBody;
 
 + (id)bodyWithJsonImage:(b2dJsonImage *)image;
 @end

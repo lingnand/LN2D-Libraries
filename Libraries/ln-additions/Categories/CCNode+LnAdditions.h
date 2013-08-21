@@ -80,8 +80,4 @@
 @property(nonatomic) Body *body;
 @property(nonatomic) CGPoint velocity;
 
-/** @group Config structure (Deprecated) */
-@property (nonatomic, strong) id data;
-- (void)loadComponentsAndData:(id <CCNodeConfigTable>)dictionary;
-
 @end

@@ -143,21 +143,6 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     return self.components;
 }
 
-#pragma mark - Data (deprecated)
-
-- (id)data {
-    return objc_getAssociatedObject(self, nodeDataKey);
-}
-
-- (void)setData:(id)data {
-    objc_setAssociatedObject(self, nodeDataKey, data, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-}
-
-- (void)loadComponentsAndData:(id <CCNodeConfigTable>)dictionary {
-    self.components = [[CCComponentKit alloc] initWithConfig:dictionary.components];
-    self.data = dictionary.data.mutableCopy;
-}
-
 #pragma mark - Body
 
 // default returns a normal body
@@ -171,7 +156,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setBody:(Body *)body {
-    [self.components setComponent:body forClass:[Body class]];
+    [self.components setComponent:body forClassLock:[Body class]];
 }
 
 // velocity is the one thing that should be supported across bodies
@@ -197,7 +182,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setMask:(Mask *)mask {
-    [self.components setComponent:mask forClass:[Mask class]];
+    [self.components setComponent:mask forClassLock:[Mask class]];
 }
 
 /** converting a rect in the current nodespace to the world nodespace */

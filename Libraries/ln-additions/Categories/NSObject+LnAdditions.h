@@ -30,4 +30,5 @@ typedef enum {
 
 - (void)bind:(NSString *)binding toKeyPath:(NSString *)keyPath ofObject:(id)observableController pairs:(NSDictionary *)pairs option:(KVBindingOption)option;
 
+- (BOOL)respondsToSelectorName:(NSString *)name;
 @end
