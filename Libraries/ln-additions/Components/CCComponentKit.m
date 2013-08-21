@@ -172,30 +172,44 @@
 
 /** This method will set the comp to the predicate and ensure that there's no
  * other component that matches up with the given predicate */
-- (void)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock {
+- (BOOL)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock {
     NSAssert([lock evaluateWithObject:comp], @"Assigning a component that does not evaluate with the predicate to true");
-    BOOL cachable = [self isCachablePredicate:lock];
     // if there's the same predicate in the lock set, that means this predicate has been enforced and
-    // sod we only need to remove that particular associated component
-    if (cachable && [self.predicateLocks containsObject:lock]) {
+    // so we only need to remove that particular associated component
+    // note that this operation implies that the lock is cachable
+    if ([self.predicateLocks containsObject:lock]) {
         CCComponent *oldComp = self.predicateTable[lock];
         if (oldComp == comp)
-            return;
-        [self removeComponent:oldComp];
-    } else if (![self.predicateQueue containsObject:lock]) {
-        // we are not sure if there's already any components that
-        // match this predicate (because there's no note in the queue)
-        // we have to remove all these components and then assign again
-        for (CCComponent *c in [self filteredComponentsUsingPredicate:lock]) {
-            if (c != comp)
-                [self removeComponent:c];
+            return YES;
+        // we must also make sure that this component does not match other existing locks
+        // in the set
+        // remove the lock first if it's already in the set (otherwise we cannot add the component)
+        [self.predicateLocks removeObject:lock];
+        // the following step might still fail.. if the component matches other
+        // locks currently held
+        if ([self addComponent:comp]) {
+            [self removeComponent:oldComp];
+            self.predicateTable[lock] = comp;
+            [self.predicateLocks addObject:lock];
+            return YES;
         }
+        [self.predicateLocks addObject:lock];
+    } else if ([self addComponent:comp]) {
+        if (![self.predicateQueue containsObject:lock]) {
+            // we are not sure if there's already any components that
+            // match this predicate (because there's no note in the queue)
+            // we have to remove all these components and then assign again
+            for (CCComponent *c in [self filteredComponentsUsingPredicate:lock]) {
+                if (c != comp)
+                    [self removeComponent:c];
+            }
+        }
+        if ([self isCachablePredicate:lock])
+            self.predicateTable[lock] = comp;
+        [self.predicateLocks addObject:lock];
+        return YES;
     }
-    // remove the lock first (otherwise we cannot add the component
-    [self intakeComponent:comp];
-    if (cachable)
-        self.predicateTable[lock] = comp;
-    [self.predicateLocks addObject:lock];
+    return NO;
 }
 
 // To remove a given lock you can only achieve through remove the component (since some predicates

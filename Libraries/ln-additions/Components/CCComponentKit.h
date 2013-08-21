@@ -97,6 +97,6 @@
 * can be added in the future.
 *
 */
-- (void)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock;
+- (BOOL)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock;
 
 @end
