@@ -14,9 +14,17 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 static char const *const nodeDataKey = "CCNodeExtension.UserData";
 
 @implementation CCNode (LnAdditions)
-@dynamic components;
+@dynamic componentKit;
 @dynamic mask;
 @dynamic body;
+
+#pragma mark - More initializer
+
++ (id)nodeWithComponents:(CCComponentKit *)componentKit {
+    CCNode *n = [self new];
+    n.componentKit = componentKit;
+    return n;
+}
 
 #pragma mark - Normal extension
 
@@ -72,18 +80,18 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     CGFloat width = self.contentSize.width;
     CGFloat height = self.contentSize.height;
     return ccpAdd(self.anchorPoint,
-            ccp(width ? delta.x/ width : 0, height ? delta.y/ height : 0));
+            ccp(width ? delta.x / width : 0, height ? delta.y / height : 0));
 }
 
 #pragma mark - Operations
 // chained methods
--(id)nodeWithAnchorPoint:(CGPoint)anchor {
+- (id)nodeWithAnchorPoint:(CGPoint)anchor {
     self.anchorPoint = anchor;
     return self;
 }
 
 // return a sprite with flipped
--(void)flipInnerX {
+- (void)flipInnerX {
     self.scaleX *= -1;
     CGPoint an = self.anchorPoint;
     // the anchorPoint should reflect about an.x = 0.5
@@ -91,7 +99,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     self.anchorPoint = an;
 }
 
--(void)flipInnerY {
+- (void)flipInnerY {
     self.scaleY *= -1;
     CGPoint an = self.anchorPoint;
     // the anchorPoint should reflect about an.x = 0.5
@@ -102,7 +110,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 #pragma mark - Worldspace size calculation
 
 - (CGRect)canvasBox {
-    CGRect canvas = [self rectInWorldSpace:(CGRect){{0, 0}, self.contentSize}];
+    CGRect canvas = [self rectInWorldSpace:(CGRect) {{0, 0}, self.contentSize}];
     for (CCNode *node in self.children) {
         canvas = CGRectUnion(canvas, node.canvasBox);
     }
@@ -114,7 +122,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (NSSet *)keyPathsForValuesAffectingCanvasBox:(NSString *)key {
-    return [NSSet setWithObjects:@"scaleX",@"scaleY",@"anchorPoint", @"children", @"contentSize", nil];
+    return [NSSet setWithObjects:@"scaleX", @"scaleY", @"anchorPoint", @"children", @"contentSize", nil];
 }
 
 - (NSSet *)keyPathsForValuesAffectingCanvasSize:(NSString *)key {
@@ -124,30 +132,30 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 
 #pragma mark - Components
 
-- (CCComponentKit *)components {
+- (CCComponentKit *)componentKit {
     CCComponentKit *components = objc_getAssociatedObject(self, nodeComponentKitKey);
     // lazy instantiation
     if (!components) {
         components = [[CCComponentKit alloc] init];
-        self.components = components;
+        self.componentKit = components;
     }
     return components;
 }
 
-- (void)setComponents:(CCComponentKit *)components {
-    [components setDelegate:self];
-    objc_setAssociatedObject(self, nodeComponentKitKey, components, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setComponentKit:(CCComponentKit *)componentKit {
+    componentKit.delegate = self;
+    objc_setAssociatedObject(self, nodeComponentKitKey, componentKit, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    return self.components;
+    return self.componentKit;
 }
 
 #pragma mark - Body
 
 // default returns a normal body
 - (id)body {
-    Body *m = [self.components componentForClass:[Body class]];
+    Body *m = [self.componentKit componentForClass:[Body class]];
     if (!m) {
         m = [SimpleBody body];
         self.body = m;
@@ -156,7 +164,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setBody:(Body *)body {
-    [self.components setComponent:body forClassLock:[Body class]];
+    [self.componentKit setComponent:body forClassLock:[Body class]];
 }
 
 // velocity is the one thing that should be supported across bodies
@@ -173,7 +181,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 // defualt returns a rectMask
 - (Mask *)mask {
     // lazily instantiate
-    Mask *m = [self.components componentForClass:[Mask class]];
+    Mask *m = [self.componentKit componentForClass:[Mask class]];
     if (!m) {
         m = [RectMask mask];
         self.mask = m;
@@ -182,7 +190,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setMask:(Mask *)mask {
-    [self.components setComponent:mask forClassLock:[Mask class]];
+    [self.componentKit setComponent:mask forClassLock:[Mask class]];
 }
 
 /** converting a rect in the current nodespace to the world nodespace */

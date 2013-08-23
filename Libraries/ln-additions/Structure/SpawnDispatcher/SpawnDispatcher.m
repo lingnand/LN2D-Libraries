@@ -37,11 +37,11 @@
 
 - (NSArray *)instances {
     if (self.tagSet)
-        return [self.delegate.children.getNSArray filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id child, NSDictionary *bindings) {
+        return [self.host.children.getNSArray filteredArrayUsingPredicate:[NSPredicate predicateWithBlock:^BOOL(id child, NSDictionary *bindings) {
             return [self.tagSet containsIndex:(NSUInteger) [child tag]] && [child conformsToProtocol:@protocol(RespawnableObject)];
         }]];
     else
-        return self.delegate.children.getNSArray;
+        return self.host.children.getNSArray;
 }
 
 - (NSArray *)activeInstances {

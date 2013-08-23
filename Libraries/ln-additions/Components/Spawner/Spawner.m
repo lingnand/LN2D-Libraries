@@ -51,11 +51,11 @@
 }
 
 - (void)spawnRightHere {
-    [self spawnAtPoint:self.delegate.position];
+    [self spawnAtPoint:self.host.position];
 }
 
 - (void)spawnAtPoint:(CGPoint)point {
-    self.delegate.position = point;
+    self.host.position = point;
     if (self.spawnBlock) {
         self.spawnBlock();
     }

@@ -44,17 +44,17 @@
 }
 
 - (SimpleBody *)delegateBody {
-    Body *b = self.delegate.body;
+    Body *b = self.host.body;
     NSAssert(!b || [b isKindOfClass:[SimpleBody class]], @"SimpleCollisionHandler depends on a simple body");
     return (SimpleBody *) b;
 }
 
 // the person is considered inAir if he hasn't collided with anything in the past 2 second
 - (void)update:(ccTime)delta {
-    self.delegate.velocity = ccpAdd(self.delegate.velocity, ccpMult(self.gravity, delta));
+    self.host.velocity = ccpAdd(self.host.velocity, ccpMult(self.gravity, delta));
 
     // the displacement of the player
-    CGPoint ds = ccpMult(self.delegate.velocity, delta);
+    CGPoint ds = ccpMult(self.host.velocity, delta);
     // this is the actual displacement of the character in the world coordinate
     CGPoint actual_ds = ccpMult(self.delegateBody.actualVelocity, delta);
     CGPoint actual_ds_direction = ccpDirection(actual_ds);
@@ -62,23 +62,23 @@
 
     CGPoint collideVec = ccp(0, 0);
     // first adjust the x direction
-    self.delegate.position = ccpAdd(self.delegate.position, ccp(ds.x, 0));
+    self.host.position = ccpAdd(self.host.position, ccp(ds.x, 0));
     while (self.contactWithWall && actual_ds_mag.x > 0) {
 //        CCLOG(@"Collided");
         collideVec.x = 1;
-        self.delegate.position = ccpAdd(self.delegate.position, ccp(-actual_ds_direction.x * self.restitution, 0));
+        self.host.position = ccpAdd(self.host.position, ccp(-actual_ds_direction.x * self.restitution, 0));
         actual_ds_mag.x -= self.restitution;
     }
     // then adjust the y direction
-    self.delegate.position = ccpAdd(self.delegate.position, ccp(0, ds.y));
+    self.host.position = ccpAdd(self.host.position, ccp(0, ds.y));
     while (self.contactWithWall && actual_ds_mag.y > 0) {
 //        CCLOG(@"Collided");
         collideVec.y = 1;
-        self.delegate.position = ccpAdd(self.delegate.position, ccp(0, -actual_ds_direction.y * self.restitution));
+        self.host.position = ccpAdd(self.host.position, ccp(0, -actual_ds_direction.y * self.restitution));
         actual_ds_mag.y -= self.restitution;
     }
 //        CCLOG(@"#########Collided!");
-    self.delegate.velocity = ccp(self.delegate.velocity.x * !collideVec.x, self.delegate.velocity.y * !collideVec.y);
+    self.host.velocity = ccp(self.host.velocity.x * !collideVec.x, self.host.velocity.y * !collideVec.y);
 
     if (collideVec.x || collideVec.y) {
         self.elapsed = 0;
@@ -92,7 +92,7 @@
 }
 
 - (BOOL)contactWithWall {
-    return [self.delegate.mask intersects:self.wallMask];
+    return [self.host.mask intersects:self.wallMask];
 }
 
 

@@ -65,7 +65,7 @@
 }
 
 - (void)onAddComponent {
-    NSAssert([self.delegate isKindOfClass:[CCSprite class]], @"Must be a CCSprite for a DisplayRandomizer to work!");
+    NSAssert([self.host isKindOfClass:[CCSprite class]], @"Must be a CCSprite for a DisplayRandomizer to work!");
     // initialize the display for the delegate
     [self setNextDisplayFrame];
 }
@@ -80,9 +80,9 @@
 
 - (void)setDisplayFrameWithName:(NSString *)name {
     if (self.masked)
-        [(CCSprite *) self.delegate setDisplayFrameWithFrameName:name maskSuffix:self.maskSuffix maskAlphaThreshold:self.alphaThreshold];
+        [(CCSprite *) self.host setDisplayFrameWithFrameName:name maskSuffix:self.maskSuffix maskAlphaThreshold:self.alphaThreshold];
     else
-        [(CCSprite *) self.delegate setDisplayFrameWithFrameName:name];
+        [(CCSprite *) self.host setDisplayFrameWithFrameName:name];
 }
 
 - (id)copyWithZone:(NSZone *)zone {

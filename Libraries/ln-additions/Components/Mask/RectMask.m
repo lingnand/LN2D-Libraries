@@ -13,12 +13,12 @@
 
 }
 - (BOOL)contains:(CGPoint)point {
-	return CGRectContainsPoint(self.delegate.canvasBox, point);
+	return CGRectContainsPoint(self.host.canvasBox, point);
 }
 
 - (BOOL)intersectsOneSide:(Mask *)other {
-	CGRect cbox1 = self.delegate.canvasBox;
-	CGRect cbox2 = other.delegate.canvasBox;
+	CGRect cbox1 = self.host.canvasBox;
+	CGRect cbox2 = other.host.canvasBox;
 	return CGRectIntersectsRect(cbox1, cbox2);
 }
 

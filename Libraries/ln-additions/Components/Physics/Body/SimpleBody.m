@@ -37,19 +37,19 @@
 #pragma mark - Legacy opposite point calculation (not used)
 
 -(CGPoint)edgeStartingPointOnMovingDirection {
-    CGFloat rightHalfWidth = self.delegate.contentSize.width * (1 - self.delegate.anchorPoint.x);
-    CGFloat upperHalfHeight = self.delegate.contentSize.height * (1 - self.delegate.anchorPoint.y);
-    return [self nearestPointOnEdgeFromPoint:self.delegate.position
+    CGFloat rightHalfWidth = self.host.contentSize.width * (1 - self.host.anchorPoint.x);
+    CGFloat upperHalfHeight = self.host.contentSize.height * (1 - self.host.anchorPoint.y);
+    return [self nearestPointOnEdgeFromPoint:self.host.position
                                            withDirection:ccpMult(self.velocity, -1)
                                                     rect:CGRectMake(-rightHalfWidth, -upperHalfHeight,
-                                                            self.delegate.contentSize.width + [CCDirector sharedDirector].winSize.width,
-                                                            self.delegate.contentSize.height + [CCDirector sharedDirector].winSize.height)];
+                                                            self.host.contentSize.width + [CCDirector sharedDirector].winSize.width,
+                                                            self.host.contentSize.height + [CCDirector sharedDirector].winSize.height)];
 }
 
 
 - (void)update:(ccTime)delta {
     self.velocity = ccpAdd(self.velocity, ccpMult(self.acceleration, delta));
-    self.delegate.position = ccpAdd(self.delegate.position, ccpMult(self.velocity, delta));
+    self.host.position = ccpAdd(self.host.position, ccpMult(self.velocity, delta));
 }
 
 - (float)yIntersectionForXLine:(float)xval withPoint:(CGPoint)point direction:(CGPoint)dir {

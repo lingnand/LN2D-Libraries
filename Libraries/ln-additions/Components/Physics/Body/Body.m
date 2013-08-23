@@ -54,13 +54,13 @@
 - (void)setClosestWorld:(World *)world {
     // check if the world is closest to the current
     if (world != self.world) {
-        if (!self.world.delegate) {
+        if (!self.world.host) {
             self.world = world;
-        } else if (world.delegate) {
+        } else if (world.host) {
             // traverse the tree up until meeting the world
-            CCNode *p = self.delegate;
-            while ((p = p.parent) && p != self.world.delegate) {
-                if (p == world.delegate) {
+            CCNode *p = self.host;
+            while ((p = p.parent) && p != self.world.host) {
+                if (p == world.host) {
                     self.world = world;
                 }
             }

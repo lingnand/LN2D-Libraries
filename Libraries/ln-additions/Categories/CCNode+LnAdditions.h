@@ -71,7 +71,7 @@
 - (id)nodeWithAnchorPoint:(CGPoint)anchor;
 
 /** @group Components */
-@property (nonatomic, strong) CCComponentKit *components;
+@property (nonatomic, strong) CCComponentKit *componentKit;
 
 /** @group Mask */
 @property(nonatomic, strong) Mask *mask;

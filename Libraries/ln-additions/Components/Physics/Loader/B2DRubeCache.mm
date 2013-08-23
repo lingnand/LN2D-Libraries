@@ -5,64 +5,98 @@
     @author lingnan
 */
 
-#include "B2DRubeCache.h"
+#include "B2DRUBECache.h"
 #include "b2dJson.h"
 #include "b2dJsonImage.h"
 #import "B2DWorld.h"
 #import "B2DRUBEImage.h"
+#import "NSMapTable+LnAdditions.h"
 #import "B2DBody.h"
 #import "CCNode+LnAdditions.h"
 
-@implementation B2DRubeCache {
+@interface B2DRUBECache ()
+@property(nonatomic, strong) NSMapTable *bodyImages;
+@property(nonatomic, strong) NSMutableDictionary *bodyNodesDict;
+@end
+
+@implementation B2DRUBECache {
     b2dJson *_json;
+    NSMutableArray *_allRUBEImages;
+    NSMutableDictionary *_bodies;
+    NSMutableDictionary *_images;
 }
 
-/**
-* Now we need to think about how to synchronize the coordinate system between B2D
-* and cocos2d. one option is to have all the rube objects neglect the coordinate in the rube
-* file i.e. the objects loaded in rube only provides information about the body and fixtures,
-* and the position of the body object is determined when the body is added to the given node.
-*
-* CGPoint p = [self.delegate.position convertToWorldSpace];
-* body->SetPosition(p.x * ptmRatio, p.y * ptmRatio);
-*
-*
-* However, the problem with this approach is that the world then becomes immovable (cannot be
-* moved around; bound to the world coordinate as the reason). To solve this problem you might
-* want to bound a world object to a parent object, so the b2dworld uses the internal coordinate
-* of that internal world i.e. when it's moved around the body coordinates do not change and thus
-* nothing changes specifically. To do this the best way might be through a NSNotification? but
-* we are setting up a relationship and this doesn't seem that sound...
-*
-* How about this. each B2DWorld will be a component (of course), and once it is added it will
-* hold the reference to the delegate. And then when the child nodes are added to this B2DWorld,
-* the B2DBody can know about the delegate of the B2DWorld and a transformation matrix can be
-* generated to transform the position in the world.delegate into the body.delegate; then all
-* the later translation between the B2DWorld coordinates and the Cocos2D coordinates will be
-* relying on this transformation matrix;
-*   negative: you'll need to recompute the transformation matrix each time if you want to be
-*   accurate; and that can be VERY expensive if you are moving positions constantly;
-*
-* How to get hold onto a world component? the topmost node can have a property as the world,
-* and later when a body is created it can get hold to that world property using the global
-* object.
-*
-* Using the notification approach: when the world is added to/removed from the delegate, it
-* sends a notification; and all bodies objects receiving that notification will perform the
-* necessary operations to wire up the world (if this world is the world the body is bound to)
-* then whenever a body is added it will also post a notification asking about whether there's
-* a world, if yes then the world will respond with another message.
-*
-* The notification approach does seem cool... it lets you bypass the problem of passing A world
-* COMPONENT around as a global object. We can specify the rule that only the nearest parent's world
-* is considered the world to wire up to
-*
-*/
++ (id)RUBECacheWithFileName:(NSString *)filename {
+    return [[self alloc] initWithFileName:filename];
+}
 
-- initWithFileName:(NSString *)filename {
+- (NSDictionary *)bodies {
+    if (!_bodies) {
+        std::vector<b2Body *> bodies;
+        _json->getAllBodies(bodies);
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        for (uint i = 0; i < bodies.size(); i++) {
+            // add all the bodies to the dictionary
+            b2Body *body = bodies[i];
+            [self pushKey:[NSString stringWithUTF8String:_json->getBodyName(body).c_str()] value:[B2DBody bodyWithB2Body:body] inDictionary:dict];
+        }
+        _bodies = dict;
+    }
+    return _bodies;
+}
+
+- (void)pushKey:(id)key value:(id)value inDictionary:(NSMutableDictionary *)dict {
+    NSMutableArray *arr = dict[key];
+    if (!arr) {
+        dict[key] = arr = [NSMutableArray array];
+    }
+    [arr addObject:value];
+}
+
+- (NSDictionary *)images {
+    if (!_images) {
+        std::vector<b2dJsonImage *> b2dImages;
+        _json->getAllImages(b2dImages);
+        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+        for (uint i = 0; i < b2dImages.size(); i++) {
+            B2DRUBEImage *img = [B2DRUBEImage imageWithJsonImage:b2dImages[i]];
+            [self pushKey:img.name value:img inDictionary:dict];
+        }
+        _images = dict;
+    }
+    return _images;
+}
+
+- (NSMapTable *)bodyImages {
+    if (!_bodyImages) {
+        std::vector<b2dJsonImage *> b2dImages;
+        _json->getAllImages(b2dImages);
+        NSMapTable *dict = [NSMapTable strongToStrongObjectsMapTable];
+        for (uint i = 0; i < b2dImages.size(); i++) {
+            b2dJsonImage *img = b2dImages[i];
+            B2DBody *body = [B2DBody bodyWithB2Body:img->body];
+            NSMutableArray *arr = dict[body];
+            if (!arr) {
+                dict[body] = arr = [NSMutableArray array];
+            }
+            [arr addObject:[B2DRUBEImage imageWithJsonImage:img]];
+        }
+        _bodyImages = dict;
+    }
+    return _bodyImages;
+}
+
+- (NSMutableDictionary *)bodyNodesDict {
+    if (!_bodyNodesDict) {
+        _bodyNodesDict = [NSMutableDictionary dictionaryWithCapacity:self.bodies.count];
+    }
+    return _bodyNodesDict;
+}
+
+- (id)initWithFileName:(NSString *)filename {
     if (self = [super init]) {
         // initialize the b2djson object
-        NSString *fullpath = [CCFileUtils fullPathFromRelativePath:filename];
+        NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:filename];
 
         // This will print out the actual location on disk that the file is read from.
         // When using the simulator, exporting your RUBE scene to this folder means
@@ -100,27 +134,30 @@
     return self;
 }
 
-
-- (B2DRUBEImage *)RUBEImageBodyForName:(NSString *)name {
-    b2dJsonImage *img = _json->getImageByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-    CCLOG(@"Loading image: %s", img->file.c_str());
-    return [B2DRUBEImage bodyWithJsonImage:img];
+- (id)objectForKeyedSubscript:(id)key {
+    return [self bodyNodesForName:key];
 }
 
-- (B2DBody *)bodyForName:(NSString *)name {
-    b2Body *body = _json->getBodyByName([name cStringUsingEncoding:[NSString defaultCStringEncoding]]);
-    return [B2DBody bodyWithB2Body:body];
-}
-
-- (NSArray *)allRUBEImageBodies {
-    // ask the json to spit out all the images
-    std::vector<b2dJsonImage*> b2dImages;
-    _json->getAllImages(b2dImages);
-    NSMutableArray *arr = [NSMutableArray array];
-    for (uint i = 0; i < b2dImages.size(); i++) {
-        [arr addObject:[B2DRUBEImage bodyWithJsonImage:b2dImages[i]]];
+- (NSArray *)bodyNodesForName:(NSString *)name {
+    id bodyNodes = self.bodyNodesDict[name];
+    if (!bodyNodes) {
+        NSArray *bodies = self.bodies[name];
+        id arr = nil;
+        if (bodies) {
+            arr = [NSMutableArray arrayWithCapacity:bodies.count];
+            for (B2DBody *body in  bodies) {
+                CCNode *node = [CCNode node];
+                node.body = body;
+                NSArray *images = self.bodyImages[body];
+                [node.componentKit addComponents:images];
+                node.zOrder = [[images valueForKeyPath:@"@min.zOrder"] integerValue];
+                [arr addObject:node];
+            }
+        } else
+            arr = [NSNull null];
+        bodyNodes = self.bodyNodesDict[name] = arr;
     }
-    return arr;
+    return bodyNodes == [NSNull null] ? nil : bodyNodes;
 }
 
 - (void)dealloc {

@@ -27,8 +27,6 @@
     if (!body)
         return nil;
     id b = (__bridge id) body->GetUserData();
-    // the following step will attempt to ignore the existing
-    // pointer if it is not of current class
     return [b isKindOfClass:[self class]] ? b : nil;
 }
 
@@ -54,6 +52,13 @@
         }
         _body = body;
         if (body) {
+            // we should check here if the body is already associated with
+            // another B2DBody object
+            id b = [self.class bodyFromB2Body:body];
+            if (b) {
+                NSAssert([b isKindOfClass:[B2DBody class]], @"the body is associated with some unknown class");
+                ((B2DBody *)b).body = nil;
+            }
             body->SetUserData((__bridge void *) self);
             self.bodyDef = nil;
         }
@@ -289,16 +294,16 @@
 - (void)activate {
     [super activate];
     // we didn't add the Initial option because the b2body position has a higher priority
-    [self.delegate addObserver:self
-                    forKeyPath:@"position"
-                       options:NSKeyValueObservingOptionNew
-                       context:nil];
+    [self.host addObserver:self
+                forKeyPath:@"position"
+                   options:NSKeyValueObservingOptionNew
+                   context:nil];
     [self scheduleUpdate];
 }
 
 - (void)deactivate {
     [super deactivate];
-    [self.delegate removeObserver:self forKeyPath:@"position"];
+    [self.host removeObserver:self forKeyPath:@"position"];
     [self unscheduleUpdate];
 }
 
@@ -322,15 +327,16 @@
 
 - (CGPoint)positionInWorld {
     // transform the local coordinates into the world coordinates
-    return CGPointApplyAffineTransform(self.delegate.position, self.delegateToWorldTransform);
+    return CGPointApplyAffineTransform(self.host.position, self.delegateToWorldTransform);
 }
 
 /** return the transform from the local coordinates into the world coordinates
- * if there's no world indicated, the outermost world is chosen */
+ * if there's no world indicated (or the world is not attached in the correct hierarchy
+ * , the outermost world is chosen */
 - (CGAffineTransform)delegateToWorldTransform {
-    CGAffineTransform t = [self.delegate nodeToParentTransform];
+    CGAffineTransform t = [self.host nodeToParentTransform];
 
-    for (CCNode *p = self.delegate.parent; p && p != self.world.delegate; p = p.parent)
+    for (CCNode *p = self.host.parent; p && p != self.world.host; p = p.parent)
         t = CGAffineTransformConcat(t, [p nodeToParentTransform]);
 
     return t;
@@ -343,10 +349,11 @@
 - (void)update:(ccTime)step {
     if (self.body) {
         CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
-        self.delegate.position = CGPointApplyAffineTransform(ccpos, [self worldToDelegateTransform]);
+        self.host.position = CGPointApplyAffineTransform(ccpos, [self worldToDelegateTransform]);
         // this might not consider the relative rotation of layered relationships
-        self.delegate.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
+        self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
     }
 }
+
 
 @end

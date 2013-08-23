@@ -26,5 +26,28 @@
     return [self arrayWithRangeStartNumber:start length:(NSUInteger) (end - start)];
 }
 
+- (NSArray *)stretched {
+    NSMutableArray *arr = [NSMutableArray arrayWithCapacity:self.count];
+    for (id obj in self) {
+        if ([obj isKindOfClass:[NSArray class]])
+            [arr addObjectsFromArray:obj];
+        else
+            [arr addObject:obj];
+    }
+    return arr;
+}
+
+- (NSArray *)flattened {
+    NSMutableArray *arr = [NSMutableArray arrayWithCapacity:self.count];
+    for (id obj in self) {
+        if ([obj isKindOfClass:[NSArray class]])
+            [arr addObjectsFromArray:[obj flattened]];
+        else
+            [arr addObject:obj];
+    }
+    return arr;
+}
+
+
 
 @end

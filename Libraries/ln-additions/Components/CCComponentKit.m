@@ -6,7 +6,6 @@
 
 
 #import "CCComponentKit.h"
-#import "CHBidirectionalDictionary.h"
 #import "NSPredicate+LnAdditions.h"
 #import "NSDictionary+LnAdditions.h"
 
@@ -14,7 +13,8 @@
 @property(nonatomic, strong) NSMutableDictionary *generalTable;
 @property(nonatomic, strong) NSMutableDictionary *predicateTable;
 @property(nonatomic, strong) NSMutableSet *predicateQueue;
-@property(nonatomic, strong) NSMutableSet *predicateLocks;
+@property(nonatomic, strong) NSMutableSet *cachablePredicateLocks;
+@property(nonatomic, strong) NSMutableSet *uncachablePredicateLocks;
 @property(nonatomic, strong) NSMutableSet *componentStore;
 @end
 
@@ -23,12 +23,40 @@
 }
 @synthesize delegate = _delegate;
 
-#pragma mark - Lifecycle
+#pragma mark - CCComponent status
+
+- (BOOL)enabled {
+    // loop through all components and check whether they are enabled
+    for (CCComponent *c in self.componentStore) {
+        if (!c.enabled)
+            return NO;
+    }
+    return YES;
+}
 
 - (void)setEnabled:(BOOL)enabled {
     [self.allComponents setValue:[NSNumber numberWithBool:enabled] forKey:@"enabled"];
 }
 
+- (BOOL)activated {
+    // loop through all components and check whether they are enabled
+    for (CCComponent *c in self.componentStore) {
+        if (!c.activated)
+            return NO;
+    }
+    return YES;
+}
+
+#pragma mark - Lifecycle
++ (id)kitWithComponent:(CCComponent *)comp {
+    return [self kitWithComponents:[NSArray arrayWithObject:comp]];
+}
+
++ (id)kitWithComponents:(NSArray *)comps {
+    CCComponentKit *kit = [self new];
+    [kit addComponents:comps];
+    return kit;
+}
 #pragma mark - Central add and remove
 
 // check if the component has been added
@@ -37,31 +65,31 @@
 }
 
 - (void)removeComponent:(CCComponent *)comp {
-    if ([self containsComponent:comp]) {
+    if (comp.delegate == self) {
         [self.generalTable removeObjectsForKeys:[self.generalTable allKeysForObject:comp]];
+        // removes from the caching entries
         NSArray *predicates = [self.predicateTable allKeysForObject:comp];
-        [self.predicateLocks minusSet:[NSSet setWithArray:predicates]];
         [self.predicateTable removeObjectsForKeys:predicates];
+        // remove from the cachableLocks
+        [self.cachablePredicateLocks minusSet:[NSSet setWithArray:predicates]];
+        // remove the uncachablelocks
+        [self.uncachablePredicateLocks filterUsingPredicate:[NSPredicate predicateWithFormat:@"!(SELF evaluateWithObject: %@)", comp]];
         [self.componentStore removeObject:comp];
         // we are assuming that the component is already present in this kit
-        comp.delegate = nil;
+        [comp setDelegateDirect:nil];
     }
 }
 
 
-/** Without any kind of wiring up, just doing the backhouse wiring for
- * the component */
 - (BOOL)addComponent:(CCComponent *)component {
+    if (!component)
+        return YES;
     if ([self componentMatchingLock:component])
         return NO;
-    [self intakeComponent:component];
-    return YES;
-}
-
-/** Wiring up for the component; without consideration for locks */
-- (void)intakeComponent:(CCComponent *)component {
-    if (![self containsComponent:component]) {
-        component.delegate = self.delegate;
+    if (component.delegate != self) {
+        // check if the component is already wired to a kit
+        if (component.delegate)
+            [component.delegate removeComponent:component];
         // need to go through the adding procedure
         // procedure for adding the component
         // check through all the holes...
@@ -70,7 +98,7 @@
             NSMutableSet *fq = [NSMutableSet setWithCapacity:self.predicateQueue.count];
             for (NSPredicate *p in self.predicateQueue) {
                 if ([p evaluateWithObject:component])
-                        // add the mmapping in the predicate table
+                        // add the mapping in the predicate table
                     self.predicateTable[p] = component;
                 else
                     [fq addObject:p];
@@ -79,6 +107,15 @@
         }
         [self.componentStore addObject:component];
     }
+    return YES;
+}
+
+- (BOOL)addComponents:(NSArray *)comps {
+    BOOL succeed = YES;
+    for (CCComponent *comp in comps) {
+        succeed &= [self addComponent:comp];
+    }
+    return succeed;
 }
 
 - (NSSet *)allComponents {
@@ -140,9 +177,15 @@
 #pragma mark - Predicate Lock interface
 
 - (BOOL)componentMatchingLock:(CCComponent *)comp {
-    for (NSPredicate *p in self.predicateLocks) {
-        if ([p evaluateWithObject:comp])
-            return YES;
+    if (comp) {
+        for (NSPredicate *p in self.cachablePredicateLocks) {
+            if ([p evaluateWithObject:comp])
+                return YES;
+        }
+        for (NSPredicate *p in self.uncachablePredicateLocks) {
+            if ([p evaluateWithObject:comp])
+                return YES;
+        }
     }
     return NO;
 }
@@ -173,27 +216,29 @@
 /** This method will set the comp to the predicate and ensure that there's no
  * other component that matches up with the given predicate */
 - (BOOL)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock {
-    NSAssert([lock evaluateWithObject:comp], @"Assigning a component that does not evaluate with the predicate to true");
+    NSAssert(!lock || [lock evaluateWithObject:comp], @"Assigning a component that does not evaluate with the predicate to true");
     // if there's the same predicate in the lock set, that means this predicate has been enforced and
     // so we only need to remove that particular associated component
     // note that this operation implies that the lock is cachable
-    if ([self.predicateLocks containsObject:lock]) {
+    if ([self.cachablePredicateLocks containsObject:lock]) {
         CCComponent *oldComp = self.predicateTable[lock];
         if (oldComp == comp)
             return YES;
         // we must also make sure that this component does not match other existing locks
         // in the set
         // remove the lock first if it's already in the set (otherwise we cannot add the component)
-        [self.predicateLocks removeObject:lock];
+        [self.cachablePredicateLocks removeObject:lock];
         // the following step might still fail.. if the component matches other
         // locks currently held
         if ([self addComponent:comp]) {
             [self removeComponent:oldComp];
-            self.predicateTable[lock] = comp;
-            [self.predicateLocks addObject:lock];
+            if (comp) {
+                self.predicateTable[lock] = comp;
+                [self.cachablePredicateLocks addObject:lock];
+            }
             return YES;
         }
-        [self.predicateLocks addObject:lock];
+        [self.cachablePredicateLocks addObject:lock];
     } else if ([self addComponent:comp]) {
         if (![self.predicateQueue containsObject:lock]) {
             // we are not sure if there's already any components that
@@ -204,12 +249,24 @@
                     [self removeComponent:c];
             }
         }
-        if ([self isCachablePredicate:lock])
-            self.predicateTable[lock] = comp;
-        [self.predicateLocks addObject:lock];
+        if (comp) {
+            if ([self isCachablePredicate:lock]) {
+                self.predicateTable[lock] = comp;
+                [self.cachablePredicateLocks addObject:lock];
+            } else {
+                // We assume that an uncachable lock cannot be recorded as
+                // as such we won't need to remove any old component
+                // add the lock to the set
+                if (!self.uncachablePredicateLocks) {
+                    self.uncachablePredicateLocks = [NSMutableSet set];
+                }
+                [self.uncachablePredicateLocks addObject:lock];
+            }
+        }
         return YES;
     }
     return NO;
+
 }
 
 // To remove a given lock you can only achieve through remove the component (since some predicates
@@ -222,7 +279,9 @@
 }
 
 /** responsibility assigning method */
-- (void)setComponent:(CCComponent *)component forClassLock:(Class)aClass {
+- (void)setComponent:(CCComponent *)component
+        forClassLock:
+                (Class)aClass {
     [self setComponent:component forPredicateLock:[NSPredicate predicateWithKindOfClassFilter:aClass]];
 }
 
@@ -232,7 +291,9 @@
     return [self componentForPredicate:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
-- (void)setComponent:(CCComponent *)component forSelectorLock:(SEL)selector {
+- (void)setComponent:(CCComponent *)component
+     forSelectorLock:
+             (SEL)selector {
     [self setComponent:component forPredicateLock:[NSPredicate predicateWithRespondsToSelectorFilter:selector]];
 }
 
@@ -266,20 +327,23 @@
     return _componentStore;
 }
 
-- (NSMutableSet *)predicateLocks {
-    if (!_predicateLocks) {
-        _predicateLocks = [NSMutableSet set];
+- (NSMutableSet *)cachablePredicateLocks {
+    if (!_cachablePredicateLocks) {
+        _cachablePredicateLocks = [NSMutableSet set];
     }
-    return _predicateLocks;
+    return _cachablePredicateLocks;
 }
 
 - (void)setDelegate:(CCNode *)delegate {
-    // need to set all the delegates for the components within
+    // host node changed
     if (delegate != _delegate) {
+        // in fact we have to go through the all-remove AND all-add approach
+        // because most components will bind to the host
+        // we don't need to perform any storage related operations because
+        // there's none involved
         _delegate = delegate;
-        for (CCComponent *comp in self.allComponents) {
-            comp.delegate = delegate;
-        }
+        [self.allComponents setValue:nil forKey:@"delegateDirect"];
+        [self.allComponents setValue:self forKey:@"delegateDirect"];
     }
 }
 
@@ -308,7 +372,7 @@
             [copy.componentStore addObject:c];
         }];
         // III. copy the locks
-        copy.predicateLocks = self.predicateLocks.mutableCopy;
+        copy.cachablePredicateLocks = self.cachablePredicateLocks.mutableCopy;
     }
 
     return copy;

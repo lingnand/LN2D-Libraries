@@ -149,7 +149,7 @@ static  CCVideoPlayerImpl *_impl = nil;
 {
 	// If the current thread is the main thread,than
 	// this message will be processed immediately.
-	[ _impl performSelectorOnMainThread: @selector(setDelegate:) 
+	[ _impl performSelectorOnMainThread:@selector(setNode:)
 							 withObject: aDelegate
 						  waitUntilDone: [NSThread isMainThread]  ];
 }

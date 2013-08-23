@@ -7,10 +7,11 @@
 
 #import "CCComponent.h"
 #import "NSObject+REObserver.h"
+#import "CCComponentKit.h"
 
 
 @implementation CCComponent {
-    CCNode *_oldDelegate;
+    CCComponentKit *_oldDelegate;
 }
 
 - (id)init {
@@ -33,17 +34,18 @@
         BOOL ov = [change[NSKeyValueChangeOldKey] boolValue];
         BOOL nv = [change[NSKeyValueChangeNewKey] boolValue];
         if (nv != ov) {
+            BOOL recoverDelegate = !_delegate;
+            if (recoverDelegate) {
+                NSAssert(_oldDelegate, @"oldDelegate lost");
+                _delegate = _oldDelegate;
+            }
             if (nv)
                 [self activate];
             else {
-                if (!_delegate) {
-                    NSAssert(_oldDelegate, @"oldDelegate lost");
-                    _delegate = _oldDelegate;
-                    [self deactivate];
-                    _delegate = _oldDelegate = nil;
-                } else
-                    [self deactivate];
+                [self deactivate];
             }
+            if (recoverDelegate)
+                _delegate = _oldDelegate = nil;
         }
     } else
         [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
@@ -67,6 +69,10 @@
 
 }
 
+- (CCNode *)host {
+    return self.delegate.delegate;
+}
+
 - (id)initWithConfig:(id)config {
     return [self init];
 }
@@ -77,10 +83,18 @@
     return copy;
 }
 
-- (void)setDelegate:(CCNode *)delegate {
+- (void)setDelegate:(CCComponentKit *)delegate {
+    if (delegate != _delegate) {
+        // we just route this to the componentKit
+        [_delegate removeComponent:self];
+        [delegate addComponent:self];
+    }
+}
+
+- (void)setDelegateDirect:(CCComponentKit *)delegate {
     if (delegate != _delegate) {
         if (_delegate) {
-            CCNode *od = _oldDelegate =  _delegate;
+            CCComponentKit *od = _oldDelegate = _delegate;
             [self willChangeValueForKey:@"delegate"];
             _delegate = nil;
             [self didChangeValueForKey:@"delegate"];
@@ -89,10 +103,10 @@
             _delegate = _oldDelegate = nil;
         }
         if (delegate) {
-            [self willChangeValueForKey:@"delegate"];
+            [self willChangeValueForKey:@"host"];
             _delegate = delegate;
             [self onAddComponent];
-            [self didChangeValueForKey:@"delegate"];
+            [self didChangeValueForKey:@"host"];
         }
     }
 }
@@ -106,7 +120,7 @@
 }
 
 - (BOOL)activated {
-    return self.enabled && self.delegate;
+    return self.enabled && self.host;
 }
 
 + (BOOL)automaticallyNotifiesObserversForKey:(NSString *)key {
@@ -116,7 +130,11 @@
 }
 
 + (NSSet *)keyPathsForValuesAffectingActivated {
-    return [NSSet setWithObjects:@"enabled", @"delegate", nil];
+    return [NSSet setWithObjects:@"enabled", @"node", nil];
+}
+
++ (NSSet *)keyPathsForValuesAffectingHost {
+    return [NSSet setWithObjects:@"delegate", nil];
 }
 
 - (void)update:(ccTime)step {

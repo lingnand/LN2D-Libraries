@@ -55,8 +55,8 @@
         }
         self.currentAnimation = tag;
 
-        [self.delegate stopAllActions];
-        [self.delegate runAction:action];
+        [self.host stopAllActions];
+        [self.host runAction:action];
     }
 }
 

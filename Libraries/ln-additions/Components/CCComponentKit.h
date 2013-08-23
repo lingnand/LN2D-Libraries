@@ -6,14 +6,22 @@
 
 
 #import <Foundation/Foundation.h>
-#import "CCComponent.h"
+#import "CCComponent_protected.h"
 #import "NSObject+LnAdditions.h"
 
 
-@interface CCComponentKit : CCComponent
+@interface CCComponentKit : NSObject <NSCopying>
+
+@property (nonatomic, weak) CCNode *delegate;
+@property (nonatomic) BOOL enabled;
+@property (nonatomic, readonly) BOOL activated;
+
+/** Initializers */
++ (id)kitWithComponent:(CCComponent *)comp;
+
++ (id)kitWithComponents:(NSArray *)comps;
 
 /** Key interface */
-
 /**
 * return value explanation follows addComponent
 * @see CCComponentKit#addComponent:
@@ -64,6 +72,12 @@
 */
 - (BOOL)addComponent:(CCComponent *)component;
 
+/**
+* This will try to add all the components and return the ANDed result of
+* the individual results
+*/
+- (BOOL)addComponents:(NSArray *)comps;
+
 - (void)removeComponent:(CCComponent *)comp;
 
 - (BOOL)containsComponent:(CCComponent *)comp;
@@ -96,6 +110,19 @@
 * also make sure that no other components that satisfies the lock
 * can be added in the future.
 *
+* This method returns true if the lock is successfully established;
+* otherwise false if setting this component will contradict other
+* locks
+*
+* NOTE: if comp argument is nil, the behavior is to remove this particular
+* lock if there's any
+*
+* Some interesting behaviour:
+* 1. add a block-based predicate lock and you won't be able to associate
+* this predicate with any other comp unless you remove the previous component
+* 2. if you have set up multiple locks on one component, most likely you
+* won't succeed in setting another component for one of these locks as the
+* new component might very likely match the other locks for the old component
 */
 - (BOOL)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock;
 

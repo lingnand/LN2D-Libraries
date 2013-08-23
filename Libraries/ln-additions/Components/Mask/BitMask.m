@@ -31,8 +31,8 @@
 
 
 - (BOOL)contains:(CGPoint)point {
-    if (!self.delegate) return NO;
-    point = ccpSub(CC_POINT_POINTS_TO_PIXELS([self.delegate convertToNodeSpace:point]), self.maskData.window.origin);
+    if (!self.host) return NO;
+    point = ccpSub(CC_POINT_POINTS_TO_PIXELS([self.host convertToNodeSpace:point]), self.maskData.window.origin);
     return (BOOL) CFBitVectorGetBitAtIndex(self.maskData.bitset, (CFIndex) (point.x + point.y * self.maskData.window.size.width));
 }
 
@@ -41,11 +41,11 @@
 //        CCLOG(@"pixelMaskIntersectsNode: either or both nodes are rotated and/or scaled. This test only works with non-rotated, non-scaled nodes.");
 //        return NO;
 //    }
-    if (!self.delegate) return NO;
+    if (!self.host) return NO;
 
-    CGRect windowInWorldSpace = [self.delegate rectInWorldSpace:CC_RECT_PIXELS_TO_POINTS(self.maskData.window)];
-    CGRect otherBBInWorldSpace = other.delegate.canvasBox;
-    CGRect this_inter = [self intersectionInWindowSpaceOfNode:self.delegate r1:windowInWorldSpace r2:otherBBInWorldSpace];
+    CGRect windowInWorldSpace = [self.host rectInWorldSpace:CC_RECT_PIXELS_TO_POINTS(self.maskData.window)];
+    CGRect otherBBInWorldSpace = other.host.canvasBox;
+    CGRect this_inter = [self intersectionInWindowSpaceOfNode:self.host r1:windowInWorldSpace r2:otherBBInWorldSpace];
     // no point in testing further if bounding boxes don't intersect
     if (this_inter.size.width == 0)
         return NO;
@@ -53,7 +53,7 @@
         // get the bitset of the other node
         BitMask *bms = (BitMask *) other;
 
-        CGRect that_inter = [bms intersectionInWindowSpaceOfNode:other.delegate r1:windowInWorldSpace r2:otherBBInWorldSpace];
+        CGRect that_inter = [bms intersectionInWindowSpaceOfNode:other.host r1:windowInWorldSpace r2:otherBBInWorldSpace];
         UInt32 length = (UInt32) ((this_inter.size.width + 8)/8 * 8);
         UInt8 *buf = malloc(length), *buf2 = malloc(length);
         memset(buf, 0, length);
