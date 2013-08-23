@@ -5,11 +5,11 @@
 //
 
 
-#import "CCComponentKit.h"
+#import "CCComponentManager.h"
 #import "NSPredicate+LnAdditions.h"
 #import "NSDictionary+LnAdditions.h"
 
-@interface CCComponentKit ()
+@interface CCComponentManager ()
 @property(nonatomic, strong) NSMutableDictionary *generalTable;
 @property(nonatomic, strong) NSMutableDictionary *predicateTable;
 @property(nonatomic, strong) NSMutableSet *predicateQueue;
@@ -18,7 +18,7 @@
 @property(nonatomic, strong) NSMutableSet *componentStore;
 @end
 
-@implementation CCComponentKit {
+@implementation CCComponentManager {
 
 }
 @synthesize delegate = _delegate;
@@ -48,15 +48,20 @@
 }
 
 #pragma mark - Lifecycle
-+ (id)kitWithComponent:(CCComponent *)comp {
-    return [self kitWithComponents:[NSArray arrayWithObject:comp]];
++ (id)manager {
+    return [self new];
 }
 
-+ (id)kitWithComponents:(NSArray *)comps {
-    CCComponentKit *kit = [self new];
++ (id)managerWithComponent:(CCComponent *)comp {
+    return [self managerWithComponents:[NSSet setWithObject:comp]];
+}
+
++ (id)managerWithComponents:(NSSet *)comps {
+    CCComponentManager *kit = [self new];
     [kit addComponents:comps];
     return kit;
 }
+
 #pragma mark - Central add and remove
 
 // check if the component has been added
@@ -110,7 +115,7 @@
     return YES;
 }
 
-- (BOOL)addComponents:(NSArray *)comps {
+- (BOOL)addComponents:(NSSet *)comps {
     BOOL succeed = YES;
     for (CCComponent *comp in comps) {
         succeed &= [self addComponent:comp];
@@ -348,7 +353,7 @@
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    CCComponentKit *copy = [[[self class] allocWithZone:zone] init];
+    CCComponentManager *copy = [[[self class] allocWithZone:zone] init];
 
     if (copy != nil) {
         // NOTE: the following implementation is based on the assumption

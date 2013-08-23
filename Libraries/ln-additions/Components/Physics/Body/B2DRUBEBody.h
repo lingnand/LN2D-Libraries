@@ -15,9 +15,9 @@
 */
 
 @interface B2DRUBEBody : B2DBody
-@property (nonatomic, strong) NSString *name;
+@property (nonatomic, readonly) CCComponentManager *imageManager;
 
-- (id)initWithB2Body:(b2Body *)body b2dJson:(b2dJson *)b2dJson;
+- (id)initWithB2Body:(b2Body *)body images:(NSSet *)images;
 
-+ (id)bodyWithB2Body:(b2Body *)body b2dJson:(b2dJson *)b2dJson;
++ (id)bodyWithB2Body:(b2Body *)body images:(NSSet *)images;
 @end

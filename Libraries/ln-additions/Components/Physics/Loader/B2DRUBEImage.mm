@@ -25,7 +25,7 @@
 - (id)initWithJsonImage:(b2dJsonImage *)image {
     self = [super init];
     if (self) {
-        _attachedBody = [B2DBody bodyWithB2Body:image->body];
+        _attachedBody = image->body;
         _name = [NSString stringWithUTF8String:image->name.c_str()];
         _filename = [NSString stringWithUTF8String:image->file.c_str()];
         _physicalScale = image->scale;
@@ -42,7 +42,11 @@
 }
 
 - (CGPoint)center {
-    return [self.attachedBody.world CGPointFromb2Vec2:_b2_center];
+    return [self.associatedBody.world CGPointFromb2Vec2:_b2_center];
+}
+
+- (B2DBody *)associatedBody {
+    return [B2DBody bodyFromB2Body:self.attachedBody];
 }
 
 
@@ -54,7 +58,7 @@
         // these will not change during simulation so we can set them now
         // this scale is the height of the image in WORLD units
         // scale / PTM_RATIO / sprite.contentSize.height
-        _image.scale = self.physicalScale / self.attachedBody.world.ptmRatio / _image.contentSize.height;
+        _image.scale = self.physicalScale / self.associatedBody.world.ptmRatio / _image.contentSize.height;
         _image.flipX = self.flipX;
         _image.color = self.color;
         _image.opacity = self.opacity;

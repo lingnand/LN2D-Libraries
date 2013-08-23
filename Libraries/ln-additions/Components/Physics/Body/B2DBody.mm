@@ -112,11 +112,11 @@
 
 // velocity in the CC sense
 - (CGPoint)velocity {
-    return [(B2DWorld *)self.world CGPointFromb2Vec2:self.linearVelocity];
+    return [self.world CGPointFromb2Vec2:self.linearVelocity];
 }
 
 - (void)setVelocity:(CGPoint)velocity {
-    self.linearVelocity = [(B2DWorld *) self.world b2Vec2FromCGPoint:velocity];
+    self.linearVelocity = [self.world b2Vec2FromCGPoint:velocity];
 }
 
 - (b2Vec2)linearVelocity {
@@ -238,6 +238,7 @@
             self.body = [(B2DWorld *) nw createBody:self.currentBodyDef];
         else
             self.body = nil;
+        // should we handle the fixture joints etc..?
     }
 }
 

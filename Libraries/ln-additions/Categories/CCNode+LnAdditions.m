@@ -14,15 +14,15 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 static char const *const nodeDataKey = "CCNodeExtension.UserData";
 
 @implementation CCNode (LnAdditions)
-@dynamic componentKit;
+@dynamic componentManager;
 @dynamic mask;
 @dynamic body;
 
 #pragma mark - More initializer
 
-+ (id)nodeWithComponents:(CCComponentKit *)componentKit {
++ (id)nodeWithComponentManager:(CCComponentManager *)manager {
     CCNode *n = [self new];
-    n.componentKit = componentKit;
+    n.componentManager = manager;
     return n;
 }
 
@@ -132,30 +132,30 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 
 #pragma mark - Components
 
-- (CCComponentKit *)componentKit {
-    CCComponentKit *components = objc_getAssociatedObject(self, nodeComponentKitKey);
+- (CCComponentManager *)componentManager {
+    CCComponentManager *components = objc_getAssociatedObject(self, nodeComponentKitKey);
     // lazy instantiation
     if (!components) {
-        components = [[CCComponentKit alloc] init];
-        self.componentKit = components;
+        components = [[CCComponentManager alloc] init];
+        self.componentManager = components;
     }
     return components;
 }
 
-- (void)setComponentKit:(CCComponentKit *)componentKit {
-    componentKit.delegate = self;
-    objc_setAssociatedObject(self, nodeComponentKitKey, componentKit, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setComponentManager:(CCComponentManager *)componentManager {
+    componentManager.delegate = self;
+    objc_setAssociatedObject(self, nodeComponentKitKey, componentManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    return self.componentKit;
+    return self.componentManager;
 }
 
 #pragma mark - Body
 
 // default returns a normal body
 - (id)body {
-    Body *m = [self.componentKit componentForClass:[Body class]];
+    Body *m = [self.componentManager componentForClass:[Body class]];
     if (!m) {
         m = [SimpleBody body];
         self.body = m;
@@ -164,7 +164,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setBody:(Body *)body {
-    [self.componentKit setComponent:body forClassLock:[Body class]];
+    [self.componentManager setComponent:body forClassLock:[Body class]];
 }
 
 // velocity is the one thing that should be supported across bodies
@@ -181,7 +181,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 // defualt returns a rectMask
 - (Mask *)mask {
     // lazily instantiate
-    Mask *m = [self.componentKit componentForClass:[Mask class]];
+    Mask *m = [self.componentManager componentForClass:[Mask class]];
     if (!m) {
         m = [RectMask mask];
         self.mask = m;
@@ -190,7 +190,7 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 }
 
 - (void)setMask:(Mask *)mask {
-    [self.componentKit setComponent:mask forClassLock:[Mask class]];
+    [self.componentManager setComponent:mask forClassLock:[Mask class]];
 }
 
 /** converting a rect in the current nodespace to the world nodespace */

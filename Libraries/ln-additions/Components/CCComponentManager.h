@@ -10,16 +10,26 @@
 #import "NSObject+LnAdditions.h"
 
 
-@interface CCComponentKit : NSObject <NSCopying>
+/**
+* The main design of componentManager is modeled on NSSet.
+* You can add arbitrary components and query via complex predicates.
+* To facilitate the access though, it also comes with a dictionary
+* that you can reference components via keys easily
+*
+* So in total the manager is a hybrid of dictionary and set.
+*/
+@interface CCComponentManager : NSObject <NSCopying>
 
 @property (nonatomic, weak) CCNode *delegate;
 @property (nonatomic) BOOL enabled;
 @property (nonatomic, readonly) BOOL activated;
 
 /** Initializers */
-+ (id)kitWithComponent:(CCComponent *)comp;
++ (id)manager;
 
-+ (id)kitWithComponents:(NSArray *)comps;
++ (id)managerWithComponent:(CCComponent *)comp;
+
++ (id)managerWithComponents:(NSSet *)comps;
 
 /** Key interface */
 /**
@@ -69,6 +79,9 @@
 * be that the component is already in the kit)
 * NO if the component cannot be added into the kit (there's predicate locks that prevent
 * it from being added)
+*
+* the component added will be anonymous -- it won't be referencable through keys
+* BUT it might be able to get referenced through predicates -- (class, selector, so on)
 */
 - (BOOL)addComponent:(CCComponent *)component;
 
@@ -76,7 +89,7 @@
 * This will try to add all the components and return the ANDed result of
 * the individual results
 */
-- (BOOL)addComponents:(NSArray *)comps;
+- (BOOL)addComponents:(NSSet *)comps;
 
 - (void)removeComponent:(CCComponent *)comp;
 

@@ -7,12 +7,12 @@
 
 #import <Foundation/Foundation.h>
 
-@class CCComponentKit;
+@class CCComponentManager;
 
 @interface CCComponent :NSObject <NSCopying>
 
 @property (nonatomic, readonly) CCNode *host;
-@property (nonatomic, weak) CCComponentKit *delegate;
+@property (nonatomic, weak) CCComponentManager *delegate;
 @property (nonatomic) BOOL enabled;
 /** the difference between enabled and activated:
 * enabled is a toggle that user can control; whereas

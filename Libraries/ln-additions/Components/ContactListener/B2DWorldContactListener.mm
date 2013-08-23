@@ -64,8 +64,8 @@ void B2DWorldContactListener::triggerHandlers(b2Contact *contact, SEL selector) 
     b2Fixture *bFixture = contact->GetFixtureB();
     B2DBody *b = (__bridge B2DBody *) bFixture->GetBody()->GetUserData();
     // find the collisionhandler and trigger it
-    B2DContactListener *aHandler = [a.host.componentKit componentForClass:[B2DContactListener class]];
-    B2DContactListener *bHandler = [b.host.componentKit componentForClass:[B2DContactListener class]];
+    B2DContactListener *aHandler = [a.host.componentManager componentForClass:[B2DContactListener class]];
+    B2DContactListener *bHandler = [b.host.componentManager componentForClass:[B2DContactListener class]];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
     [aHandler performSelector:selector withObject:[B2DContact contactWithBody:a otherBody:b ownFixture:aFixture otherFixture:bFixture b2Contact:contact]];

@@ -6,7 +6,7 @@
 
 
 #import <Foundation/Foundation.h>
-#import "CCComponentKit.h"
+#import "CCComponentManager.h"
 #import "Mask.h"
 #import "SimpleBody.h"
 #import "CCNode.h"
@@ -19,6 +19,8 @@
 
 
 @interface CCNode (LnAdditions) <Masked>
+
++ (id)nodeWithComponentManager:(CCComponentManager *)manager;
 
 /** @group Queries */
 - (BOOL)fullyOutsideScreen;
@@ -71,7 +73,7 @@
 - (id)nodeWithAnchorPoint:(CGPoint)anchor;
 
 /** @group Components */
-@property (nonatomic, strong) CCComponentKit *componentKit;
+@property (nonatomic, strong) CCComponentManager *componentManager;
 
 /** @group Mask */
 @property(nonatomic, strong) Mask *mask;

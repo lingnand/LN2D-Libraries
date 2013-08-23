@@ -114,7 +114,7 @@
 		AED9EFB31792254500DD92CF /* Body.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF4F1792254400DD92CF /* Body.m */; };
 		AED9EFB41792254500DD92CF /* SimpleBody.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF511792254400DD92CF /* SimpleBody.m */; };
 		AED9EFB51792254500DD92CF /* CCComponent.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF531792254500DD92CF /* CCComponent.m */; };
-		AED9EFB61792254500DD92CF /* CCComponentKit.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF551792254500DD92CF /* CCComponentKit.m */; };
+		AED9EFB61792254500DD92CF /* CCComponentManager.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF551792254500DD92CF /* CCComponentManager.m */; };
 		AED9EFB71792254500DD92CF /* ContactListener.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF581792254500DD92CF /* ContactListener.m */; };
 		AED9EFB81792254500DD92CF /* SimpleContactListener.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF5A1792254500DD92CF /* SimpleContactListener.m */; };
 		AED9EFB91792254500DD92CF /* Animator.m in Sources */ = {isa = PBXBuildFile; fileRef = AED9EF5D1792254500DD92CF /* Animator.m */; };
@@ -319,6 +319,7 @@
 
 /* Begin PBXFileReference section */
 		A8C6D0497CE5CC400355E763 /* B2DRUBEImage.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DRUBEImage.mm; sourceTree = "<group>"; };
+		A8C6D109B687737260B0E30F /* B2DWorld_protected.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DWorld_protected.h; sourceTree = "<group>"; };
 		A8C6D1BCD54B88A09582289F /* B2DRUBECache.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DRUBECache.h; sourceTree = "<group>"; };
 		A8C6D25B114F457476DC2306 /* NSMutableSet+LnAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSMutableSet+LnAdditions.m"; sourceTree = "<group>"; };
 		A8C6D26A320F470AB9401734 /* NSPredicate+LnAdditions.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = "NSPredicate+LnAdditions.m"; sourceTree = "<group>"; };
@@ -559,8 +560,8 @@
 		AED9EF511792254400DD92CF /* SimpleBody.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SimpleBody.m; sourceTree = "<group>"; };
 		AED9EF521792254500DD92CF /* CCComponent.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCComponent.h; sourceTree = "<group>"; };
 		AED9EF531792254500DD92CF /* CCComponent.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCComponent.m; sourceTree = "<group>"; };
-		AED9EF541792254500DD92CF /* CCComponentKit.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCComponentKit.h; sourceTree = "<group>"; };
-		AED9EF551792254500DD92CF /* CCComponentKit.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCComponentKit.m; sourceTree = "<group>"; };
+		AED9EF541792254500DD92CF /* CCComponentManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CCComponentManager.h; sourceTree = "<group>"; };
+		AED9EF551792254500DD92CF /* CCComponentManager.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CCComponentManager.m; sourceTree = "<group>"; };
 		AED9EF571792254500DD92CF /* ContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ContactListener.h; sourceTree = "<group>"; };
 		AED9EF581792254500DD92CF /* ContactListener.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ContactListener.m; sourceTree = "<group>"; };
 		AED9EF591792254500DD92CF /* SimpleContactListener.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SimpleContactListener.h; sourceTree = "<group>"; };
@@ -713,6 +714,7 @@
 				A8C6D57DE056246E3B581913 /* SimpleWorld.m */,
 				A8C6DEA56ECFACF82400F64F /* World.h */,
 				A8C6DC21EACCF5668AEDA623 /* World.m */,
+				A8C6D109B687737260B0E30F /* B2DWorld_protected.h */,
 			);
 			path = World;
 			sourceTree = "<group>";
@@ -1239,8 +1241,8 @@
 			children = (
 				AED9EF521792254500DD92CF /* CCComponent.h */,
 				AED9EF531792254500DD92CF /* CCComponent.m */,
-				AED9EF541792254500DD92CF /* CCComponentKit.h */,
-				AED9EF551792254500DD92CF /* CCComponentKit.m */,
+				AED9EF541792254500DD92CF /* CCComponentManager.h */,
+				AED9EF551792254500DD92CF /* CCComponentManager.m */,
 				AED9EF561792254500DD92CF /* ContactListener */,
 				AED9EF5B1792254500DD92CF /* Display */,
 				AED9EF601792254500DD92CF /* Physics */,
@@ -1840,7 +1842,7 @@
 				AED9EFB31792254500DD92CF /* Body.m in Sources */,
 				AED9EFB41792254500DD92CF /* SimpleBody.m in Sources */,
 				AED9EFB51792254500DD92CF /* CCComponent.m in Sources */,
-				AED9EFB61792254500DD92CF /* CCComponentKit.m in Sources */,
+				AED9EFB61792254500DD92CF /* CCComponentManager.m in Sources */,
 				AED9EFB71792254500DD92CF /* ContactListener.m in Sources */,
 				AED9EFB81792254500DD92CF /* SimpleContactListener.m in Sources */,
 				AED9EFB91792254500DD92CF /* Animator.m in Sources */,

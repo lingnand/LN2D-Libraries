@@ -33,10 +33,11 @@
 /** imageName - image array pairs */
 @property (nonatomic, readonly) NSDictionary *images;
 
++ (id)cacheForNewWorldWithFileName:(NSString *)filename;
 
-+ (id)RUBECacheWithFileName:(NSString *)filename;
++ (id)cacheForWorld:(B2DWorld *)world WithFileName:(NSString *)filename;
 
-- (id)initWithFileName:(NSString *)filename;
+- (id)initWithWorld:(B2DWorld *)world fileName:(NSString *)filename;
 
 - (id)objectForKeyedSubscript:(id)key;
 

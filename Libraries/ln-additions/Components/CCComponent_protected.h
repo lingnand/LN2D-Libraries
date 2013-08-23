@@ -1,5 +1,5 @@
 #import "CCComponent.h"
 
 @interface CCComponent()
-- (void)setDelegateDirect:(CCComponentKit *)delegate;
+- (void)setDelegateDirect:(CCComponentManager *)delegate;
 @end

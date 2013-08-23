@@ -7,11 +7,11 @@
 
 #import "CCComponent.h"
 #import "NSObject+REObserver.h"
-#import "CCComponentKit.h"
+#import "CCComponentManager.h"
 
 
 @implementation CCComponent {
-    CCComponentKit *_oldDelegate;
+    CCComponentManager *_oldDelegate;
 }
 
 - (id)init {
@@ -83,7 +83,7 @@
     return copy;
 }
 
-- (void)setDelegate:(CCComponentKit *)delegate {
+- (void)setDelegate:(CCComponentManager *)delegate {
     if (delegate != _delegate) {
         // we just route this to the componentKit
         [_delegate removeComponent:self];
@@ -91,10 +91,10 @@
     }
 }
 
-- (void)setDelegateDirect:(CCComponentKit *)delegate {
+- (void)setDelegateDirect:(CCComponentManager *)delegate {
     if (delegate != _delegate) {
         if (_delegate) {
-            CCComponentKit *od = _oldDelegate = _delegate;
+            CCComponentManager *od = _oldDelegate = _delegate;
             [self willChangeValueForKey:@"delegate"];
             _delegate = nil;
             [self didChangeValueForKey:@"delegate"];
@@ -148,6 +148,7 @@
 
 - (void)dealloc {
     self.delegate = nil;
+    [self removeObserver:self forKeyPath:@"activated"];
 }
 
 @end

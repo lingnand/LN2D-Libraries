@@ -5,15 +5,8 @@
     @author lingnan
 */
 
-#include "B2DWorld.h"
-#import "B2DBody.h"
-#import "B2DWorldContactListener.h"
-
-
-@interface B2DWorld()
-@property (nonatomic, assign) b2World *world;
-@property (nonatomic, assign) B2DWorldContactListener *worldContactListener;
-@end
+#import "B2DWorld_protected.h"
+#import "B2DRUBECache.h"
 
 @implementation B2DWorld
 
@@ -164,6 +157,10 @@
         // get the object
         callback([B2DBody bodyFromB2Body:b]);
     }
+}
+
+- (B2DRUBECache *)cacheForThisWorldWithFileName:(NSString *)name {
+    return [B2DRUBECache cacheForWorld:self WithFileName:name];
 }
 
 

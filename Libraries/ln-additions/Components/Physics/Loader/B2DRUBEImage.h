@@ -14,7 +14,7 @@
 /** A wrapper around b2dJsonImage */
 /**
 * NOTICE:
-* After adding this component a sprite would be initiated and added
+* After adding this component a sprite woould be initiated and added
 * to the delegate to simulate the effects as in RUBE
 *
 */
@@ -31,7 +31,14 @@
 @property (nonatomic, readonly) CGPoint center;
 @property (nonatomic, readonly) int zOrder;
 @property (nonatomic, readonly, strong) CCSprite *image;
-@property (nonatomic, readonly, strong) B2DBody *attachedBody;
+@property (nonatomic, readonly, assign) b2Body *attachedBody;
+/** The attached body for this image. NOTE: if the body is
+ *  not created before it won't get created automatically (...OK)
+ *  Think about this: body is at a higher hierarchy than an image,
+ *  and therefore if there's a RUBEImage then there should already be
+ *  a B2DBody for it.
+ * */
+@property (nonatomic, readonly) B2DBody *associatedBody;
 
 + (id)imageWithJsonImage:(b2dJsonImage *)image;
 @end

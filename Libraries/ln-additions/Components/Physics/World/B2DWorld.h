@@ -8,9 +8,11 @@
 
 
 #import "World.h"
+#import "B2DBody.h"
 #include "b2World.h"
 
-@class B2DBody;
+@class B2DRUBECache;
+
 
 typedef void(^B2DBodyCallback)(B2DBody *);
 
@@ -40,5 +42,7 @@ typedef void(^B2DBodyCallback)(B2DBody *);
 - (CGPoint)CGPointFromb2Vec2:(b2Vec2)p;
 
 - (void)iterateBodiesWithBlock:(B2DBodyCallback)callback;
+
+- (B2DRUBECache *)cacheForThisWorldWithFileName:(NSString *)name;
 @end
 
