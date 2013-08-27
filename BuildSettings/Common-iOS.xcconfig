@@ -7,7 +7,7 @@ VALID_ARCHS[sdk=iphonesimulator*] = i386
 
 SDKROOT = iphoneos
 TARGETED_DEVICE_FAMILY = 1,2
-IPHONEOS_DEPLOYMENT_TARGET = 4.3
+IPHONEOS_DEPLOYMENT_TARGET = 6.1
 //GCC_THUMB_SUPPORT[arch=armv6] = NO
 
-GCC_PREFIX_HEADER = prefix/Prefix-iOS.pch
+//GCC_PREFIX_HEADER = prefix/Prefix-iOS.pch

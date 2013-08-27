@@ -29,7 +29,7 @@
 
 + (id)managerWithComponent:(CCComponent *)comp;
 
-+ (id)managerWithComponents:(NSSet *)comps;
++ (id)managerWithComponents:(id <NSFastEnumeration>)comps;
 
 /** Key interface */
 /**
@@ -89,7 +89,7 @@
 * This will try to add all the components and return the ANDed result of
 * the individual results
 */
-- (BOOL)addComponents:(NSSet *)comps;
+- (BOOL)addComponents:(id <NSFastEnumeration>)comps;
 
 - (void)removeComponent:(CCComponent *)comp;
 
@@ -138,5 +138,4 @@
 * new component might very likely match the other locks for the old component
 */
 - (BOOL)setComponent:(CCComponent *)comp forPredicateLock:(NSPredicate *)lock;
-
 @end

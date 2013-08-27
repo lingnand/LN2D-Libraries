@@ -6,13 +6,11 @@
 */
 
 #import "CCComponent.h"
-#import "B2DBody.h"
-#import "B2DWorld.h"
-
-@interface B2DBody()
-@property (nonatomic, assign) b2BodyDef *bodyDef;
-@property (nonatomic, assign) b2Body *body;
-@end
+#import "B2DBody_protected.h"
+#import "B2DWorld_protected.h"
+#import "b2Fixture.h"
+#import "B2DFixture_protected.h"
+#import "CCNode+LnAdditions.h"
 
 @implementation B2DBody {
     b2BodyDef *_bodyDef;
@@ -32,23 +30,45 @@
 
 - (id)initWithB2Body:(b2Body *)body {
     NSAssert(body, @"Cannot initialize a B2DBody with a NULL b2Body pointer");
-    if (!(self = [self.class bodyFromB2Body:body]) && (self = [super init])) {
+    id b = [self.class bodyFromB2Body:body];
+    if (b) {
+        self = b;
+    } else if (self = [super init]) {
         self.body = body;
     }
     return self;
 }
 
+- (void)bindB2Body:(b2Body *)body toUserData:(void *)data {
+    body->SetUserData(data);
+}
+
+- (void)enumerateFixturesInB2Body:(b2Body *)body withBlock:(void (^)(b2Fixture *fixture))block {
+    b2Fixture *fix = body->GetFixtureList();
+    while (fix) {
+        block(fix);
+        fix = fix->GetNext();
+    }
+}
+
 - (void)setBody:(b2Body *)body {
     if (_body != body) {
         if (_body) {
-            _body->SetUserData(nil);
+            [self bindB2Body:_body toUserData:nil];
+            // should we loop through all the fixture defs and set the userdata to nil?
+
             // should we destroy the body?
 //            [(B2DWorld *) self.world destroyBody:_body];
             // should we delete the body?
             // delete _body;
             // save the bodyDef if the body is going to be niled.
-            if (!body)
+            if (!body) {
                 self.bodyDef = self.currentBodyDef;
+            }
+            // we need to nil all the fixtures
+            for (B2DFixture *fix in self.fixtures) {
+                fix.fix = nil;
+            }
         }
         _body = body;
         if (body) {
@@ -59,13 +79,28 @@
                 NSAssert([b isKindOfClass:[B2DBody class]], @"the body is associated with some unknown class");
                 ((B2DBody *)b).body = nil;
             }
-            body->SetUserData((__bridge void *) self);
+            [self bindB2Body:body toUserData:(__bridge void *)self];
             self.bodyDef = nil;
+
+            if (body->GetFixtureList()) {
+                // if the body has fixtures; then that will override
+                // the existing fixtures
+                [self.fixtures removeAllObjects];
+                // convert all the fixtures in the body into cached fixtures..
+                [self enumerateFixturesInB2Body:body withBlock:^(b2Fixture *fixture) {
+                    // add the fixture into self
+                    // these steps will automatically wire up with top structure
+                    [B2DFixture fixtureWithB2Fixture:fixture];
+                }];
+            } else {
+                // add all the current fixtures
+                for (B2DFixture *fix in self.fixtures)
+                    fix.fix = self.body->CreateFixture(fix.currentFixtureDef);
+            }
         }
-        // handle the syncing between body and world
         if (!self.bodyWorldInSync) {
+            // default to instantiate a B2DWorld upper level
             if (body)
-                // set the world
                 self.world = [B2DWorld worldWithB2World:body->GetWorld()];
             else
                 self.world = nil;
@@ -87,15 +122,29 @@
     }
 }
 
-- (b2Vec2)position {
+- (void)setPosition:(CGPoint)position {
+    // first get the position relative to the world
+    // set the relative position in the physical world
+    self.worldPosition = CGPointApplyAffineTransform(position, [self hostParentToWorldTransform]);
+}
+
+- (CGPoint)worldPosition {
+    return [self.world CGPointFromb2Vec2:self.realPhysicalPosition];
+}
+
+- (void)setWorldPosition:(CGPoint)worldPosition {
+    self.realPhysicalPosition = [self.world b2Vec2FromCGPoint:worldPosition];
+}
+
+- (b2Vec2)realPhysicalPosition {
     return self.body ? _body->GetPosition() : self.bodyDef->position;
 }
 
-- (void)setPosition:(b2Vec2)position {
+- (void)setRealPhysicalPosition:(b2Vec2)realPhysicalPosition {
     if (self.body) {
-        self.body->SetTransform(position, self.angle);
+        self.body->SetTransform(realPhysicalPosition, self.angle);
     } else {
-        self.bodyDef->position = position;
+        self.bodyDef->position = realPhysicalPosition;
     }
 }
 
@@ -105,17 +154,25 @@
 
 - (void)setAngle:(float)angle {
     if (self.body)
-        self.body->SetTransform(self.position, angle);
+        self.body->SetTransform(self.realPhysicalPosition, angle);
     else
         self.bodyDef->angle = angle;
 }
 
-// velocity in the CC sense
 - (CGPoint)velocity {
-    return [self.world CGPointFromb2Vec2:self.linearVelocity];
+    return CGPointApplyAffineTransform(self.worldVelocity, [self worldToHostParentTransform]);
 }
 
 - (void)setVelocity:(CGPoint)velocity {
+    self.worldVelocity = CGPointApplyAffineTransform(velocity, [self hostParentToWorldTransform]);
+}
+
+// velocity in the CC sense
+- (CGPoint)worldVelocity {
+    return [self.world CGPointFromb2Vec2:self.linearVelocity];
+}
+
+- (void)setWorldVelocity:(CGPoint)velocity {
     self.linearVelocity = [self.world b2Vec2FromCGPoint:velocity];
 }
 
@@ -229,19 +286,6 @@
         self.bodyDef->gravityScale = gravityScale;
 }
 
-- (void)worldChangedFrom:(World *)ow to:(World *)nw {
-    [super worldChangedFrom:ow to:nw];
-    // need to wire the internal body
-    if (!self.bodyWorldInSync) {
-        if (nw)
-            // get the def to add to the new world
-            self.body = [(B2DWorld *) nw createBody:self.currentBodyDef];
-        else
-            self.body = nil;
-        // should we handle the fixture joints etc..?
-    }
-}
-
 - (BOOL)bodyWorldInSync {
    return (!self.body && !self.world) || ([B2DWorld worldFromB2World:self.body->GetWorld()] == self.world);
 }
@@ -253,7 +297,7 @@
 
 - (b2BodyDef *)currentBodyDef {
     b2BodyDef *def;
-    if (_body) {
+    if (self.body) {
         NSAssert(!self.bodyDef, @"Inconsistent states. BodyDef should have been deleted if body is present");
         def = new b2BodyDef();
         def->position = _body->GetPosition();
@@ -274,10 +318,62 @@
     return def;
 }
 
-#pragma mark - Operations
+/** This will allocate a new def on the heap; remember to memory manage it */
+- (b2FixtureDef *)fixtureDefFromFixture:(const b2Fixture *)fixture {
+    b2FixtureDef *def = new b2FixtureDef;
+    // get the attributes one by one
+    def->density = fixture->GetDensity();
+    def->shape = fixture->GetShape();
+    def->filter = fixture->GetFilterData();
+    def->friction = fixture->GetFriction();
+    def->isSensor = fixture->IsSensor();
+    def->restitution = fixture->GetRestitution();
+    def->userData = fixture->GetUserData();
+    return def;
+}
 
--(b2Fixture *) addFixture:(b2FixtureDef *)fixtureDef {
-    return self.body ? self.body->CreateFixture(fixtureDef) : nil;
+#pragma mark - Fixture Operations
+
+-(void) addFixture:(B2DFixture *)fixture {
+    // check if the fixture is already part of the body.. ?
+    if (fixture.body != self) {
+        if (fixture.body)
+            [fixture.body removeFixture:fixture];
+        //// setting the delegate
+        [fixture setBodyDirect:self];
+        //// setting the fix
+        // sync the fixture and body definition within
+        if (self.body) {
+            if (!fixture.fix || self.body != fixture.fix->GetBody()) {
+                fixture.fix = self.body->CreateFixture(fixture.currentFixtureDef);
+            }
+        } else {
+            fixture.fix = nil;
+        }
+        // save this fixture in a set
+        [self.fixtures addObject:fixture];
+    }
+}
+
+-(void) removeFixture:(B2DFixture *)fixture {
+    if (fixture.body == self) {
+        // remove the fixture from the body
+        if (self.body)
+            self.body->DestroyFixture(fixture.fix);
+        //// setting the delegate
+        [fixture setBodyDirect:nil];
+        //// setting fix
+        // we also need to set the fixture.fix to nil
+        // as an fix instance without a body would be meaningless
+        fixture.fix = nil;
+        [self.fixtures removeObject:fixture];
+    }
+}
+
+- (NSMutableSet *)fixtures {
+    if (!_fixtures)
+        _fixtures = [NSMutableSet set];
+    return _fixtures;
 }
 
 #pragma mark - Update
@@ -295,66 +391,55 @@
 - (void)activate {
     [super activate];
     // we didn't add the Initial option because the b2body position has a higher priority
-    [self.host addObserver:self
-                forKeyPath:@"position"
-                   options:NSKeyValueObservingOptionNew
-                   context:nil];
+//    [self.host addObserver:self
+//                forKeyPath:@"position"
+//                   options:nil
+//                   context:nil];
     [self scheduleUpdate];
 }
 
 - (void)deactivate {
     [super deactivate];
-    [self.host removeObserver:self forKeyPath:@"position"];
+//    [self.host removeObserver:self forKeyPath:@"position"];
     [self unscheduleUpdate];
 }
 
 #pragma mark - Unit conversion (depending on the world)
 
-- (void)observeValueForKeyPath:(NSString *)keyPath
-                      ofObject:(id)object
-                        change:(NSDictionary *)change
-                       context:(void *)context {
-    if ([keyPath isEqualToString:@"position"] && self.body) {
-        // first get the position relative to the world
-        // set the relative position in the physical world
-        self.body->SetTransform([(B2DWorld *)self.world b2Vec2FromCGPoint:self.positionInWorld], self.body->GetAngle());
-    } else {
-        [super observeValueForKeyPath:keyPath
-                             ofObject:object
-                               change:change
-                              context:context];
-    }
-}
-
-- (CGPoint)positionInWorld {
-    // transform the local coordinates into the world coordinates
-    return CGPointApplyAffineTransform(self.host.position, self.delegateToWorldTransform);
-}
-
-/** return the transform from the local coordinates into the world coordinates
- * if there's no world indicated (or the world is not attached in the correct hierarchy
- * , the outermost world is chosen */
-- (CGAffineTransform)delegateToWorldTransform {
-    CGAffineTransform t = [self.host nodeToParentTransform];
-
-    for (CCNode *p = self.host.parent; p && p != self.world.host; p = p.parent)
-        t = CGAffineTransformConcat(t, [p nodeToParentTransform]);
-
-    return t;
-}
-
-- (CGAffineTransform)worldToDelegateTransform {
-    return CGAffineTransformInvert([self delegateToWorldTransform]);
-}
+//- (void)observeValueForKeyPath:(NSString *)keyPath
+//                      ofObject:(id)object
+//                        change:(NSDictionary *)change
+//                       context:(void *)context {
+//    if ([keyPath isEqualToString:@"position"]) {
+//        self.position = self.host.position;
+//    } else {
+//        [super observeValueForKeyPath:keyPath
+//                             ofObject:object
+//                               change:change
+//                              context:context];
+//    }
+//}
 
 - (void)update:(ccTime)step {
-    if (self.body) {
-        CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
-        self.host.position = CGPointApplyAffineTransform(ccpos, [self worldToDelegateTransform]);
-        // this might not consider the relative rotation of layered relationships
-        self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
-    }
+    CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
+    self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self worldToHostParentTransform]);
+    // this might not consider the relative rotation of layered relationships
+    self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    B2DBody *copy = (B2DBody *) [super copyWithZone:zone];
+
+    if (copy != nil) {
+        copy->_bodyDef = self.currentBodyDef;
+        copy->_fixtures = [[NSMutableSet alloc] initWithSet:self.fixtures copyItems:YES];
+    }
+
+    return copy;
+}
+
+- (NSString *)description {
+    return [[super description] stringByAppendingFormat:@"; b2body pointer = %p", self.body];
+}
 
 @end

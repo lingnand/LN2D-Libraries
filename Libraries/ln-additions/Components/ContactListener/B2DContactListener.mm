@@ -85,7 +85,7 @@
 
 - (void)setCallbackClosure:(B2DContactCallbackClosure *)closure
               forPredicate:(NSPredicate *)predicate {
-    self.contactCallBacks[predicate] = closure;
+    self.writableContactCallBacks[predicate] = closure;
 }
 
 - (void)setObject:(B2DContactCallbackClosure *)closure forKeyedSubscript:(NSPredicate *)predicate {
@@ -97,7 +97,7 @@
 }
 
 - (void)addEntriesFromDictionary:(NSDictionary *)dictionary {
-    [self.contactCallBacks addEntriesFromDictionary:dictionary];
+    [self.writableContactCallBacks addEntriesFromDictionary:dictionary];
 }
 
 - (B2DContactCallbackClosure *)objectForKeyedSubscript:(NSPredicate *)predicate {
@@ -108,7 +108,7 @@
     return self.contactCallBacks[predicate];
 }
 
-- (NSMutableDictionary *)contactCallBacks {
+- (NSMutableDictionary *)writableContactCallBacks {
     if (!_contactCallBacks) {
         _contactCallBacks = [NSMutableDictionary dictionary];
     }

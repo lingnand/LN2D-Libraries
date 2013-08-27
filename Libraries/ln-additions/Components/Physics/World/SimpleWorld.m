@@ -6,16 +6,20 @@
 */
 
 #import "SimpleWorld.h"
+#import "CCNode+LnAdditions.h"
 
 
 @implementation SimpleWorld {
 
 }
 
-+(id)worldWithReferenceVelocity:(CGPoint)vref {
-    SimpleWorld *engine = [self world];
-    engine.referenceVelocity = vref;
-    return engine;
+/** return the velocity from the host of the world */
+- (CGPoint)referenceVelocity {
+    return self.host.body.worldVelocity;
+}
+
+- (void)setReferenceVelocity:(CGPoint)referenceVelocity {
+    self.host.body.velocity = referenceVelocity;
 }
 
 @end

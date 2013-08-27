@@ -7,14 +7,12 @@
 
 
 
-#import "World.h"
-#import "B2DBody.h"
 #include "b2World.h"
+#import "World.h"
 
 @class B2DRUBECache;
+@class B2DBody;
 
-
-typedef void(^B2DBodyCallback)(B2DBody *);
 
 @interface B2DWorld : World
 
@@ -28,12 +26,7 @@ typedef void(^B2DBodyCallback)(B2DBody *);
 
 + (id)worldWithB2World:(b2World *)world;
 
-
 + (id)worldFromB2World:(b2World *)world;
-
-- (b2Body *)createBody:(b2BodyDef *)def;
-
-- (void)destroyBody:(b2Body *)body;
 
 - (b2Vec2)b2Vec2FromCGPoint:(CGPoint)p;
 
@@ -41,8 +34,11 @@ typedef void(^B2DBodyCallback)(B2DBody *);
 
 - (CGPoint)CGPointFromb2Vec2:(b2Vec2)p;
 
-- (void)iterateBodiesWithBlock:(B2DBodyCallback)callback;
+- (void)addBody:(B2DBody *)body;
 
-- (B2DRUBECache *)cacheForThisWorldWithFileName:(NSString *)name;
+- (void)removeBody:(B2DBody *)body;
+
+- (void)addBodyForB2Body:(b2Body *)b;
+
 @end
 

@@ -12,4 +12,5 @@
 
 +(id)arrayWithRangeStartNumber:(int)start endNumber:(int)end;
 
+- (NSArray *)flattened;
 @end

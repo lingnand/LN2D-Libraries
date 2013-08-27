@@ -6,19 +6,34 @@
 */
 
 #import "NSPredicate+LnAdditions.h"
+#import "NSCache+LnAdditions.h"
 
 
 @implementation NSPredicate (LnAdditions)
 
-/** All filters are:
- * - comparable
+/** All filters need to be:
+ * - comparable (multiple calls return instances on which isEqual: returns true)
+ * - provides fast access (average cost for multiple calls should be as low as
+ * possible)
  * This ensures that the NSPredicate instance can be used as a key
  * */
  + (id)predicateWithKindOfClassFilter:(Class)aClass {
-    return [NSPredicate predicateWithFormat:@"SELF isKindOfClass: %@", aClass];
+    return [[self predicateCacheTable] objectForKey:aClass valueGenerator:^id(id key) {
+        return [NSPredicate predicateWithFormat:@"SELF isKindOfClass: %@", aClass];
+    }];
 }
 
 + (id)predicateWithRespondsToSelectorFilter:(SEL)selector {
-    return [NSPredicate predicateWithFormat:@"SELF respondsToSelectorName: %@", NSStringFromSelector(selector)];
+    return [[self predicateCacheTable] objectForKey:[NSValue valueWithPointer:selector] valueGenerator:^id(id key) {
+        return [NSPredicate predicateWithFormat:@"SELF respondsToSelectorName: %@", NSStringFromSelector(selector)];
+    }];
+}
+
++ (NSCache *)predicateCacheTable {
+    static NSCache *predicateCacheTable = nil;
+    if (!predicateCacheTable) {
+        predicateCacheTable = [NSCache cache];
+    }
+    return predicateCacheTable;
 }
 @end

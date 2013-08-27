@@ -8,24 +8,54 @@
 #import <Foundation/Foundation.h>
 
 @class World;
+@class ContactListener;
 
 
-@interface Body : CCComponent
-/** On-screen velocity */
-@property(nonatomic) CGPoint velocity;
 /**
-* The world object is read as a readonly property because it is strictly
-* defined as *THE CLOSEST ASSIGNABLE WORLD* that fits into slot. There
-* in fact isn't any sort of manual tinkering required by the user (the
-* user shouldn't as well)
+* A virtual class that defines a common interface to the body component
+* A body is like an actuator of the host, controls the position, velocity, etc.
+* of the host
+*/
+@interface Body : CCComponent {
+    __weak World *_world;
+}
+/** These properties need to be overriden in the immediate subclass to
+ * provide the correct implementation! */
+
+ /** relative to the immediate parent */
+@property(nonatomic) CGPoint position;
+@property(nonatomic) CGPoint velocity;
+/** relative to the world */
+@property(nonatomic) CGPoint worldPosition;
+@property(nonatomic) CGPoint worldVelocity;
+/** relative to the whole application */
+@property(nonatomic) CGPoint absolutePosition;
+@property(nonatomic) CGPoint absoluteVelocity;
+
+/**
+* world is an object that represents the outermost container to the
+* bodies. The positioning etc. might closely relate to which node the
+* world component is attached to
 */
 @property(nonatomic, weak) World *world;
 /** gives back the class of the world attribute for this world obj*/
 @property(nonatomic, readonly) Class worldClass;
+///** a dedicated contact listener that handles the collision on this body
+//* this property is implemented on the basis of lazy initialization so
+//* you can be safe to call methods directly on it */
+//@property(nonatomic) ContactListener *listener;
 
 + (id)body;
 
-- (void)worldChangedFrom:(World *)ow to:(World *)nw;
+- (CGAffineTransform)hostParentToWorldTransform;
 
-- (void)setClosestWorld:(World *)world;
+- (CGAffineTransform)worldToHostParentTransform;
+
+- (CGAffineTransform)hostParentToAbsoluteWorldTransform;
+
+- (CGAffineTransform)absoluteWorldToHostParentTransform;
+
+- (void)setClosestWorld;
+
+- (id)copyWithZone:(NSZone *)zone;
 @end

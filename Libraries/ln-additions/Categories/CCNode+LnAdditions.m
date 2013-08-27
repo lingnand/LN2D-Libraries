@@ -7,11 +7,11 @@
 
 #import "CCNode+LnAdditions.h"
 #import "RectMask.h"
+#import "JRSwizzle.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
 static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit";
-static char const *const nodeDataKey = "CCNodeExtension.UserData";
 
 @implementation CCNode (LnAdditions)
 @dynamic componentManager;
@@ -107,6 +107,11 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     self.anchorPoint = an;
 }
 
+- (void)addChildren:(id<NSFastEnumeration>)children {
+    for (CCNode *c in children)
+        [self addChild:c];
+}
+
 #pragma mark - Worldspace size calculation
 
 - (CGRect)canvasBox {
@@ -154,8 +159,8 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 #pragma mark - Body
 
 // default returns a normal body
-- (id)body {
-    Body *m = [self.componentManager componentForClass:[Body class]];
+- (Body *)body {
+    Body *m = self.readableBody;
     if (!m) {
         m = [SimpleBody body];
         self.body = m;
@@ -163,17 +168,12 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
     return m;
 }
 
+- (Body *)readableBody {
+    return [self.componentManager componentForClass:[Body class]];
+}
+
 - (void)setBody:(Body *)body {
     [self.componentManager setComponent:body forClassLock:[Body class]];
-}
-
-// velocity is the one thing that should be supported across bodies
-- (CGPoint)velocity {
-    return self.body.velocity;
-}
-
-- (void)setVelocity:(CGPoint)velocity {
-    self.body.velocity = velocity;
 }
 
 #pragma mark - Mask
@@ -196,6 +196,23 @@ static char const *const nodeDataKey = "CCNodeExtension.UserData";
 /** converting a rect in the current nodespace to the world nodespace */
 - (CGRect)rectInWorldSpace:(CGRect)rect {
     return CGRectApplyAffineTransform(rect, [self nodeToWorldTransform]);
+}
+
+#pragma mark - Position overriding
+
+- (void)setNodePosition:(CGPoint)nodePosition {
+    self.body.position = nodePosition;
+}
+
+- (CGPoint)nodePosition {
+    return self.body.position;
+}
+
++ (void)load {
+    if (self.class == [CCNode class]) {
+        [self jr_swizzleMethod:@selector(position) withMethod:@selector(nodePosition) error:nil];
+        [self jr_swizzleMethod:@selector(setPosition:) withMethod:@selector(setNodePosition:) error:nil];
+    }
 }
 
 

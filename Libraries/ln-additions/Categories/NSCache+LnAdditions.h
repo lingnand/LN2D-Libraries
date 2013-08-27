@@ -7,6 +7,8 @@
 
 @interface NSCache (LnAdditions)
 
++ (id)cache;
+
 - (id)objectForKey:(id)k valueGenerator:(id(^)(id key))generator;
 
 - (void)setObject:(id)object forKeyedSubscript:(id)key;

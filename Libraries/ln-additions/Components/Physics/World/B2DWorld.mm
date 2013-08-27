@@ -6,9 +6,12 @@
 */
 
 #import "B2DWorld_protected.h"
-#import "B2DRUBECache.h"
+#import "Body_protect.h"
+#import "B2DBody_protected.h"
 
-@implementation B2DWorld
+@implementation B2DWorld {
+    B2DWorldContactListener *_worldContactListener;
+}
 
 /**
 * Spec:
@@ -40,10 +43,7 @@
 */
 
 #define DEFAULT_PTM_RATIO 1.5
-
-+ (id)worldWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
-    return [[self alloc] initWithB2World:world ptmRatio:ptmRatio];
-}
+#define DEFAULT_GRAVITY b2Vec2(0.0f, -10.0f)
 
 + (NSMutableDictionary *)worldMap {
     static NSMutableDictionary *worldMap = nil;
@@ -53,17 +53,20 @@
     return worldMap;
 }
 
++ (id)worldWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
+    return [[self alloc] initWithB2World:world ptmRatio:ptmRatio];
+}
+
 + (id)worldWithB2World:(b2World *)world {
     return [self worldWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
 }
-
 
 + (id)worldWithGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
     return [[self alloc] initWithGravity:gravity ptmRatio:ptmRatio];
 }
 
 + (id)worldFromB2World:(b2World *)world {
-    id w = [self.class worldMap][[NSValue valueWithPointer:world]];
+    id w = [self worldMap][[NSValue valueWithPointer:(void *) world]];
     return [w isKindOfClass:[self class]] ? w : nil;
 }
 
@@ -73,36 +76,66 @@
 
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
     // we should ensure that there's only ever one such world being initiated
-    if (!(self = [self.class worldFromB2World:world]) && (self = [super init])) {
-        // create a new world
-        [self.class worldMap][[NSValue valueWithPointer:world]] = self;
+    id w = [self.class worldFromB2World:world];
+    if (w) {
+        self = w;
+    } else if (self = [super init]) {
         self.world = world;
-        // set up the contact listener
-        self.worldContactListener = new B2DWorldContactListener();
-        self.world->SetContactListener(self.worldContactListener);
+        // defining PTM ratio
+        self.ptmRatio = ptmRatio;
     }
-    // defining PTM ratio
-    self.ptmRatio = ptmRatio;
     return self;
 }
 
-- (b2Body *)createBody:(b2BodyDef *)def {
-    if (def)
-        return self.world->CreateBody(def);
-    return nil;
-}
-
-- (void)destroyBody:(b2Body *)body {
-    if (body)
-        self.world->DestroyBody(body);
+- (id)init {
+    return [self initWithGravity:DEFAULT_GRAVITY ptmRatio:DEFAULT_PTM_RATIO];
 }
 
 - (void)setWorld:(b2World *)world {
     if (world != _world) {
         // delete the old world
-        delete _world;
+        if (_world) {
+            [self.class worldMap][[NSValue valueWithPointer:_world]] = nil;
+            for (Body *b in self) {
+                b.world = nil;
+            }
+            delete _world;
+        }
         _world = world;
+        NSValue *value = [NSValue valueWithPointer:world];
+        // create a new world
+        id ow = [self.class worldMap][value];
+        [self.class worldMap][value] = self;
+        if (ow) {
+            NSAssert([ow isKindOfClass:[B2DWorld class]], @"the world is associated with some unknown class");
+            // 1. set the delegate pointer that's all
+            for (Body *b in ow) {
+                [b setWorldDirect:self];
+            }
+            // 2. remove all the components
+            [((World *) ow).bodies removeAllObjects];
+        } else {
+            // inflate the new world with B2DBody..
+            b2Body *b = world->GetBodyList();
+            while (b) {
+                // add the body
+                [self addBodyForB2Body:b];
+                b = b->GetNext();
+            }
+        }
+        // set up the contact listener
+        self.world->SetContactListener(self.worldContactListener);
     }
+}
+
+- (void)addBodyForB2Body:(b2Body *)b {
+    [B2DBody bodyWithB2Body:b];
+}
+
+- (B2DWorldContactListener *)worldContactListener {
+    if (!_worldContactListener)
+        _worldContactListener = new B2DWorldContactListener();
+    return _worldContactListener;
 }
 
 - (void)setWorldContactListener:(B2DWorldContactListener *)worldContactListener {
@@ -116,18 +149,18 @@
 /**
  * Convert b2Vec2 to CGPoint honoring ptmratio
  */
-- (b2Vec2) b2Vec2FromCGPoint:(CGPoint)p {
-    return b2Vec2(p.x/self.ptmRatio, p.y/self.ptmRatio);
+- (b2Vec2)b2Vec2FromCGPoint:(CGPoint)p {
+    return b2Vec2(p.x / self.ptmRatio, p.y / self.ptmRatio);
 }
 
-- (b2Vec2) b2Vec2FromX:(float)x  y:(float)y {
-    return b2Vec2(x/self.ptmRatio, y/self.ptmRatio);
+- (b2Vec2)b2Vec2FromX:(float)x  y:(float)y {
+    return b2Vec2(x / self.ptmRatio, y / self.ptmRatio);
 }
 
 /**
  * Convert CGPoint to b2Vec2 honoring self.ptmRatio
  */
-- (CGPoint) CGPointFromb2Vec2:(b2Vec2)p {
+- (CGPoint)CGPointFromb2Vec2:(b2Vec2)p {
     return CGPointMake(p.x * self.ptmRatio, p.y * self.ptmRatio);
 }
 
@@ -136,34 +169,48 @@
 }
 
 - (void)activate {
+    [super activate];
     [self scheduleUpdate];
 }
 
 - (void)deactivate {
+    [super deactivate];
     [self unscheduleUpdate];
 }
 
 - (void)update:(ccTime)step {
-    const float32 timeStep = 1.0f / 30.0f;
+//    NSLog(@"timestep = %f", step);
+//    const float32 timeStep = 1.0f / 60.0f;
+//    const float32 timeStep = step / 5000.0f;
     const int32 velocityIterations = 5;
     const int32 positionIterations = 1;
 
     // step the world
-    self.world->Step(timeStep, velocityIterations, positionIterations);
+    self.world->Step(step, velocityIterations, positionIterations);
 }
 
-- (void)iterateBodiesWithBlock:(B2DBodyCallback)callback {
-    for (b2Body* b = self.world->GetBodyList(); b; b = b->GetNext()) {
-        // get the object
-        callback([B2DBody bodyFromB2Body:b]);
+#pragma mark - Override the addComponent and removeComponent to add B2D specific processings
+
+- (void)addBody:(B2DBody *)body {
+    if (body.world != self) {
+        // we need to check for more accurate assigning
+        if (!body.body || body.body->GetWorld() != self.world) {
+            // we need to create the body
+            body.body = self.world->CreateBody(body.currentBodyDef);
+        }
     }
+    [super addBody:body];
 }
 
-- (B2DRUBECache *)cacheForThisWorldWithFileName:(NSString *)name {
-    return [B2DRUBECache cacheForWorld:self WithFileName:name];
+- (void)removeBody:(B2DBody *)body {
+    if (body.world == self) {
+        self.world->DestroyBody(body.body);
+        // we also need to nil the body as a B2DBody not connected with
+        // any world would be funny to have a dangling b2body with it
+        body.body = nil;
+    }
+    [super removeBody:body];
 }
-
-
 
 @end
 

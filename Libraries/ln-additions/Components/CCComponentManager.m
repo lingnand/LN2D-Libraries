@@ -35,7 +35,7 @@
 }
 
 - (void)setEnabled:(BOOL)enabled {
-    [self.allComponents setValue:[NSNumber numberWithBool:enabled] forKey:@"enabled"];
+    [self.componentStore setValue:[NSNumber numberWithBool:enabled] forKey:@"enabled"];
 }
 
 - (BOOL)activated {
@@ -56,7 +56,7 @@
     return [self managerWithComponents:[NSSet setWithObject:comp]];
 }
 
-+ (id)managerWithComponents:(NSSet *)comps {
++ (id)managerWithComponents:(id <NSFastEnumeration>)comps {
     CCComponentManager *kit = [self new];
     [kit addComponents:comps];
     return kit;
@@ -104,18 +104,20 @@
             for (NSPredicate *p in self.predicateQueue) {
                 if ([p evaluateWithObject:component])
                         // add the mapping in the predicate table
-                    self.predicateTable[p] = component;
+                    self.writablePredicateTable[p] = component;
                 else
                     [fq addObject:p];
             }
             self.predicateQueue = fq;
         }
-        [self.componentStore addObject:component];
+        [self.writableComponentStore addObject:component];
+        // set the delegate
+        [component setDelegateDirect:self];
     }
     return YES;
 }
 
-- (BOOL)addComponents:(NSSet *)comps {
+- (BOOL)addComponents:(id <NSFastEnumeration>)comps {
     BOOL succeed = YES;
     for (CCComponent *comp in comps) {
         succeed &= [self addComponent:comp];
@@ -123,12 +125,8 @@
     return succeed;
 }
 
-- (NSSet *)allComponents {
-    return self.componentStore.copy;
-}
-
 - (NSSet *)filteredComponentsUsingPredicate:(NSPredicate *)predicate {
-    return [self.componentStore filteredSetUsingPredicate:predicate];
+    return [self.writableComponentStore filteredSetUsingPredicate:predicate];
 }
 
 
@@ -159,7 +157,7 @@
 - (BOOL)setComponent:(CCComponent *)component forKey:(id)key {
     BOOL r = [self addComponent:component];
     if (r)
-        self.generalTable[key] = component;
+        self.writableGeneralTable[key] = component;
     return r;
 }
 
@@ -202,9 +200,9 @@
         if (!comp && ![self.predicateQueue containsObject:predicate]) {
             if ((comp = [self filteredComponentsUsingPredicate:predicate].anyObject))
                     // we obtained the comp ref so we should match up the accessor system
-                self.predicateTable[predicate] = comp;
+                self.writablePredicateTable[predicate] = comp;
             else
-                [self.predicateQueue addObject:predicate];
+                [self.writablePredicateQueue addObject:predicate];
         }
     } else {
         // we don't bother for caching if it's block based: we can't cache
@@ -238,12 +236,12 @@
         if ([self addComponent:comp]) {
             [self removeComponent:oldComp];
             if (comp) {
-                self.predicateTable[lock] = comp;
-                [self.cachablePredicateLocks addObject:lock];
+                self.writablePredicateTable[lock] = comp;
+                [self.writableCachablePredicateLocks addObject:lock];
             }
             return YES;
         }
-        [self.cachablePredicateLocks addObject:lock];
+        [self.writableCachablePredicateLocks addObject:lock];
     } else if ([self addComponent:comp]) {
         if (![self.predicateQueue containsObject:lock]) {
             // we are not sure if there's already any components that
@@ -256,8 +254,8 @@
         }
         if (comp) {
             if ([self isCachablePredicate:lock]) {
-                self.predicateTable[lock] = comp;
-                [self.cachablePredicateLocks addObject:lock];
+                self.writablePredicateTable[lock] = comp;
+                [self.writableCachablePredicateLocks addObject:lock];
             } else {
                 // We assume that an uncachable lock cannot be recorded as
                 // as such we won't need to remove any old component
@@ -304,35 +302,35 @@
 
 #pragma mark - Facilities
 
-- (NSMutableDictionary *)generalTable {
+- (NSMutableDictionary *)writableGeneralTable {
     if (!_generalTable) {
         _generalTable = [NSMutableDictionary dictionary];
     }
     return _generalTable;
 }
 
-- (NSMutableDictionary *)predicateTable {
+- (NSMutableDictionary *)writablePredicateTable {
     if (!_predicateTable) {
         _predicateTable = [NSMutableDictionary dictionary];
     }
     return _predicateTable;
 }
 
-- (NSMutableSet *)predicateQueue {
+- (NSMutableSet *)writablePredicateQueue {
     if (!_predicateQueue) {
         _predicateQueue = [NSMutableSet set];
     }
     return _predicateQueue;
 }
 
-- (NSMutableSet *)componentStore {
+- (NSMutableSet *)writableComponentStore {
     if (!_componentStore) {
         _componentStore = [NSMutableSet set];
     }
     return _componentStore;
 }
 
-- (NSMutableSet *)cachablePredicateLocks {
+- (NSMutableSet *)writableCachablePredicateLocks {
     if (!_cachablePredicateLocks) {
         _cachablePredicateLocks = [NSMutableSet set];
     }
@@ -346,9 +344,9 @@
         // because most components will bind to the host
         // we don't need to perform any storage related operations because
         // there's none involved
+        [self.componentStore setValue:nil forKey:@"delegateDirect"];
         _delegate = delegate;
-        [self.allComponents setValue:nil forKey:@"delegateDirect"];
-        [self.allComponents setValue:self forKey:@"delegateDirect"];
+        [self.componentStore setValue:self forKey:@"delegateDirect"];
     }
 }
 
@@ -367,16 +365,11 @@
         // we first obtain the set that cannot be referenced by the key/value pairs
         NSMutableSet *unKeyedComps = self.componentStore.mutableCopy;
         [unKeyedComps minusSet:self.generalTable.valueSet];
-        for (CCComponent *c in unKeyedComps) {
-            [copy.componentStore addObject:c.copy];
-        }
+        copy->_componentStore = [[NSMutableSet alloc] initWithSet:unKeyedComps copyItems:YES];
         // II. copy all key/value pairs
-        [self.generalTable enumerateKeysAndObjectsUsingBlock:^(id key, id obj, BOOL *stop) {
-            id c = [obj copy];
-            copy.generalTable[key] = c;
-            [copy.componentStore addObject:c];
-        }];
-        // III. copy the locks
+        copy->_generalTable = [[NSMutableDictionary alloc] initWithDictionary:self.generalTable copyItems:YES];
+        [copy.writableComponentStore addObjectsFromArray:copy.generalTable.allValues];
+        // III. copy the locks (because the objects within are immutable so this is fine...)
         copy.cachablePredicateLocks = self.cachablePredicateLocks.mutableCopy;
     }
 
@@ -387,5 +380,7 @@
     return [self componentForSelector:aSelector];
 }
 
-
+- (NSSet *)allComponents {
+    return self.writableComponentStore;
+}
 @end

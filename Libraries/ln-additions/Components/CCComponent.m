@@ -6,8 +6,8 @@
 
 
 #import "CCComponent.h"
-#import "NSObject+REObserver.h"
 #import "CCComponentManager.h"
+#import "NSObject+REObserver.h"
 
 
 @implementation CCComponent {
@@ -20,37 +20,30 @@
         // the default implementation will be setting enabled to true
         _enabled = YES;
         // monitors the change in the activated value
-        [self addObserver:self
-               forKeyPath:@"activated"
-                  options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
-                  context:nil];
+        [self addObserverForKeyPath:@"activated"
+                            options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew
+                         usingBlock:^(NSDictionary *change) {
+            BOOL ov = [change[NSKeyValueChangeOldKey] boolValue];
+            BOOL nv = [change[NSKeyValueChangeNewKey] boolValue];
+            if (nv != ov) {
+                BOOL recoverDelegate = !_delegate;
+                if (recoverDelegate) {
+                    NSAssert(_oldDelegate, @"oldDelegate lost");
+                    _delegate = _oldDelegate;
+                }
+                if (nv)
+                    [self activate];
+                else {
+                    [self deactivate];
+                }
+                if (recoverDelegate)
+                    _delegate = _oldDelegate = nil;
+            }
+        }];
     }
 
     return self;
 }
-
-- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context {
-    if ([keyPath isEqualToString:@"activated"]) {
-        BOOL ov = [change[NSKeyValueChangeOldKey] boolValue];
-        BOOL nv = [change[NSKeyValueChangeNewKey] boolValue];
-        if (nv != ov) {
-            BOOL recoverDelegate = !_delegate;
-            if (recoverDelegate) {
-                NSAssert(_oldDelegate, @"oldDelegate lost");
-                _delegate = _oldDelegate;
-            }
-            if (nv)
-                [self activate];
-            else {
-                [self deactivate];
-            }
-            if (recoverDelegate)
-                _delegate = _oldDelegate = nil;
-        }
-    } else
-        [super observeValueForKeyPath:keyPath ofObject:object change:change context:context];
-}
-
 
 - (void)scheduleUpdate {
     // most of the components are offscreen and won't be scheduled by default implementation
@@ -86,6 +79,8 @@
 - (void)setDelegate:(CCComponentManager *)delegate {
     if (delegate != _delegate) {
         // we just route this to the componentKit
+        // needed this line because the new delegate might be nil and
+        // in that situation the next line won't be triggered
         [_delegate removeComponent:self];
         [delegate addComponent:self];
     }
@@ -103,10 +98,10 @@
             _delegate = _oldDelegate = nil;
         }
         if (delegate) {
-            [self willChangeValueForKey:@"host"];
+            [self willChangeValueForKey:@"delegate"];
             _delegate = delegate;
             [self onAddComponent];
-            [self didChangeValueForKey:@"host"];
+            [self didChangeValueForKey:@"delegate"];
         }
     }
 }
@@ -130,11 +125,11 @@
 }
 
 + (NSSet *)keyPathsForValuesAffectingActivated {
-    return [NSSet setWithObjects:@"enabled", @"node", nil];
+    return [NSSet setWithObjects:@"enabled", @"host", nil];
 }
 
 + (NSSet *)keyPathsForValuesAffectingHost {
-    return [NSSet setWithObjects:@"delegate", nil];
+    return [NSSet setWithObject:@"delegate"];
 }
 
 - (void)update:(ccTime)step {
@@ -148,7 +143,6 @@
 
 - (void)dealloc {
     self.delegate = nil;
-    [self removeObserver:self forKeyPath:@"activated"];
 }
 
 @end

@@ -7,32 +7,77 @@
 
 #import "CCComponent.h"
 #import "SimpleBody.h"
-#import "SimpleWorld.h"
 
 @implementation SimpleBody {
 
 }
 
-#pragma mark - SimpleBody creation
-
+@synthesize velocity = _velocity;
 
 #pragma mark - LifeCycle
 
-- (void)onAddComponent {
-    [super onAddComponent];
+- (BOOL)activated {
+    return [super activated] && (self.velocity.x || self.velocity.y || self.acceleration.x || self.acceleration.y);
+}
+
++ (NSSet *)keyPathsForValuesAffectingActivated {
+    NSMutableSet *set = [NSMutableSet setWithSet:[super keyPathsForValuesAffectingActivated]];
+    [set addObjectsFromArray:@[@"velocity", @"acceleration"]];
+    return set;
+}
+
+- (void)update:(ccTime)delta {
+    // avoid using the setter so that no unnecessary messages are sent to
+    // check the activated attribute
+    _velocity = ccpAdd(self.velocity, ccpMult(self.acceleration, delta));
+    self.position = ccpAdd(self.host.position, ccpMult(self.velocity, delta));
+}
+
+- (void)activate {
+    [super activate];
     [self scheduleUpdate];
 }
 
-- (void)onRemoveComponent {
-    [super onRemoveComponent];
+- (void)deactivate {
+    [super deactivate];
     [self unscheduleUpdate];
 }
 
-#pragma mark - Properties
+#pragma mark - Positions and attributes
 
-- (CGPoint)actualVelocity {
-    return ccpSub(self.velocity, self.world.referenceVelocity);
+- (CGPoint)worldPosition {
+    // returns the real position of the host in the world coordinate
+    return CGPointApplyAffineTransform(self.position, [self hostParentToWorldTransform]);
 }
+
+- (void)setWorldPosition:(CGPoint)worldPosition {
+    self.position = CGPointApplyAffineTransform(worldPosition, [self worldToHostParentTransform]);
+}
+
+- (CGPoint)worldVelocity {
+    return CGPointApplyAffineTransform(self.velocity, [self hostParentToWorldTransform]);
+}
+
+- (void)setWorldVelocity:(CGPoint)worldVelocity {
+    self.velocity = CGPointApplyAffineTransform(worldVelocity, [self worldToHostParentTransform]);
+}
+
+- (CGPoint)absolutePosition {
+    return CGPointApplyAffineTransform(self.position, [self hostParentToWorldTransform]);
+}
+
+- (void)setAbsolutePosition:(CGPoint)absolutePosition {
+    self.position = CGPointApplyAffineTransform(absolutePosition, [self absoluteWorldToHostParentTransform]);
+}
+
+- (CGPoint)absoluteVelocity {
+    return CGPointApplyAffineTransform(self.velocity, [self hostParentToAbsoluteWorldTransform]);
+}
+
+- (void)setAbsoluteVelocity:(CGPoint)absoluteVelocity {
+    self.velocity = CGPointApplyAffineTransform(absoluteVelocity, [self absoluteWorldToHostParentTransform]);
+}
+
 
 #pragma mark - Legacy opposite point calculation (not used)
 
@@ -44,12 +89,6 @@
                                                     rect:CGRectMake(-rightHalfWidth, -upperHalfHeight,
                                                             self.host.contentSize.width + [CCDirector sharedDirector].winSize.width,
                                                             self.host.contentSize.height + [CCDirector sharedDirector].winSize.height)];
-}
-
-
-- (void)update:(ccTime)delta {
-    self.velocity = ccpAdd(self.velocity, ccpMult(self.acceleration, delta));
-    self.host.position = ccpAdd(self.host.position, ccpMult(self.velocity, delta));
 }
 
 - (float)yIntersectionForXLine:(float)xval withPoint:(CGPoint)point direction:(CGPoint)dir {

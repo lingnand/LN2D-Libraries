@@ -38,14 +38,6 @@
     return self;
 }
 
-- (void)activate {
-    // this is a component that requires deliberate triggering (so there's really no enable
-    // or disable needed
-}
-
-- (void)deactivate {
-}
-
 - (void)spawn {
     [self spawnAtPoint:self.spawnPointGenerator.nextPoint];
 }

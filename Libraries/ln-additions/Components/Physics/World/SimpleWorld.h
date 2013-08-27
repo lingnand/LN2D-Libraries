@@ -12,6 +12,4 @@
 @interface SimpleWorld : World
 /** The reference velocity for the the on-screen velocity */
 @property(nonatomic) CGPoint referenceVelocity;
-
-+ (id)worldWithReferenceVelocity:(CGPoint)vref;
 @end

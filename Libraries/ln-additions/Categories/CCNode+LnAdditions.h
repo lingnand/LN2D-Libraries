@@ -12,12 +12,6 @@
 #import "CCNode.h"
 
 
-@protocol CCNodeConfigTable
-@property (nonatomic, readonly) NSDictionary *data;
-@property (nonatomic, readonly) NSDictionary *components;
-@end
-
-
 @interface CCNode (LnAdditions) <Masked>
 
 + (id)nodeWithComponentManager:(CCComponentManager *)manager;
@@ -38,6 +32,8 @@
 -(CGSize)winSize;
 
 - (CGRect)rectInWorldSpace:(CGRect)rect;
+
+- (void)addChildren:(id <NSFastEnumeration>)children;
 
 /**
     This is the rect of the node measured in the WORLD coordinate.
@@ -80,6 +76,9 @@
 
 /** @group Body */
 @property(nonatomic) Body *body;
-@property(nonatomic) CGPoint velocity;
+
+/** @group Position */
+/** change the position of the node (note this is the original method implemented by cocos2d */
+@property(nonatomic) CGPoint nodePosition;
 
 @end

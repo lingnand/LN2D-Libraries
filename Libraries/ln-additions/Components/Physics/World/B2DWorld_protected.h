@@ -1,3 +1,4 @@
+#import "World_protected.h"
 #import "B2DWorld.h"
 #import "B2DWorldContactListener.h"
 

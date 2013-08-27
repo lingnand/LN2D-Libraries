@@ -45,5 +45,4 @@
     self.imageManager.delegate = nil;
 }
 
-
 @end

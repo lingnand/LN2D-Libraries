@@ -8,6 +8,10 @@
 
 @implementation NSCache (LnAdditions)
 
++ (id)cache {
+    return [self new];
+}
+
 - (id)objectForKey:(id)k valueGenerator:(id(^)(id key))generator {
     id value = [self objectForKey:k];
     if (!value) {

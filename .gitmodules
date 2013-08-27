@@ -16,3 +16,6 @@
 [submodule "Libraries/chdatastructures"]
 	path = Libraries/chdatastructures
 	url = https://github.com/davedelong/CHDataStructures
+[submodule "Libraries/jrswizzle"]
+	path = Libraries/jrswizzle
+	url = https://github.com/rentzsch/jrswizzle

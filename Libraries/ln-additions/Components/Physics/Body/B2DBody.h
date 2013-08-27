@@ -11,12 +11,13 @@
 #import "b2Body.h"
 
 @class B2DWorld;
+@class B2DFixture;
 
 
 // we'll preseve using the original b2d units and syntax
 @interface B2DBody:Body
 
-@property (nonatomic) b2Vec2 position;
+@property (nonatomic) b2Vec2 realPhysicalPosition;
 @property (nonatomic) float angle;
 @property (nonatomic) b2Vec2 linearVelocity;
 @property (nonatomic) float angularVelocity;
@@ -32,6 +33,12 @@
 
 
 - (id)initWithB2Body:(b2Body *)body;
+
+- (void)addFixture:(B2DFixture *)fixture;
+
+- (void)removeFixture:(B2DFixture *)fixture;
+
+- (id)copyWithZone:(NSZone *)zone;
 
 + (id)bodyWithB2Body:(b2Body *)body;
 

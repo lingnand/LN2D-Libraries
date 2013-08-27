@@ -5,8 +5,10 @@
     @author lingnan
 */
 
-#import "World.h"
+#import "World_protected.h"
 #import "Body.h"
+#import "Body_protect.h"
+#import "CCNode+LnAdditions.h"
 
 @implementation World
 
@@ -14,49 +16,53 @@
     return [self new];
 }
 
-+ (NSString *)worldAddedNotificationName {
-    static NSString *not = nil;
-    if (!not)
-        not = [NSString stringWithFormat:@"%@.WorldAdded", NSStringFromClass(self)];
-    return not;
-}
-
-+ (NSString *)worldRemovedNotificationName {
-    static NSString *not = nil;
-    if (!not)
-        not = [NSString stringWithFormat:@"%@.WorldRemoved", NSStringFromClass(self)];
-    return not;
-}
-
-+ (NSString *)bodyWorldRequestNotificationName {
-    static NSString *not = nil;
-    if (!not)
-        not = [NSString stringWithFormat:@"%@.BodyWorldRequest", NSStringFromClass(self)];
-    return not;
-}
-
 - (void)onAddComponent {
-    // register for Bodies posting world request
-    [[NSNotificationCenter defaultCenter] addObserverForName:[self.class bodyWorldRequestNotificationName]
-                                                      object:nil
-                                                       queue:[NSOperationQueue mainQueue]
-                                                  usingBlock:^(NSNotification *note) {
-                                                      [(Body *)note.object setClosestWorld:self];
-                                                  }];
-    // declare to the world that I have been added to a delegate
-    [[NSNotificationCenter defaultCenter] postNotificationName:[self.class worldAddedNotificationName] object:self];
+    // find all children bodies that might be working for this world;
+    // only if this world is empty
+    if (!self.bodies.count)
+        [self addEncompassingBodiesInNode:self.host];
 }
 
-- (void)onRemoveComponent {
-    // declare to the world that I'm no longer attached to a proper delegate, so
-    // the bodies attached to me should probably remove themselves
-    [[NSNotificationCenter defaultCenter] postNotificationName:[self.class worldRemovedNotificationName] object:self];
-    // remove self as the observer
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+- (void)addEncompassingBodiesInNode:(CCNode *)n {
+    for (CCNode *c in n.children) {
+        // we need to use the predicate to get all the components that matchs
+        // the requirement
+        Body *b = [c.componentManager componentForClass:[Body class]];
+        if ([self isKindOfClass:b.worldClass]) {
+            b.world = self;
+        }
+        // recurse downwards
+        [self addEncompassingBodiesInNode:c];
+    }
+}
+
+- (NSMutableSet *)bodies {
+    if (!_bodies)
+        _bodies = [NSMutableSet set];
+    return _bodies;
+}
+
+- (void)addBody:(Body *)body {
+    if (body.world != self) {
+        if (body.world)
+            [body.world removeBody:body];
+        [self.bodies addObject:body];
+        [body setWorldDirect:self];
+    }
+}
+
+- (void)removeBody:(Body *)body {
+    if (body.world == self) {
+        [self.bodies removeObject:body];
+        [body setWorldDirect:nil];
+    }
+}
+
+- (NSSet *)allBodies {
+    return self.bodies;
 }
 
 - (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
 }
 
 @end

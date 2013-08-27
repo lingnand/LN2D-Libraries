@@ -6,13 +6,14 @@
 */
 
 #import "CCComponent.h"
-#import "Body.h"
+#import "Body_protect.h"
 #import "World.h"
-#import "NSObject+Properties.h"
 #include "NSObject+LnAdditions.h"
+#import "CCNode+LnAdditions.h"
 
 @implementation Body {
     Class _worldClass;
+    BOOL _searchWorldAutomatically;
 }
 
 + (id)body {
@@ -26,66 +27,91 @@
     return _worldClass;
 }
 
+- (World *)world {
+    if (!_world && _searchWorldAutomatically) {
+        [self setClosestWorld];
+    }
+    return _world;
+}
+
+/** with respect to immediate parent */
+- (void)setPosition:(CGPoint)position {
+    self.host.nodePosition = position;
+}
+
+- (CGPoint)position {
+    return self.host.nodePosition;
+}
+
+/** with respect to the real world */
+
+/** return the transform from the local coordinates into the world coordinates
+ * if there's no world indicated (or the world is not attached in the correct hierarchy
+ * , the outermost world is chosen */
+- (CGAffineTransform)hostParentToWorldTransform {
+    CGAffineTransform t = CGAffineTransformIdentity;
+
+    for (CCNode *p = self.host.parent; p && p != self.world.host; p = p.parent)
+        t = CGAffineTransformConcat(t, [p nodeToParentTransform]);
+
+    return t;
+}
+
+- (CGAffineTransform)worldToHostParentTransform {
+    return CGAffineTransformInvert([self hostParentToWorldTransform]);
+}
+
+/** with respect to the absolute world (the outermost world, the iPhone..?) */
+- (CGAffineTransform)hostParentToAbsoluteWorldTransform {
+    return [self.host.parent nodeToWorldTransform];
+}
+
+- (CGAffineTransform)absoluteWorldToHostParentTransform {
+    return [self.host.parent worldToNodeTransform];
+}
 
 - (void)setWorld:(World *)world {
     if (_world != world) {
-        _world = world;
-        [self worldChangedFrom:_world to:world];
+        // just route the messages to the next level up
+        [_world removeBody:self];
+        [world addBody:self];
     }
 }
 
-- (void)worldChangedFrom:(World *)ow to:(World *)nw {
-    if (ow)
-        [[NSNotificationCenter defaultCenter] removeObserver:self
-                                                        name:[self.worldClass worldRemovedNotificationName]
-                                                      object:ow];
-    // need to add the observer for the new world
-    if (nw)
-        [[NSNotificationCenter defaultCenter] addObserverForName:[self.worldClass worldRemovedNotificationName]
-                                                          object:nw
-                                                           queue:[NSOperationQueue mainQueue]
-                                                      usingBlock:^(NSNotification *note) {
-                                                          // requesting new world to set myself
-                                                          [[NSNotificationCenter defaultCenter] postNotificationName:[self.worldClass bodyWorldRequestNotificationName]
-                                                                                                              object:self];
-                                                      }];
+- (void)setWorldDirect:(World *)world {
+    _world = world;
 }
 
-- (void)setClosestWorld:(World *)world {
-    // check if the world is closest to the current
-    if (world != self.world) {
-        if (!self.world.host) {
-            self.world = world;
-        } else if (world.host) {
-            // traverse the tree up until meeting the world
-            CCNode *p = self.host;
-            while ((p = p.parent) && p != self.world.host) {
-                if (p == world.host) {
-                    self.world = world;
-                }
+/** Search for a suitable world component in the tree upwards */
+- (void)setClosestWorld {
+    CCNode *p = self.host;
+    if (p) {
+        World *w = nil;
+        while ((p = p.parent)) {
+            if ((w = [p.componentManager componentForClass:self.worldClass])) {
+                self.world = w;
+                break;
             }
         }
+        // flip the toggle
+        _searchWorldAutomatically = NO;
     }
 }
 
 - (void)onAddComponent {
-    // requesting world component
-    [[NSNotificationCenter defaultCenter] postNotificationName:[self.worldClass bodyWorldRequestNotificationName] object:self];
-    // observing for world changes
-    [[NSNotificationCenter defaultCenter] addObserverForName:[self.worldClass worldAddedNotificationName]
-                                                      object:nil
-                                                       queue:[NSOperationQueue mainQueue]
-                                                  usingBlock:^(NSNotification *note) {
-                                                      [self setClosestWorld:note.object];
-                                                  }];
+    [super onAddComponent];
+    _searchWorldAutomatically = YES;
 }
 
-- (void)onRemoveComponent {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
-}
+- (id)copyWithZone:(NSZone *)zone {
+    Body *copy = (Body *) [super copyWithZone:zone];
 
-- (void)dealloc {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    if (copy != nil) {
+        copy->_worldClass = _worldClass;
+        copy.velocity = self.velocity;
+    }
+
+    return copy;
 }
 
 @end

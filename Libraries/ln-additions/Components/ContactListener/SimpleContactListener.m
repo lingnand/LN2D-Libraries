@@ -11,6 +11,8 @@
 
 
 #define TIME_STAY_LIMIT 0.5
+#define DEFAULT_GRAVITY (ccp(0, 100))
+#define DEFAULT_RESTITUTION 160
 
 @interface SimpleContactListener ()
 @property(nonatomic) ccTime elapsed;
@@ -33,6 +35,10 @@
     return self;
 }
 
+- (id)init {
+    return [self initWithGravity:DEFAULT_GRAVITY wallMask:nil restitution:DEFAULT_RESTITUTION];
+}
+
 - (void)onAddComponent {
     // check for compatibility of the mover class
     _currentContactState = self.contactWithWall ? ContactStateOnGround : ContactStateInAir;
@@ -51,12 +57,12 @@
 
 // the person is considered inAir if he hasn't collided with anything in the past 2 second
 - (void)update:(ccTime)delta {
-    self.host.velocity = ccpAdd(self.host.velocity, ccpMult(self.gravity, delta));
+    self.host.body.velocity = ccpAdd(self.host.body.velocity, ccpMult(self.gravity, delta));
 
     // the displacement of the player
-    CGPoint ds = ccpMult(self.host.velocity, delta);
+    CGPoint ds = ccpMult(self.host.body.velocity, delta);
     // this is the actual displacement of the character in the world coordinate
-    CGPoint actual_ds = ccpMult(self.delegateBody.actualVelocity, delta);
+    CGPoint actual_ds = ccpMult(self.delegateBody.worldVelocity, delta);
     CGPoint actual_ds_direction = ccpDirection(actual_ds);
     CGPoint actual_ds_mag = ccpMagnitude(actual_ds);
 
@@ -78,7 +84,7 @@
         actual_ds_mag.y -= self.restitution;
     }
 //        CCLOG(@"#########Collided!");
-    self.host.velocity = ccp(self.host.velocity.x * !collideVec.x, self.host.velocity.y * !collideVec.y);
+    self.host.body.velocity = ccp(self.host.body.velocity.x * !collideVec.x, self.host.body.velocity.y * !collideVec.y);
 
     if (collideVec.x || collideVec.y) {
         self.elapsed = 0;

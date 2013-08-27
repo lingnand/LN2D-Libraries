@@ -7,13 +7,14 @@
 
 #import <Foundation/Foundation.h>
 #import "CCComponent.h"
+@class Body;
 
 @interface World : CCComponent
 +(id)world;
 
-+ (NSString *)worldAddedNotificationName;
+- (void)addBody:(Body *)body;
 
-+ (NSString *)worldRemovedNotificationName;
+- (void)removeBody:(Body *)body;
 
-+ (NSString *)bodyWorldRequestNotificationName;
+- (NSSet *)allBodies;
 @end

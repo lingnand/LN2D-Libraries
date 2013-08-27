@@ -8,11 +8,12 @@
 #import <Foundation/Foundation.h>
 #import "Body.h"
 
-@class SimpleWorld;
 
+/** A simpleBody is the simplest implementation that fulfills the requirement
+ * of Body - using an update method that updates the position of the node
+  * through velocity and acceleration increments*/
 
-@interface SimpleBody : Body
+ @interface SimpleBody : Body
+/** The acceleration attribute is added to allow more precise control (steady) */
 @property(nonatomic) CGPoint acceleration;
-@property(nonatomic,readonly) CGPoint actualVelocity;
-@property(nonatomic, weak) SimpleWorld *world;
 @end

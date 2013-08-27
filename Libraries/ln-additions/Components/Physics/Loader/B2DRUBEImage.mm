@@ -58,7 +58,7 @@
         // these will not change during simulation so we can set them now
         // this scale is the height of the image in WORLD units
         // scale / PTM_RATIO / sprite.contentSize.height
-        _image.scale = self.physicalScale / self.associatedBody.world.ptmRatio / _image.contentSize.height;
+        _image.scale = self.physicalScale * self.associatedBody.world.ptmRatio / _image.contentSize.height;
         _image.flipX = self.flipX;
         _image.color = self.color;
         _image.opacity = self.opacity;
@@ -75,13 +75,13 @@
     return _image;
 }
 
-- (void)onAddComponent {
-    [super onAddComponent];
+- (void)activate {
+    [super activate];
     [self.host addChild:self.image];
 }
 
-- (void)onRemoveComponent {
-    [super onRemoveComponent];
+- (void)deactivate {
+    [super deactivate];
     [self.host removeChild:self.image cleanup:YES];
 }
 
