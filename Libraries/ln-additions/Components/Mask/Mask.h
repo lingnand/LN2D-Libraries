@@ -57,4 +57,10 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
 */
 - (BOOL)intersects:(Mask *)other;
 
+/** Overriden by subclass to provide the implementation (checked by one side) */
+- (BOOL)intersectsOneSide:(Mask *)other;
+
+- (MaskIntersectComplexity)complexity;
+
+- (MaskIntersectPolicy)intersectPolicy;
 @end

@@ -12,12 +12,14 @@
 
 @class B2DWorld;
 @class B2DFixture;
+@class B2DContactListener;
 
 
 // we'll preseve using the original b2d units and syntax
 @interface B2DBody:Body
 
-@property (nonatomic) b2Vec2 realPhysicalPosition;
+@property (nonatomic) b2BodyType b2Type;
+@property (nonatomic) b2Vec2 worldPhysicalPosition;
 @property (nonatomic) float angle;
 @property (nonatomic) b2Vec2 linearVelocity;
 @property (nonatomic) float angularVelocity;
@@ -30,6 +32,7 @@
 @property (nonatomic) BOOL active;
 @property (nonatomic) float gravityScale;
 @property(nonatomic, weak) B2DWorld *world;
+@property(nonatomic) B2DContactListener *contactListener;
 
 
 - (id)initWithB2Body:(b2Body *)body;

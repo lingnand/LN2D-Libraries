@@ -97,6 +97,17 @@ CGPoint ccpFromRatio(CGPoint ratio) {
     return ccp(ratio.x * [CCDirector sharedDirector].winSize.width, ratio.y * [CCDirector sharedDirector].winSize.height);
 }
 
+#pragma mark - Vector and affine-related transformations
+
+/** The basic idea is that we apply the transform to the begin and end points and take the subtraction */
+NS_INLINE
+
+CGPoint CGPointVectorApplyAffineTransform(CGPoint vector, CGAffineTransform t) {
+    CGPoint orig =  CGPointApplyAffineTransform(CGPointZero, t);
+    CGPoint dest =  CGPointApplyAffineTransform(vector, t);
+    return ccpSub(dest, orig);
+}
+
 #pragma mark - Block definitions
 
 #define BLOCK_SAFE_RUN(block, ...) {if (block) block(__VA_ARGS__);}

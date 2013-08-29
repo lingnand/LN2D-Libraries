@@ -10,7 +10,7 @@
 
 @class B2DBody;
 
-@interface B2DContact: NSObject
+@interface B2DContact: Contact
 @property (nonatomic, strong) B2DBody *ownBody;
 @property (nonatomic, strong) B2DBody *otherBody;
 @property (nonatomic, assign) b2Fixture *ownFixture;

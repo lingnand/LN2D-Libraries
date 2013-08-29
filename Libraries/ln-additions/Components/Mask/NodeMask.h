@@ -6,7 +6,11 @@
 */
 
 #import <Foundation/Foundation.h>
+#import "Mask.h"
 
-
-@interface NodeMask : NSObject
+/** Node mask is designed to forward mask requests:
+ * If the host has children, then it will default to using
+  * a composite mask containing its children. Otherwise
+  * it will use a simple RectMask*/
+@interface NodeMask : Mask
 @end

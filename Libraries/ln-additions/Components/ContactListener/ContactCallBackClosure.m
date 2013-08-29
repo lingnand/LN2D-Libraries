@@ -5,10 +5,17 @@
     @author lingnan
 */
 
-#import "ContactCallBackClosure.h"
+#import "ContactCallbackClosure.h"
 
 
-@implementation ContactCallBackClosure {
+@implementation ContactCallbackClosure {
 
 }
+
++ (id)closureWithBeginContact:(ContactCallback)beginContact {
+    ContactCallbackClosure *closure = [self new];
+    closure.beginContact = beginContact;
+    return closure;
+}
+
 @end

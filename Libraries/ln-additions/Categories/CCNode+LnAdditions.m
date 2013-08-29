@@ -6,8 +6,8 @@
 
 
 #import "CCNode+LnAdditions.h"
-#import "RectMask.h"
 #import "JRSwizzle.h"
+#import "NodeMask.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
@@ -84,6 +84,56 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 }
 
 #pragma mark - Operations
+
+- (BOOL)isAscendantOfNode:(CCNode *)node {
+    if (node == self)
+        return NO;
+    CCNode *p;
+    while ((p = node.parent)) {
+        if (p == self)
+            return YES;
+    }
+    return NO;
+}
+
+- (BOOL)isDescendantOfNode:(CCNode *)node {
+    return [node isAscendantOfNode:self];
+}
+
+- (BOOL)isOnLineageOfNode:(CCNode *)node {
+    return node == self || [self isAscendantOfNode:node] || [self isDescendantOfNode:node];
+}
+
+/** return all the nodes on this lineage */
+- (NSArray *)allLineages {
+    NSMutableArray *arr = [NSMutableArray array];
+    // get all the parents first
+    CCNode *n = self;
+    do
+        [arr addObject:n];
+    while ((n = n.parent));
+    // add all the children
+    return [arr arrayByAddingObjectsFromArray:self.allDescendants];
+}
+
+-(NSArray *)allAscendants {
+    NSMutableArray *arr = [NSMutableArray array];
+    CCNode *n = self;
+    while ((n = n.parent)) {
+        [arr addObject:n];
+    }
+    return arr;
+}
+
+- (NSArray *)allDescendants {
+    NSMutableArray *arr = [NSMutableArray array];
+    [arr addObjectsFromArray:self.children.getNSArray];
+    for (CCNode *c in self.children) {
+        [arr addObjectsFromArray:c.allDescendants];
+    }
+    return arr;
+}
+
 // chained methods
 - (id)nodeWithAnchorPoint:(CGPoint)anchor {
     self.anchorPoint = anchor;
@@ -178,13 +228,12 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 
 #pragma mark - Mask
 
-// defualt returns a rectMask
 - (Mask *)mask {
     // lazily instantiate
     Mask *m = [self.componentManager componentForClass:[Mask class]];
     if (!m) {
-        m = [RectMask mask];
-        self.mask = m;
+        // default to a nodeMask that basically forwards calls to children if there's any
+        self.mask = [NodeMask mask];
     }
     return m;
 }

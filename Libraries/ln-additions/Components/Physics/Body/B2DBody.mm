@@ -11,6 +11,7 @@
 #import "b2Fixture.h"
 #import "B2DFixture_protected.h"
 #import "CCNode+LnAdditions.h"
+#import "B2DContactListener.h"
 
 @implementation B2DBody {
     b2BodyDef *_bodyDef;
@@ -122,29 +123,68 @@
     }
 }
 
+/** type information */
+- (b2BodyType)b2BodyTypeFromBodyType:(BodyType)type {
+    switch (type) {
+        case BodyTypeStatic: return b2_staticBody;
+        case BodyTypeKinematic: return b2_kinematicBody; 
+        case BodyTypeDynamic: return b2_dynamicBody; 
+    }
+    return b2_staticBody;
+}
+
+- (BodyType)bodyTypeFromB2BodyType:(b2BodyType)type {
+    switch (type) {
+        case b2_staticBody:return BodyTypeStatic; 
+        case b2_kinematicBody:return BodyTypeKinematic;
+        case b2_dynamicBody:return BodyTypeDynamic;
+    }
+    return BodyTypeStatic;
+}
+
+- (BodyType)type {
+    return [self bodyTypeFromB2BodyType:self.b2Type];
+}
+
+- (void)setType:(BodyType)type {
+    self.b2Type = [self b2BodyTypeFromBodyType:type];
+}
+
+- (b2BodyType)b2Type {
+    return self.body ? self.body->GetType() : self.bodyDef->type;
+}
+
+- (void)setB2Type:(b2BodyType)b2Type {
+    if (self.body) {
+        self.body->SetType(b2Type);
+    } else {
+        self.bodyDef->type = b2Type;
+    }
+}
+
 - (void)setPosition:(CGPoint)position {
     // first get the position relative to the world
     // set the relative position in the physical world
-    self.worldPosition = CGPointApplyAffineTransform(position, [self hostParentToWorldTransform]);
+    self.worldPosition = CGPointApplyAffineTransform(position, self.hostParentToWorldTransform);
 }
 
 - (CGPoint)worldPosition {
-    return [self.world CGPointFromb2Vec2:self.realPhysicalPosition];
+    return [self.world CGPointFromb2Vec2:self.worldPhysicalPosition];
 }
 
 - (void)setWorldPosition:(CGPoint)worldPosition {
-    self.realPhysicalPosition = [self.world b2Vec2FromCGPoint:worldPosition];
+    self.worldPhysicalPosition = [self.world b2Vec2FromCGPoint:worldPosition];
 }
 
-- (b2Vec2)realPhysicalPosition {
+- (b2Vec2)worldPhysicalPosition {
     return self.body ? _body->GetPosition() : self.bodyDef->position;
 }
 
-- (void)setRealPhysicalPosition:(b2Vec2)realPhysicalPosition {
+- (void)setWorldPhysicalPosition:(b2Vec2)worldPhysicalPosition {
     if (self.body) {
-        self.body->SetTransform(realPhysicalPosition, self.angle);
+        self.body->SetTransform(worldPhysicalPosition, self.angle);
     } else {
-        self.bodyDef->position = realPhysicalPosition;
+        self.bodyDef->position = worldPhysicalPosition;
     }
 }
 
@@ -154,17 +194,17 @@
 
 - (void)setAngle:(float)angle {
     if (self.body)
-        self.body->SetTransform(self.realPhysicalPosition, angle);
+        self.body->SetTransform(self.worldPhysicalPosition, angle);
     else
         self.bodyDef->angle = angle;
 }
 
 - (CGPoint)velocity {
-    return CGPointApplyAffineTransform(self.worldVelocity, [self worldToHostParentTransform]);
+    return CGPointVectorApplyAffineTransform(self.worldVelocity, self.worldToHostParentTransform);
 }
 
 - (void)setVelocity:(CGPoint)velocity {
-    self.worldVelocity = CGPointApplyAffineTransform(velocity, [self hostParentToWorldTransform]);
+    self.worldVelocity = CGPointVectorApplyAffineTransform(velocity, self.hostParentToWorldTransform);
 }
 
 // velocity in the CC sense
@@ -300,6 +340,7 @@
     if (self.body) {
         NSAssert(!self.bodyDef, @"Inconsistent states. BodyDef should have been deleted if body is present");
         def = new b2BodyDef();
+        def->type = _body->GetType();
         def->position = _body->GetPosition();
         def->angle = _body->GetAngle();
         def->linearVelocity = _body->GetLinearVelocity();
@@ -423,7 +464,8 @@
 - (void)update:(ccTime)step {
     CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
     self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self worldToHostParentTransform]);
-    // this might not consider the relative rotation of layered relationships
+    // an rotation itself can be expressed as an affinetransformation, which means
+    // that independent of the relative observer, it's always the same operation
     self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
 }
 

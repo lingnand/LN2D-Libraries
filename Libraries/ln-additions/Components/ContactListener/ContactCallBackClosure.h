@@ -6,7 +6,11 @@
 */
 
 #import <Foundation/Foundation.h>
+#import "Contact.h"
 
 
-@interface ContactCallBackClosure : NSObject
+typedef void (^ContactCallback) (Contact *);
+
+@interface ContactCallbackClosure : NSObject
+@property(nonatomic, copy) ContactCallback beginContact;
 @end

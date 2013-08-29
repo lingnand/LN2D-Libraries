@@ -48,9 +48,7 @@
 
 - (void)spawnAtPoint:(CGPoint)point {
     self.host.position = point;
-    if (self.spawnBlock) {
-        self.spawnBlock();
-    }
+    BLOCK_SAFE_RUN(self.spawnBlock);
 }
 
 - (id)copyWithZone:(NSZone *)zone {

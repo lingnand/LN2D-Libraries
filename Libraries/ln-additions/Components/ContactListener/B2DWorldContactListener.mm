@@ -60,17 +60,13 @@ void B2DWorldContactListener::PostSolve(b2Contact *contact, const b2ContactImpul
 
 void B2DWorldContactListener::triggerHandlers(b2Contact *contact, SEL selector) {
     b2Fixture *aFixture = contact->GetFixtureA();
-    B2DBody *a = (__bridge B2DBody *) aFixture->GetBody()->GetUserData();
+    B2DBody *a = [B2DBody bodyFromB2Body:aFixture->GetBody()];
     b2Fixture *bFixture = contact->GetFixtureB();
-    B2DBody *b = (__bridge B2DBody *) bFixture->GetBody()->GetUserData();
+    B2DBody *b = [B2DBody bodyFromB2Body:bFixture->GetBody()];
     // find the collisionhandler and trigger it
-    B2DContactListener *aHandler = [a.delegate componentForClass:[B2DContactListener class]];
-    B2DContactListener *bHandler = [b.delegate componentForClass:[B2DContactListener class]];
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    if (aHandler)
-        [aHandler performSelector:selector withObject:[B2DContact contactWithBody:a otherBody:b ownFixture:aFixture otherFixture:bFixture b2Contact:contact]];
-    if (bHandler)
-        [bHandler performSelector:selector withObject:[B2DContact contactWithBody:b otherBody:a ownFixture:bFixture otherFixture:aFixture b2Contact:contact]];
+    [a.contactListener performSelector:selector withObject:[B2DContact contactWithBody:a otherBody:b ownFixture:aFixture otherFixture:bFixture b2Contact:contact]];
+    [b.contactListener performSelector:selector withObject:[B2DContact contactWithBody:b otherBody:a ownFixture:bFixture otherFixture:aFixture b2Contact:contact]];
 #pragma clang diagnostic pop
 }

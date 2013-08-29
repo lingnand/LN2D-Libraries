@@ -7,9 +7,10 @@
 
 #import "CCComponent.h"
 #import "SimpleBody.h"
+#import "CCNode+LnAdditions.h"
 
 @implementation SimpleBody {
-
+    CGPoint _position;
 }
 
 @synthesize velocity = _velocity;
@@ -36,6 +37,8 @@
 - (void)activate {
     [super activate];
     [self scheduleUpdate];
+    // set the position (in case the component is added and the position is not in sync)
+    self.position = self.position;
 }
 
 - (void)deactivate {
@@ -45,39 +48,36 @@
 
 #pragma mark - Positions and attributes
 
+/** with respect to immediate parent */
+- (void)setPosition:(CGPoint)position {
+    self.host.nodePosition = position;
+    _position = position;
+}
+
 - (CGPoint)worldPosition {
     // returns the real position of the host in the world coordinate
-    return CGPointApplyAffineTransform(self.position, [self hostParentToWorldTransform]);
+    return CGPointApplyAffineTransform(self.position, self.hostParentToWorldTransform);
 }
 
 - (void)setWorldPosition:(CGPoint)worldPosition {
-    self.position = CGPointApplyAffineTransform(worldPosition, [self worldToHostParentTransform]);
+    self.position = CGPointApplyAffineTransform(worldPosition, self.worldToHostParentTransform);
 }
 
 - (CGPoint)worldVelocity {
-    return CGPointApplyAffineTransform(self.velocity, [self hostParentToWorldTransform]);
+    return CGPointVectorApplyAffineTransform(self.velocity, self.hostParentToWorldTransform);
 }
 
 - (void)setWorldVelocity:(CGPoint)worldVelocity {
-    self.velocity = CGPointApplyAffineTransform(worldVelocity, [self worldToHostParentTransform]);
+    self.velocity = CGPointVectorApplyAffineTransform(worldVelocity, self.worldToHostParentTransform);
 }
 
-- (CGPoint)absolutePosition {
-    return CGPointApplyAffineTransform(self.position, [self hostParentToWorldTransform]);
+- (CGPoint)worldAcceleration {
+    return CGPointVectorApplyAffineTransform(self.acceleration, self.hostParentToWorldTransform);
 }
 
-- (void)setAbsolutePosition:(CGPoint)absolutePosition {
-    self.position = CGPointApplyAffineTransform(absolutePosition, [self absoluteWorldToHostParentTransform]);
+- (void)setWorldAcceleration:(CGPoint)worldAcceleration {
+    self.acceleration = CGPointVectorApplyAffineTransform(worldAcceleration, self.worldToHostParentTransform);
 }
-
-- (CGPoint)absoluteVelocity {
-    return CGPointApplyAffineTransform(self.velocity, [self hostParentToAbsoluteWorldTransform]);
-}
-
-- (void)setAbsoluteVelocity:(CGPoint)absoluteVelocity {
-    self.velocity = CGPointApplyAffineTransform(absoluteVelocity, [self absoluteWorldToHostParentTransform]);
-}
-
 
 #pragma mark - Legacy opposite point calculation (not used)
 

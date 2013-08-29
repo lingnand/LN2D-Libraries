@@ -65,6 +65,18 @@
 
 - (CGPoint)anchorPointFromDeltaPoint:(CGPoint)delta;
 
+- (BOOL)isAscendantOfNode:(CCNode *)node;
+
+- (BOOL)isDescendantOfNode:(CCNode *)node;
+
+- (BOOL)isOnLineageOfNode:(CCNode *)node;
+
+- (NSArray *)allLineages;
+
+- (NSArray *)allAscendants;
+
+- (NSArray *)allDescendants;
+
 /** @group Curries */
 - (id)nodeWithAnchorPoint:(CGPoint)anchor;
 

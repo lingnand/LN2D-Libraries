@@ -11,7 +11,6 @@
 
 @interface PeriodicSpawnDispatcher ()
 @property(nonatomic) ccTime elapsed;
-@property(nonatomic) int updateCount;
 @property(nonatomic) ccTime period;
 @end
 
@@ -42,8 +41,8 @@
 - (void)update:(ccTime)delta {
     // we'd like to have a correct behavior for specifying the period (as number of seconds before releasing the next object
     self.elapsed += delta;
-    if ((int) (self.elapsed / self.period) > self.updateCount) {
-        self.updateCount = (int) (self.elapsed / self.period);
+    if (self.elapsed > self.period) {
+        self.elapsed = 0;
         [self spawnInactiveInstance];
     }
 }

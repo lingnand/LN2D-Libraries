@@ -42,9 +42,6 @@
 * // we can rename it to something like RUBEWorldCache
 */
 
-#define DEFAULT_PTM_RATIO 1.5
-#define DEFAULT_GRAVITY b2Vec2(0.0f, -10.0f)
-
 + (NSMutableDictionary *)worldMap {
     static NSMutableDictionary *worldMap = nil;
     if (!worldMap) {
@@ -53,16 +50,8 @@
     return worldMap;
 }
 
-+ (id)worldWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
-    return [[self alloc] initWithB2World:world ptmRatio:ptmRatio];
-}
-
 + (id)worldWithB2World:(b2World *)world {
-    return [self worldWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
-}
-
-+ (id)worldWithGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
-    return [[self alloc] initWithGravity:gravity ptmRatio:ptmRatio];
+    return [[self alloc] initWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
 }
 
 + (id)worldFromB2World:(b2World *)world {
@@ -70,10 +59,27 @@
     return [w isKindOfClass:[self class]] ? w : nil;
 }
 
-- (id)initWithGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
++ (id)worldWitGravity:(CGPoint)gravity ptmRatio:(float)ptmRatio {
+    return [[self alloc] initWithGravity:gravity ptmRatio:ptmRatio];
+}
+
+- (id)initWithGravity:(CGPoint)point ptmRatio:(float)ptmRatio {
+    return [self initWithPhysicalGravity:b2Vec2(point.x / ptmRatio, point.y / ptmRatio) ptmRatio:ptmRatio];
+}
+
++ (id)worldWithPhysicalGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
+    return [[self alloc] initWithPhysicalGravity:gravity ptmRatio:ptmRatio];
+}
+
+- (id)initWithPhysicalGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
     return [self initWithB2World:new b2World(gravity) ptmRatio:ptmRatio];
 }
 
+- (id)init {
+    return [self initWithGravity:DEFAULT_GRAVITY ptmRatio:DEFAULT_PTM_RATIO];
+}
+
+/** Designated initializer */
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
     // we should ensure that there's only ever one such world being initiated
     id w = [self.class worldFromB2World:world];
@@ -87,8 +93,24 @@
     return self;
 }
 
-- (id)init {
-    return [self initWithGravity:DEFAULT_GRAVITY ptmRatio:DEFAULT_PTM_RATIO];
+- (Class)bodyClass {
+    return [B2DBody class];
+}
+
+- (void)setGravity:(CGPoint)gravity {
+    self.physicalGravity = [self b2Vec2FromCGPoint:gravity];
+}
+
+- (CGPoint)gravity {
+    return [self CGPointFromb2Vec2:self.physicalGravity];
+}
+
+- (void)setPhysicalGravity:(b2Vec2)physicalGravity {
+    self.world->SetGravity(physicalGravity);
+}
+
+- (b2Vec2)physicalGravity {
+    return self.world->GetGravity();
 }
 
 - (void)setWorld:(b2World *)world {
@@ -96,7 +118,7 @@
         // delete the old world
         if (_world) {
             [self.class worldMap][[NSValue valueWithPointer:_world]] = nil;
-            for (Body *b in self) {
+            for (Body *b in self.allBodies) {
                 b.world = nil;
             }
             delete _world;
@@ -123,8 +145,8 @@
                 b = b->GetNext();
             }
         }
-        // set up the contact listener
-        self.world->SetContactListener(self.worldContactListener);
+        // reset up the contact listener
+        world->SetContactListener(self.worldContactListener);
     }
 }
 
@@ -134,7 +156,7 @@
 
 - (B2DWorldContactListener *)worldContactListener {
     if (!_worldContactListener)
-        _worldContactListener = new B2DWorldContactListener();
+        self.worldContactListener = new B2DWorldContactListener();
     return _worldContactListener;
 }
 
@@ -142,6 +164,7 @@
     if (worldContactListener != _worldContactListener) {
         delete _worldContactListener;
         _worldContactListener = worldContactListener;
+        self.world->SetContactListener(worldContactListener);
     }
 }
 
@@ -166,6 +189,7 @@
 
 - (void)dealloc {
     self.world = nil;
+    self.worldContactListener = nil;
 }
 
 - (void)activate {
@@ -182,7 +206,7 @@
 //    NSLog(@"timestep = %f", step);
 //    const float32 timeStep = 1.0f / 60.0f;
 //    const float32 timeStep = step / 5000.0f;
-    const int32 velocityIterations = 5;
+    const int32 velocityIterations = 8;
     const int32 positionIterations = 1;
 
     // step the world
@@ -191,25 +215,19 @@
 
 #pragma mark - Override the addComponent and removeComponent to add B2D specific processings
 
-- (void)addBody:(B2DBody *)body {
-    if (body.world != self) {
-        // we need to check for more accurate assigning
-        if (!body.body || body.body->GetWorld() != self.world) {
-            // we need to create the body
-            body.body = self.world->CreateBody(body.currentBodyDef);
-        }
+- (void)onAddingNewBody:(B2DBody *)body {
+    // we need to check for more accurate assigning
+    if (!body.body || body.body->GetWorld() != self.world) {
+        // we need to create the body
+        body.body = self.world->CreateBody(body.currentBodyDef);
     }
-    [super addBody:body];
 }
 
-- (void)removeBody:(B2DBody *)body {
-    if (body.world == self) {
-        self.world->DestroyBody(body.body);
-        // we also need to nil the body as a B2DBody not connected with
-        // any world would be funny to have a dangling b2body with it
-        body.body = nil;
-    }
-    [super removeBody:body];
+- (void)onRemovingBody:(B2DBody *)body {
+    self.world->DestroyBody(body.body);
+    // we also need to nil the body as a B2DBody not connected with
+    // any world would be funny to have a dangling b2body with it
+    body.body = nil;
 }
 
 @end

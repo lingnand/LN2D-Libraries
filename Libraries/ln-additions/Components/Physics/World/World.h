@@ -9,12 +9,24 @@
 #import "CCComponent.h"
 @class Body;
 
+#define DEFAULT_GRAVITY (ccp(0.0f, -100.0f))
+#define DEFAULT_STEP (1.0f / 60.0f)
 @interface World : CCComponent
+/** These two properties are not used in this abstract class
+ * The subclass should provide the correct initializers for these properties */
+@property(nonatomic) CGPoint gravity;
+
 +(id)world;
 
-- (void)addBody:(Body *)body;
+- (Class)bodyClass;
 
-- (void)removeBody:(Body *)body;
+- (BOOL)addBody:(Body *)body;
+
+- (void)onAddingNewBody:(Body *)body;
+
+- (BOOL)removeBody:(Body *)body;
+
+- (void)onRemovingBody:(Body *)body;
 
 - (NSSet *)allBodies;
 @end

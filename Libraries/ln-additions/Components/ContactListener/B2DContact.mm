@@ -6,15 +6,14 @@
 */
 
 #import "CCComponent.h"
+#import "Contact.h"
 #import "B2DContact.h"
 #import "B2DBody.h"
 #include "b2Contact.h"
 
 @implementation B2DContact
 - (id)initWithBody:(B2DBody *)ownBody otherBody:(B2DBody *)otherBody ownFixture:(b2Fixture *)ownFixture otherFixture:(b2Fixture *)otherFixture b2Contact:(b2Contact *)contact {
-    if (self = [super init]) {
-        self.ownBody = ownBody;
-        self.otherBody = otherBody;
+    if (self = [super initWithBody:ownBody otherBody:otherBody]) {
         self.ownFixture = ownFixture;
         self.otherFixture = otherFixture;
         self.b2Contact = contact;

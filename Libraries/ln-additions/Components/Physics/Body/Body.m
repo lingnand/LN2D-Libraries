@@ -10,10 +10,10 @@
 #import "World.h"
 #include "NSObject+LnAdditions.h"
 #import "CCNode+LnAdditions.h"
+#import "ContactListener.h"
 
 @implementation Body {
     Class _worldClass;
-    BOOL _searchWorldAutomatically;
 }
 
 + (id)body {
@@ -27,20 +27,23 @@
     return _worldClass;
 }
 
-- (World *)world {
-    if (!_world && _searchWorldAutomatically) {
-        [self setClosestWorld];
-    }
-    return _world;
+// absolute position / velocity etc
+- (CGPoint)absolutePosition {
+    return CGPointApplyAffineTransform(self.worldPosition, self.world.host.nodeToWorldTransform);
 }
 
-/** with respect to immediate parent */
-- (void)setPosition:(CGPoint)position {
-    self.host.nodePosition = position;
+- (void)setAbsolutePosition:(CGPoint)absolutePosition {
+    self.worldPosition = CGPointApplyAffineTransform(absolutePosition, self.world.host.worldToNodeTransform);
 }
 
-- (CGPoint)position {
-    return self.host.nodePosition;
+// we should also add the velocity of the world
+- (CGPoint)absoluteVelocity {
+    // when the body is not wired to any world then the first argument will return 0; exactly what we are looking for
+    return ccpAdd(self.world.host.body.absoluteVelocity, CGPointVectorApplyAffineTransform(self.worldVelocity, self.world.host.nodeToWorldTransform));
+}
+
+- (void)setAbsoluteVelocity:(CGPoint)absoluteVelocity {
+    self.worldVelocity = CGPointVectorApplyAffineTransform(ccpSub(absoluteVelocity, self.world.host.body.absoluteVelocity), self.world.host.worldToNodeTransform);
 }
 
 /** with respect to the real world */
@@ -52,22 +55,13 @@
     CGAffineTransform t = CGAffineTransformIdentity;
 
     for (CCNode *p = self.host.parent; p && p != self.world.host; p = p.parent)
-        t = CGAffineTransformConcat(t, [p nodeToParentTransform]);
+        t = CGAffineTransformConcat(t, p.nodeToParentTransform);
 
     return t;
 }
 
 - (CGAffineTransform)worldToHostParentTransform {
-    return CGAffineTransformInvert([self hostParentToWorldTransform]);
-}
-
-/** with respect to the absolute world (the outermost world, the iPhone..?) */
-- (CGAffineTransform)hostParentToAbsoluteWorldTransform {
-    return [self.host.parent nodeToWorldTransform];
-}
-
-- (CGAffineTransform)absoluteWorldToHostParentTransform {
-    return [self.host.parent worldToNodeTransform];
+    return CGAffineTransformInvert(self.hostParentToWorldTransform);
 }
 
 - (void)setWorld:(World *)world {
@@ -85,22 +79,36 @@
 /** Search for a suitable world component in the tree upwards */
 - (void)setClosestWorld {
     CCNode *p = self.host;
-    if (p) {
+    if (!self.world && p) {
         World *w = nil;
         while ((p = p.parent)) {
             if ((w = [p.componentManager componentForClass:self.worldClass])) {
-                self.world = w;
-                break;
+                if ([w addBody:self])
+                    return;
+            } else if ([self.worldClass isSubclassOfClass:p.body.worldClass]) {
+                // we can ask for the body of the parent. Since it must have already checked
+                // for the whole place then it should get the correct result
+                // condition: the worldClass of this body must be kind of class of that of the parent's body
+                if ([p.body.world addBody:self])
+                    return;
             }
         }
-        // flip the toggle
-        _searchWorldAutomatically = NO;
     }
+}
+
+/** Contact Listener */
+- (ContactListener *)contactListener {
+    if (!_contactListener)
+        // get the class of the contactListener
+        _contactListener = [[self classForPropertyNamed:@"contactListener"] listener];
+
+    return _contactListener;
 }
 
 - (void)onAddComponent {
     [super onAddComponent];
-    _searchWorldAutomatically = YES;
+    // we really need to add the body to the closest world to ensure consistency
+    [self setClosestWorld];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
