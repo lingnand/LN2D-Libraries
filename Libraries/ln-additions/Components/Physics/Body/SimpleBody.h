@@ -23,4 +23,6 @@
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic) CGPoint worldAcceleration;
 @property(nonatomic) CGFloat restitution;
+
+- (id)copyWithZone:(NSZone *)zone;
 @end

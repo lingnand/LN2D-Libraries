@@ -11,6 +11,7 @@
 #import "CCNode+LnAdditions.h"
 
 @implementation World
+@dynamic gravity;
 
 + (id)world {
     return [self new];

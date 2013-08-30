@@ -24,6 +24,11 @@
     return [[self alloc] initWithB2Fixture:fixture];
 }
 
++ (id)fixture {
+    return [self new];
+}
+
+
 - (id)initWithB2Fixture:(b2Fixture *)fixture {
     id f = [self.class fixtureFromB2Fixture:fixture];
     if (f) {
@@ -196,7 +201,10 @@
 - (id)copyWithZone:(NSZone *)zone {
     B2DFixture *copy = [[[self class] allocWithZone:zone] init];
     if (copy != nil) {
-        copy->_fixDef = self.currentFixtureDef;
+        if (self.fix)
+            copy->_fixDef = self.currentFixtureDef;
+        else
+            copy->_fixDef = new b2FixtureDef(*(self.fixDef));
     }
     return copy;
 }

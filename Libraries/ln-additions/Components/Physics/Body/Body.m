@@ -15,9 +15,22 @@
 @implementation Body {
     Class _worldClass;
 }
+@dynamic position,velocity,worldPosition,worldVelocity;
 
 + (id)body {
+    // give back a simpleBody instance if the user does not specify a
+    // concrete implementing class; SimpleBody is like a default implementation
+    // of Body anyway
+    if (self.class == [Body class])
+        return [SimpleBody body];
     return [self component];
+}
+
+/** We explicitly return a nil instance if the user tries to init this abstract class */
+- (id)init {
+    if (self.class == [Body class])
+        return nil;
+    return [super init];
 }
 
 - (Class)worldClass {
@@ -85,7 +98,7 @@
             if ((w = [p.componentManager componentForClass:self.worldClass])) {
                 if ([w addBody:self])
                     return;
-            } else if ([self.worldClass isSubclassOfClass:p.body.worldClass]) {
+            } else if ([p.body.worldClass isSubclassOfClass:self.worldClass]) {
                 // we can ask for the body of the parent. Since it must have already checked
                 // for the whole place then it should get the correct result
                 // condition: the worldClass of this body must be kind of class of that of the parent's body
@@ -116,7 +129,7 @@
 
     if (copy != nil) {
         copy->_worldClass = _worldClass;
-        copy.velocity = self.velocity;
+        // all other fields should be handled by the subclass
     }
 
     return copy;

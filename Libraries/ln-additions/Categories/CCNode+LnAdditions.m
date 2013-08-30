@@ -233,7 +233,7 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
     Mask *m = [self.componentManager componentForClass:[Mask class]];
     if (!m) {
         // default to a nodeMask that basically forwards calls to children if there's any
-        self.mask = [NodeMask mask];
+        self.mask = m = [NodeMask mask];
     }
     return m;
 }

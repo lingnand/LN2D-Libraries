@@ -49,8 +49,8 @@
         The verdict: prefer OR mask when resolving two masks of different types
 */
 - (BOOL)intersects:(Mask *)other {
-    // if the same mask is passed along then just return false
-    if (other == self)
+    // if it's nil or the same mask is passed along then just return false
+    if (!other || other == self)
         return NO;
     // if the two belong to the same class then essentially they are of the same implementation and the result
     // should be the same; if they aren't same then there's something wrong with that implementation! (consistency

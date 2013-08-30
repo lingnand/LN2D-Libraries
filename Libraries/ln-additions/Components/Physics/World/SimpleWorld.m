@@ -154,7 +154,7 @@
 // that causes the collision
 - (CCNode *)node:(CCNode *)n intersectsWithNodesInSet:(NSSet *)set {
     for (CCNode *node in set) {
-        if ([node.mask intersects:n])
+        if ([node.mask intersects:n.mask])
             return node;
     }
     return nil;

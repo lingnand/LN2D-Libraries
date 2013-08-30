@@ -162,6 +162,10 @@
     }
 }
 
+- (CGPoint)position {
+    return CGPointApplyAffineTransform(self.worldPosition, self.worldToHostParentTransform);
+}
+
 - (void)setPosition:(CGPoint)position {
     // first get the position relative to the world
     // set the relative position in the physical world
@@ -169,11 +173,11 @@
 }
 
 - (CGPoint)worldPosition {
-    return [self.world CGPointFromb2Vec2:self.worldPhysicalPosition];
+    return CGPointFromb2Vec2(self.worldPhysicalPosition, self.world);
 }
 
 - (void)setWorldPosition:(CGPoint)worldPosition {
-    self.worldPhysicalPosition = [self.world b2Vec2FromCGPoint:worldPosition];
+    self.worldPhysicalPosition = b2Vec2FromCGPoint(worldPosition, self.world);
 }
 
 - (b2Vec2)worldPhysicalPosition {
@@ -209,11 +213,11 @@
 
 // velocity in the CC sense
 - (CGPoint)worldVelocity {
-    return [self.world CGPointFromb2Vec2:self.linearVelocity];
+    return CGPointFromb2Vec2(self.linearVelocity, self.world);
 }
 
 - (void)setWorldVelocity:(CGPoint)velocity {
-    self.linearVelocity = [self.world b2Vec2FromCGPoint:velocity];
+    self.linearVelocity = b2Vec2FromCGPoint(velocity, self.world);
 }
 
 - (b2Vec2)linearVelocity {
@@ -359,20 +363,6 @@
     return def;
 }
 
-/** This will allocate a new def on the heap; remember to memory manage it */
-- (b2FixtureDef *)fixtureDefFromFixture:(const b2Fixture *)fixture {
-    b2FixtureDef *def = new b2FixtureDef;
-    // get the attributes one by one
-    def->density = fixture->GetDensity();
-    def->shape = fixture->GetShape();
-    def->filter = fixture->GetFilterData();
-    def->friction = fixture->GetFriction();
-    def->isSensor = fixture->IsSensor();
-    def->restitution = fixture->GetRestitution();
-    def->userData = fixture->GetUserData();
-    return def;
-}
-
 #pragma mark - Fixture Operations
 
 -(void) addFixture:(B2DFixture *)fixture {
@@ -415,6 +405,10 @@
     if (!_fixtures)
         _fixtures = [NSMutableSet set];
     return _fixtures;
+}
+
+- (NSSet *)allFixtures {
+    return self.fixtures;
 }
 
 #pragma mark - Update
@@ -462,7 +456,7 @@
 //}
 
 - (void)update:(ccTime)step {
-    CGPoint ccpos = [self.world CGPointFromb2Vec2:self.body->GetPosition()];
+    CGPoint ccpos = CGPointFromb2Vec2(self.body->GetPosition(), self.world);
     self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self worldToHostParentTransform]);
     // an rotation itself can be expressed as an affinetransformation, which means
     // that independent of the relative observer, it's always the same operation
@@ -473,7 +467,12 @@
     B2DBody *copy = (B2DBody *) [super copyWithZone:zone];
 
     if (copy != nil) {
-        copy->_bodyDef = self.currentBodyDef;
+        if (self.body)
+            // this currentBodyDef will be a newly allocated BodyDef
+            copy->_bodyDef = self.currentBodyDef;
+        else
+            // we need to copy the BodyDef
+            copy->_bodyDef = new b2BodyDef(*(self.bodyDef));
         copy->_fixtures = [[NSMutableSet alloc] initWithSet:self.fixtures copyItems:YES];
     }
 

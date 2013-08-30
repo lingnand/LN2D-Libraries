@@ -23,9 +23,9 @@
 // if ptmRatio changed and the world is enabled then it will automatically
 // recalibrate everything in the next 'update' cycle; otherwise there's no
 // need to change
-@property (atomic) float ptmRatio;
-@property (atomic) b2Vec2 physicalGravity;
-@property (nonatomic, assign) B2DWorldContactListener *worldContactListener;
+@property(atomic) float ptmRatio;
+@property(atomic) b2Vec2 physicalGravity;
+@property(nonatomic, assign) B2DWorldContactListener *worldContactListener;
 
 
 + (id)worldFromB2World:(b2World *)world;
@@ -42,13 +42,32 @@
 
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio;
 
-- (b2Vec2)b2Vec2FromCGPoint:(CGPoint)p;
-
-- (b2Vec2)b2Vec2FromX:(float)x y:(float)y;
-
-- (CGPoint)CGPointFromb2Vec2:(b2Vec2)p;
-
 - (void)addBodyForB2Body:(b2Body *)b;
 
 @end
+
+// define some functions to transform the coordinates
+NS_INLINE CGPoint CGPointFromb2Vec2(b2Vec2 p, B2DWorld *w) {
+    float ptmRatio = w ? w.ptmRatio : DEFAULT_PTM_RATIO;
+    return ccp(p.x * ptmRatio, p.y * ptmRatio);
+}
+
+NS_INLINE b2Vec2 b2Vec2FromCC(CGFloat x, CGFloat y, B2DWorld *w) {
+    float ptmRatio = w ? w.ptmRatio : DEFAULT_PTM_RATIO;
+    return b2Vec2(x / ptmRatio, y / ptmRatio);
+}
+
+NS_INLINE b2Vec2 b2Vec2FromCGPoint(CGPoint p, B2DWorld *w) {
+    return b2Vec2FromCC(p.x, p.y, w);
+}
+
+NS_INLINE CGFloat CGLengthFromb2Length(float len, B2DWorld *w) {
+    float ptmRatio = w ? w.ptmRatio : DEFAULT_PTM_RATIO;
+    return len * ptmRatio;
+}
+
+NS_INLINE float b2LengthFromCGLength(CGFloat len, B2DWorld *w) {
+    float ptmRatio = w ? w.ptmRatio : DEFAULT_PTM_RATIO;
+    return len / ptmRatio;
+}
 

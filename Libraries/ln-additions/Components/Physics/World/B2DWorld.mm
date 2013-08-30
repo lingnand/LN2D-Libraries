@@ -98,11 +98,11 @@
 }
 
 - (void)setGravity:(CGPoint)gravity {
-    self.physicalGravity = [self b2Vec2FromCGPoint:gravity];
+    self.physicalGravity = b2Vec2FromCGPoint(gravity, self);
 }
 
 - (CGPoint)gravity {
-    return [self CGPointFromb2Vec2:self.physicalGravity];
+    return CGPointFromb2Vec2(self.physicalGravity, self);
 }
 
 - (void)setPhysicalGravity:(b2Vec2)physicalGravity {
@@ -166,25 +166,6 @@
         _worldContactListener = worldContactListener;
         self.world->SetContactListener(worldContactListener);
     }
-}
-
-
-/**
- * Convert b2Vec2 to CGPoint honoring ptmratio
- */
-- (b2Vec2)b2Vec2FromCGPoint:(CGPoint)p {
-    return b2Vec2(p.x / self.ptmRatio, p.y / self.ptmRatio);
-}
-
-- (b2Vec2)b2Vec2FromX:(float)x  y:(float)y {
-    return b2Vec2(x / self.ptmRatio, y / self.ptmRatio);
-}
-
-/**
- * Convert CGPoint to b2Vec2 honoring self.ptmRatio
- */
-- (CGPoint)CGPointFromb2Vec2:(b2Vec2)p {
-    return CGPointMake(p.x * self.ptmRatio, p.y * self.ptmRatio);
 }
 
 - (void)dealloc {

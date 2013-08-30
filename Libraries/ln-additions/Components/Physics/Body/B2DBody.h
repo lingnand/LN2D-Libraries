@@ -46,6 +46,8 @@
 + (id)bodyWithB2Body:(b2Body *)body;
 
 + (id)bodyFromB2Body:(b2Body *)body;
+
+- (NSSet *)allFixtures;
 @end
 
 

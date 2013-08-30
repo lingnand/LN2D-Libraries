@@ -12,8 +12,8 @@
 #define DEFAULT_GRAVITY (ccp(0.0f, -100.0f))
 #define DEFAULT_STEP (1.0f / 60.0f)
 @interface World : CCComponent
-/** These two properties are not used in this abstract class
- * The subclass should provide the correct initializers for these properties */
+/** The subclass should provide the correct initializers for these properties */
+/** The gravity is ALWAYS relative to the world */
 @property(nonatomic) CGPoint gravity;
 
 +(id)world;

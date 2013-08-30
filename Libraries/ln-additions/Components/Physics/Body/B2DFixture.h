@@ -20,7 +20,7 @@
 @property (nonatomic) BOOL isSensor;
 @property (nonatomic) b2Filter filter;
 /** return the next fixture if there's one (only valid if it's already wired up to a body) */
-@property (nonatomic) B2DFixture *next;
+@property (nonatomic, readonly) B2DFixture *next;
 
 - (id)initWithB2Fixture:(b2Fixture *)fixture;
 
@@ -34,4 +34,6 @@
 + (id)fixtureFromB2Fixture:(b2Fixture *)fixture;
 
 + (id)fixtureWithB2Fixture:(b2Fixture *)fixture;
+
++ (id)fixture;
 @end

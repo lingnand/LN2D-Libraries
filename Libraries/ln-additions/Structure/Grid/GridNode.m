@@ -40,8 +40,8 @@
         }
         _grids = arr;
 
-        // default mask
-        self.mask = self.rows.mask;
+        // the default mask (a nodemask will be good enough for looping through all
+        // the children of this node)
     }
     return self;
 }
@@ -125,8 +125,6 @@
     for (GridLine *line in group) {
         [self.grids[index] addLine:line];
     }
-    // set the default mask
-    self.mask = group.mask;
 }
 
 #pragma mark - GridGroupDelegate protocol

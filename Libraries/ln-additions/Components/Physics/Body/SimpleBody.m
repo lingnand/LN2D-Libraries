@@ -8,11 +8,11 @@
 #import "CCComponent.h"
 #import "SimpleBody.h"
 #import "CCNode+LnAdditions.h"
+#import "NodeMask.h"
 
 @implementation SimpleBody {
-    CGPoint _position;
 }
-
+@synthesize position = _position;
 @synthesize velocity = _velocity;
 
 #pragma mark - LifeCycle
@@ -38,7 +38,7 @@
     [super activate];
     [self scheduleUpdate];
     // set the position (in case the component is added and the position is not in sync)
-    self.position = self.position;
+    self.host.nodePosition = self.position;
 }
 
 - (void)deactivate {
@@ -78,6 +78,20 @@
 - (void)setWorldAcceleration:(CGPoint)worldAcceleration {
     self.acceleration = CGPointVectorApplyAffineTransform(worldAcceleration, self.worldToHostParentTransform);
 }
+
+- (id)copyWithZone:(NSZone *)zone {
+    SimpleBody *copy = (SimpleBody *) [super copyWithZone:zone];
+
+    if (copy != nil) {
+        copy->_position = _position;
+        copy->_acceleration = _acceleration;
+        copy->_restitution = _restitution;
+        copy->_velocity = _velocity;
+    }
+
+    return copy;
+}
+
 
 #pragma mark - Legacy opposite point calculation (not used)
 
