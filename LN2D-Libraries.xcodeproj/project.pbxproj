@@ -27,8 +27,8 @@
 		A8C6DE4A923410410A5F652D /* NodalMask.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DD2DDDA22DADBE86B766 /* NodalMask.m */; };
 		A8C6DE88A808DB3B399C5BEB /* NSMapTable+LnAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = A8C6DD79CCD9A3B09D413ADD /* NSMapTable+LnAdditions.m */; };
 		A8C6DF746523817E3548343C /* B2DRUBEImage.mm in Sources */ = {isa = PBXBuildFile; fileRef = A8C6D0497CE5CC400355E763 /* B2DRUBEImage.mm */; };
-		AE2A55A217CC538F00766E68 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED9EBD51792060000DD92CF /* Foundation.framework */; };
-		AE2A55AF17CC542B00766E68 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = AE2A55AE17CC542B00766E68 /* JRSwizzle.m */; };
+		AE43BAEC17D09A8E00A1F6E5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AED9EBD51792060000DD92CF /* Foundation.framework */; };
+		AE43BAF917D09B0000A1F6E5 /* JRSwizzle.m in Sources */ = {isa = PBXBuildFile; fileRef = AE43BAF817D09B0000A1F6E5 /* JRSwizzle.m */; };
 		AE8FDD4E1793038C0054D812 /* b2dJson.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD431793038C0054D812 /* b2dJson.cpp */; };
 		AE8FDD501793038C0054D812 /* b2dJsonImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD471793038C0054D812 /* b2dJsonImage.cpp */; };
 		AE8FDD511793038C0054D812 /* jsoncpp.cpp in Sources */ = {isa = PBXBuildFile; fileRef = AE8FDD4D1793038C0054D812 /* jsoncpp.cpp */; };
@@ -260,7 +260,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
-		AE2A559F17CC538F00766E68 /* CopyFiles */ = {
+		AE43BAE917D09A8E00A1F6E5 /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "include/${PRODUCT_NAME}";
@@ -384,9 +384,10 @@
 		A8C6DF720C47B316B966FE96 /* B2DRUBESpace.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = B2DRUBESpace.mm; sourceTree = "<group>"; };
 		A8C6DF90EB21A628724505A9 /* B2DContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = B2DContact.h; sourceTree = "<group>"; };
 		AE13B1ED17975D3900BECFA0 /* CHDataStructures-iOS.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "CHDataStructures-iOS.xcodeproj"; path = "Libraries/chdatastructures/CHDataStructures-iOS.xcodeproj"; sourceTree = "<group>"; };
-		AE2A55A117CC538F00766E68 /* libjrswizzle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libjrswizzle.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		AE2A55AD17CC542B00766E68 /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
-		AE2A55AE17CC542B00766E68 /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
+		AE43BAEB17D09A8E00A1F6E5 /* libjrswizzle.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libjrswizzle.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		AE43BAF717D09B0000A1F6E5 /* JRSwizzle.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JRSwizzle.h; sourceTree = "<group>"; };
+		AE43BAF817D09B0000A1F6E5 /* JRSwizzle.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = JRSwizzle.m; sourceTree = "<group>"; };
+		AE783F7917D08AFE00CA8399 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		AE8FDC861792FE220054D812 /* librube.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = librube.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE8FDCA2179302B40054D812 /* libbox2d-git.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libbox2d-git.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 		AE8FDD431793038C0054D812 /* b2dJson.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = b2dJson.cpp; sourceTree = "<group>"; };
@@ -675,11 +676,11 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		AE2A559E17CC538F00766E68 /* Frameworks */ = {
+		AE43BAE817D09A8E00A1F6E5 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE2A55A217CC538F00766E68 /* Foundation.framework in Frameworks */,
+				AE43BAEC17D09A8E00A1F6E5 /* Foundation.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -790,11 +791,11 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		AE2A558E17CC533800766E68 /* JRSwizzle */ = {
+		AE43BAED17D09A8E00A1F6E5 /* JRSwizzle */ = {
 			isa = PBXGroup;
 			children = (
-				AE2A55AD17CC542B00766E68 /* JRSwizzle.h */,
-				AE2A55AE17CC542B00766E68 /* JRSwizzle.m */,
+				AE43BAF717D09B0000A1F6E5 /* JRSwizzle.h */,
+				AE43BAF817D09B0000A1F6E5 /* JRSwizzle.m */,
 			);
 			name = JRSwizzle;
 			path = Libraries/jrswizzle;
@@ -1164,7 +1165,7 @@
 				AED9EBBE1792058B00DD92CF /* Frameworks */,
 				A8C6DE0180E7995FA67FAEE6 /* BuildSettings */,
 				AED9EEA21792240F00DD92CF /* LnAdditions */,
-				AE2A558E17CC533800766E68 /* JRSwizzle */,
+				AE43BAED17D09A8E00A1F6E5 /* JRSwizzle */,
 				AE94B26D17C1FA41005EC66C /* AQToolkit */,
 				AE8FDC761792FDE60054D812 /* Rube */,
 				AE8FDD42179303040054D812 /* Box2D */,
@@ -1179,6 +1180,8 @@
 		AED9EBBE1792058B00DD92CF /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				AE43BAEB17D09A8E00A1F6E5 /* libjrswizzle.a */,
+				AE783F7917D08AFE00CA8399 /* OpenGLES.framework */,
 				AED334D617C30816001E2C0C /* libxml2.dylib */,
 				AED334D417C30804001E2C0C /* MobileCoreServices.framework */,
 				AED334D217C307F9001E2C0C /* SystemConfiguration.framework */,
@@ -1186,7 +1189,6 @@
 				AED334BE17C27E6E001E2C0C /* libstdc++.dylib */,
 				AE8FDEA6179365B70054D812 /* UIKit.framework */,
 				AED9EBD51792060000DD92CF /* Foundation.framework */,
-				AE2A55A117CC538F00766E68 /* libjrswizzle.a */,
 				AED9EBDB1792063100DD92CF /* libobjc-simple-bindings.a */,
 				AE94B30B17C1FB7E005EC66C /* libaqtoolkit.a */,
 				AED9EEA71792248A00DD92CF /* libln-additions.a */,
@@ -1513,13 +1515,13 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		AE2A55A017CC538F00766E68 /* jrswizzle */ = {
+		AE43BAEA17D09A8E00A1F6E5 /* jrswizzle */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = AE2A55AA17CC538F00766E68 /* Build configuration list for PBXNativeTarget "jrswizzle" */;
+			buildConfigurationList = AE43BAF417D09A8E00A1F6E5 /* Build configuration list for PBXNativeTarget "jrswizzle" */;
 			buildPhases = (
-				AE2A559D17CC538F00766E68 /* Sources */,
-				AE2A559E17CC538F00766E68 /* Frameworks */,
-				AE2A559F17CC538F00766E68 /* CopyFiles */,
+				AE43BAE717D09A8E00A1F6E5 /* Sources */,
+				AE43BAE817D09A8E00A1F6E5 /* Frameworks */,
+				AE43BAE917D09A8E00A1F6E5 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -1527,7 +1529,7 @@
 			);
 			name = jrswizzle;
 			productName = jrswizzle;
-			productReference = AE2A55A117CC538F00766E68 /* libjrswizzle.a */;
+			productReference = AE43BAEB17D09A8E00A1F6E5 /* libjrswizzle.a */;
 			productType = "com.apple.product-type.library.static";
 		};
 		AE8FDC851792FE220054D812 /* rube */ = {
@@ -1688,7 +1690,7 @@
 				AE8FDCA1179302B40054D812 /* box2d-git */,
 				AE8FDE4817935B550054D812 /* cocos2d-extensions */,
 				AE94B25217C1FA1C005EC66C /* aqtoolkit */,
-				AE2A55A017CC538F00766E68 /* jrswizzle */,
+				AE43BAEA17D09A8E00A1F6E5 /* jrswizzle */,
 			);
 		};
 /* End PBXProject section */
@@ -1795,11 +1797,11 @@
 /* End PBXReferenceProxy section */
 
 /* Begin PBXSourcesBuildPhase section */
-		AE2A559D17CC538F00766E68 /* Sources */ = {
+		AE43BAE717D09A8E00A1F6E5 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AE2A55AF17CC542B00766E68 /* JRSwizzle.m in Sources */,
+				AE43BAF917D09B0000A1F6E5 /* JRSwizzle.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1998,7 +2000,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		AE2A55AB17CC538F00766E68 /* Debug */ = {
+		AE43BAF517D09A8E00A1F6E5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DSTROOT = /tmp/jrswizzle.dst;
@@ -2008,7 +2010,7 @@
 			};
 			name = Debug;
 		};
-		AE2A55AC17CC538F00766E68 /* Release */ = {
+		AE43BAF617D09A8E00A1F6E5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				DSTROOT = /tmp/jrswizzle.dst;
@@ -2110,8 +2112,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -2139,8 +2139,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
-				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_WARN_CONSTANT_CONVERSION = YES;
 				CLANG_WARN_EMPTY_BODY = YES;
 				CLANG_WARN_ENUM_CONVERSION = YES;
@@ -2240,11 +2238,11 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		AE2A55AA17CC538F00766E68 /* Build configuration list for PBXNativeTarget "jrswizzle" */ = {
+		AE43BAF417D09A8E00A1F6E5 /* Build configuration list for PBXNativeTarget "jrswizzle" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				AE2A55AB17CC538F00766E68 /* Debug */,
-				AE2A55AC17CC538F00766E68 /* Release */,
+				AE43BAF517D09A8E00A1F6E5 /* Debug */,
+				AE43BAF617D09A8E00A1F6E5 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

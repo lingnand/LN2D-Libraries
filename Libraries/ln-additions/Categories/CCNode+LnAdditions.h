@@ -31,33 +31,24 @@
 
 -(CGSize)winSize;
 
-- (CGRect)rectInWorldSpace:(CGRect)rect;
-
 - (void)addChildren:(id <NSFastEnumeration>)children;
 
-- (CGRect)unionBox;
-
-- (CGRect)unionBoxInWorld;
-
-- (CGRect)unionBoxInParent;
-
 /**
-    This is the rect of the node measured in the WORLD coordinate.
+    This is the union of all the space measured in the CURRENT NODE space
     It takes care
     1. the space taken by the children
     2. scale and rotate
 
-    The canvasBox (and also its sibling canvasSize) is especially useful for computation
-    involving what 'looks like' on screen. Using a world coordinate means that nodes in
-    different groups and structures can access the their relative positions and this is
-    a vital need for uses such as Mask calculation.
+    The unionBox (and also its siblings) is especially useful for computation
+    involving what 'looks like' on screen.
 */
-- (CGRect)canvasBox;
+- (CGRect)unionBox;
 
-/**
-    Used primarily to compute the total size of the current node including its children
-*/
-- (CGSize)canvasSize;
+/** The unionBox measured in the absolute world */
+- (CGRect)unionBoxInWorld;
+
+/** The unionBox measured in the parent space */
+- (CGRect)unionBoxInParent;
 
 /** @group Operations */
 - (void)flipInnerX;
@@ -77,10 +68,13 @@
 
 - (BOOL)isOnLineageOfNode:(CCNode *)node;
 
+/** return all the ancestors and all the posterity of this node */
 - (NSArray *)allLineages;
 
+/** return all the ancestors of this node */
 - (NSArray *)allAscendants;
 
+/** return all the posterity of this node */
 - (NSArray *)allDescendants;
 
 /** @group Curries */

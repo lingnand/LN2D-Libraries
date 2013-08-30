@@ -7,7 +7,6 @@
 
 #import "CCNode+LnAdditions.h"
 #import "JRSwizzle.h"
-#import "NodalMask.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
@@ -224,7 +223,7 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 }
 
 - (void)setBody:(Body *)body {
-    [self.componentManager setComponent:body forClassLock:[Body class]];
+    [self.componentManager setComponent:body forClass:[Body class]];
 }
 
 #pragma mark - Mask

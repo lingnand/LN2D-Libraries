@@ -17,6 +17,38 @@
 * that you can reference components via keys easily
 *
 * So in total the manager is a hybrid of dictionary and set.
+*
+* Clearing the confusion on predicates:
+*
+* The main aim of associating components with predicates is for dynamic
+* lookup of component.
+*
+* Oftentimes operations involve asking the componentManager: do you have a
+* component that matches this and this condition? To answer this the componentManager
+* will do a dynamic lookup on the components and cache the result.
+*
+* Now sometimes you want to make sure that if someone else asks this type of
+* question the componentManager will return the component that you'd like it
+* to return as an answer. You have two options:
+* 1. use a predicateLock
+*   A predicateLock works for all predicates. Basically it adds this component and
+*   makes sure that no other components matching this predicate will be added (existing
+*   matching instances will be removed as well). This means that when you ask another
+*   canonically identical question but expressed in a different way, the manager will
+*   also return the same instance
+* 2. use a predicate
+*   The component manager will remember this question and return the assigned component
+*   when it sees the SAME question expressed in the SAME way. This doesn't work for
+*   some predicates e.g. blocks, because a block cannot be remembered and compared reliably.
+*   However, this does work for some format-based predicates, to a certain extent. The
+*   main advantage of this approach is that it does not lock out other components, thus
+*   allowing more flexibility.
+*
+* Special notice:
+*   The caching mechanism for predicates does involve extra validating step but it doesn't
+*   work for uncachable locks. So if you set some component for a uncachable predicate lock,
+*   change the component so that it does not match up with that component lock
+*
 */
 @interface CCComponentManager : NSObject <NSCopying>
 
@@ -33,6 +65,7 @@
 
 /** Key interface */
 /**
+* Set the component for the given key. The old component associated with the key will be removed
 * return value explanation follows addComponent
 * @see CCComponentKit#addComponent:
 */
@@ -49,6 +82,7 @@
 /** Tag interface */
 
 /**
+* Set the component for the given tag. The old component associated with the tag will be removed
 * return value explanation follows addComponent
 * @see CCComponentKit#addComponent:
 */
@@ -65,11 +99,13 @@
 /** Class interface */
 - (id)componentForClass:(Class)aClass;
 
+- (void)setComponent:(CCComponent *)component forClass:(Class)aClass;
 - (void)setComponent:(CCComponent *)component forClassLock:(Class)aClass;
 
 /** Selector interface */
 - (id)componentForSelector:(SEL)selector;
 
+- (void)setComponent:(CCComponent *)component forSelector:(SEL)selector;
 - (void)setComponent:(CCComponent *)component forSelectorLock:(SEL)selector;
 
 /** General interface */
@@ -115,6 +151,10 @@
 */
 - (id)componentForPredicate:(NSPredicate *)predicate;
 
+/** This will set the component in the predicate cache table but will not lock out other predicates
+* Due to this nature uncachable predicates are not allowed */
+/** Note that this method will NEVER remove any existing components. It simply associates an component with a predicate */
+- (BOOL)setComponent:(CCComponent *)comp forPredicate:(NSPredicate *)predicate;
 /**
 * This method is useful for locking a certain type of component.
 * e.g. You'd like to specify that some component is exclusive with
