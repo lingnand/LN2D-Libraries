@@ -5,7 +5,7 @@
     @author lingnan
 */
 
-#import "SimpleWorld.h"
+#import "SimpleSpace.h"
 #import "CCNode+LnAdditions.h"
 #import "NSCache+LnAdditions.h"
 #import "CompositeMask.h"
@@ -13,11 +13,11 @@
 #import "ContactListener.h"
 #import "BodilyMask.h"
 
-@interface SimpleWorld ()
+@interface SimpleSpace ()
 @property(nonatomic) ccTime elapsed;
 @end
 
-@implementation SimpleWorld {
+@implementation SimpleSpace {
 
 }
 @synthesize gravity = _gravity;
@@ -36,7 +36,7 @@
     return self;
 }
 
-+ (id)worldWithGravity:(CGPoint)gravity step:(ccTime)step {
++ (id)spaceWithGravity:(CGPoint)gravity step:(ccTime)step {
     return [[self alloc] initWithGravity:gravity step:step];
 }
 
@@ -96,54 +96,54 @@
                 [collisionBodiesSet removeObject:lineageHeadBodies[[NSValue valueWithPointer:(__bridge void *) b.host]]];
 
                 // the displacement of body
-                CGPoint worldv = b.worldVelocity;
+                CGPoint worldv = b.spaceVelocity;
                 CGPoint ds = ccpMult(worldv, step);
                 CGPoint ds_direction = ccpDirection(ds);
                 CGPoint ds_mag = ccpMagnitude(ds);
 
                 CGPoint collideVec = ccp(0, 0);
                 // save the old position
-                CGPoint oldPos = b.worldPosition;
+                CGPoint oldPos = b.spacePosition;
 
                 NSMutableSet *collidedBodies = [NSMutableSet set];
                 SimpleBody *collidedBody;
 
                 // first adjust the x direction
-                b.worldPosition = ccpAdd(oldPos, ccp(ds.x, 0));
+                b.spacePosition = ccpAdd(oldPos, ccp(ds.x, 0));
                 while ((collidedBody = [self body:b intersectsWithBodiesInSet:collisionBodiesSet]) && ds_mag.x > 0) {
                     [collidedBodies addObject:collidedBody];
                     collideVec.x = 1;
-                    b.worldPosition = ccpAdd(b.worldPosition, ccp(-ds_direction.x * b.restitution, 0));
+                    b.spacePosition = ccpAdd(b.spacePosition, ccp(-ds_direction.x * b.restitution, 0));
                     ds_mag.x -= b.restitution;
                 }
                 // then adjust the y direction
-                b.worldPosition = ccpAdd(b.worldPosition, ccp(0, ds.y));
+                b.spacePosition = ccpAdd(b.spacePosition, ccp(0, ds.y));
                 while ((collidedBody = [self body:b intersectsWithBodiesInSet:collisionBodiesSet]) && ds_mag.y > 0) {
                     [collidedBodies addObject:collidedBody];
                     collideVec.y = 1;
-                    b.worldPosition = ccpAdd(b.worldPosition, ccp(0, -ds_direction.y * b.restitution));
+                    b.spacePosition = ccpAdd(b.spacePosition, ccp(0, -ds_direction.y * b.restitution));
                     ds_mag.y -= b.restitution;
                 }
                 // we can modify the world velocity because we can be quite sure that
                 // velocity only takes effect after next update
-                b.worldVelocity = ccp(worldv.x * !collideVec.x, worldv.y * !collideVec.y);
+                b.spaceVelocity = ccp(worldv.x * !collideVec.x, worldv.y * !collideVec.y);
 
                 // save the positional changes in the dictionary and restore the old position
                 NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                positionChangesTable[value] = [NSValue valueWithCGPoint:b.worldPosition];
-                b.worldPosition = oldPos;
+                positionChangesTable[value] = [NSValue valueWithCGPoint:b.spacePosition];
+                b.spacePosition = oldPos;
 
                 // save the collision contact set
                 collidedBodiesTable[value] = collidedBodies;
 
                 // we reset the world acceleration to be the gravity
-                b.worldAcceleration = self.gravity;
+                b.spaceAcceleration = self.gravity;
             }
 
             // loop through all the dynamic bodies and apply the changes
             for (SimpleBody *b in activeDynamicBodies) {
                 NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                b.worldPosition = [positionChangesTable[value] CGPointValue];
+                b.spacePosition = [positionChangesTable[value] CGPointValue];
                 for (SimpleBody *o in collidedBodiesTable[value])
                     [b.contactListener beginContact:[Contact contactWithBody:b otherBody:o]];
             }

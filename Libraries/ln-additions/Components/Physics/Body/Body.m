@@ -7,15 +7,15 @@
 
 #import "CCComponent.h"
 #import "Body_protect.h"
-#import "World.h"
+#import "Space.h"
 #include "NSObject+LnAdditions.h"
 #import "CCNode+LnAdditions.h"
 #import "ContactListener.h"
 
 @implementation Body {
-    Class _worldClass;
+    Class _spaceClass;
 }
-@dynamic position,velocity,worldPosition,worldVelocity;
+@dynamic position,velocity, spacePosition, spaceVelocity;
 
 + (id)body {
     // give back a simpleBody instance if the user does not specify a
@@ -33,38 +33,38 @@
     return [super init];
 }
 
-- (Class)worldClass {
-    if (!_worldClass) {
-        _worldClass = [self classForPropertyNamed:@"world"];
+- (Class)spaceClass {
+    if (!_spaceClass) {
+        _spaceClass = [self classForPropertyNamed:@"space"];
     }
-    return _worldClass;
+    return _spaceClass;
 }
 
 // absolute position / velocity etc
-- (CGPoint)absolutePosition {
-    return CGPointApplyAffineTransform(self.worldPosition, self.world.host.nodeToWorldTransform);
+- (CGPoint)worldPosition {
+    return CGPointApplyAffineTransform(self.spacePosition, self.space.host.nodeToWorldTransform);
 }
 
-- (void)setAbsolutePosition:(CGPoint)absolutePosition {
-    self.worldPosition = CGPointApplyAffineTransform(absolutePosition, self.world.host.worldToNodeTransform);
+- (void)setWorldPosition:(CGPoint)worldPosition {
+    self.spacePosition = CGPointApplyAffineTransform(worldPosition, self.space.host.worldToNodeTransform);
 }
 
 // we should also add the velocity of the world
-- (CGPoint)absoluteVelocity {
+- (CGPoint)worldVelocity {
     // when the body is not wired to any world then the first argument will return 0; exactly what we are looking for
-    return ccpAdd(self.world.host.body.absoluteVelocity, CGPointVectorApplyAffineTransform(self.worldVelocity, self.world.host.nodeToWorldTransform));
+    return ccpAdd(self.space.host.body.worldVelocity, CGPointVectorApplyAffineTransform(self.spaceVelocity, self.space.host.nodeToWorldTransform));
 }
 
-- (void)setAbsoluteVelocity:(CGPoint)absoluteVelocity {
-    self.worldVelocity = CGPointVectorApplyAffineTransform(ccpSub(absoluteVelocity, self.world.host.body.absoluteVelocity), self.world.host.worldToNodeTransform);
+- (void)setWorldVelocity:(CGPoint)worldVelocity {
+    self.spaceVelocity = CGPointVectorApplyAffineTransform(ccpSub(worldVelocity, self.space.host.body.worldVelocity), self.space.host.worldToNodeTransform);
 }
 
 /** with respect to the real world */
 
-- (CGAffineTransform)toWorldTransformFromNode:(CCNode *)n {
+- (CGAffineTransform)toSpaceTransformFromNode:(CCNode *)n {
     CGAffineTransform t = CGAffineTransformIdentity;
 
-    for (CCNode *p = n; p && p != self.world.host; p = p.parent)
+    for (CCNode *p = n; p && p != self.space.host; p = p.parent)
         t = CGAffineTransformConcat(t, p.nodeToParentTransform);
 
     return t;
@@ -73,58 +73,58 @@
 /** return the transform from the local coordinates into the world coordinates
  * if there's no world indicated (or the world is not attached in the correct hierarchy
  * , the outermost world is chosen */
-- (CGAffineTransform)hostParentToWorldTransform {
-    return [self toWorldTransformFromNode:self.host.parent];
+- (CGAffineTransform)hostParentToSpaceTransform {
+    return [self toSpaceTransformFromNode:self.host.parent];
 }
 
-- (CGAffineTransform)worldToHostParentTransform {
-    return CGAffineTransformInvert(self.hostParentToWorldTransform);
+- (CGAffineTransform)spaceToHostParentTransform {
+    return CGAffineTransformInvert(self.hostParentToSpaceTransform);
 }
 
-- (CGAffineTransform)hostToWorldTransform {
-    return [self toWorldTransformFromNode:self.host];
+- (CGAffineTransform)hostToSpaceTransform {
+    return [self toSpaceTransformFromNode:self.host];
 }
 
-- (CGAffineTransform)worldToHostTransform {
-    return CGAffineTransformInvert(self.hostToWorldTransform);
+- (CGAffineTransform)spaceToHostTransform {
+    return CGAffineTransformInvert(self.hostToSpaceTransform);
 }
 
 // the contentSize box in the wired world
-- (CGRect)hostContentBoxInWorld {
-    return CGRectApplyAffineTransform((CGRect){{0,0},self.host.contentSize}, self.hostToWorldTransform);
+- (CGRect)hostContentBoxInSpace {
+    return CGRectApplyAffineTransform((CGRect){{0,0},self.host.contentSize}, self.hostToSpaceTransform);
 }
 
 // unionBox in the wired world
-- (CGRect)hostUnionBoxInWorld {
-    return CGRectApplyAffineTransform(self.host.unionBox, self.hostToWorldTransform);
+- (CGRect)hostUnionBoxInSpace {
+    return CGRectApplyAffineTransform(self.host.unionBox, self.hostToSpaceTransform);
 }
 
-- (void)setWorld:(World *)world {
-    if (_world != world) {
+- (void)setSpace:(Space *)space {
+    if (_space != space) {
         // just route the messages to the next level up
-        [_world removeBody:self];
-        [world addBody:self];
+        [_space removeBody:self];
+        [space addBody:self];
     }
 }
 
-- (void)setWorldDirect:(World *)world {
-    _world = world;
+- (void)setWorldDirect:(Space *)world {
+    _space = world;
 }
 
 /** Search for a suitable world component in the tree upwards */
-- (void)setClosestWorld {
+- (void)setClosestSpace {
     CCNode *p = self.host;
-    if (!self.world && p) {
-        World *w = nil;
+    if (!self.space && p) {
+        Space *w = nil;
         while ((p = p.parent)) {
-            if ((w = [p.componentManager componentForClass:self.worldClass])) {
+            if ((w = [p.componentManager componentForClass:self.spaceClass])) {
                 if ([w addBody:self])
                     return;
-            } else if ([p.body.worldClass isSubclassOfClass:self.worldClass]) {
+            } else if ([p.body.spaceClass isSubclassOfClass:self.spaceClass]) {
                 // we can ask for the body of the parent. Since it must have already checked
                 // for the whole place then it should get the correct result
                 // condition: the worldClass of this body must be kind of class of that of the parent's body
-                if ([p.body.world addBody:self])
+                if ([p.body.space addBody:self])
                     return;
             }
         }
@@ -143,14 +143,14 @@
 - (void)onAddComponent {
     [super onAddComponent];
     // we really need to add the body to the closest world to ensure consistency
-    [self setClosestWorld];
+    [self setClosestSpace];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
     Body *copy = (Body *) [super copyWithZone:zone];
 
     if (copy != nil) {
-        copy->_worldClass = _worldClass;
+        copy->_spaceClass = _spaceClass;
         // all other fields should be handled by the subclass
     }
 

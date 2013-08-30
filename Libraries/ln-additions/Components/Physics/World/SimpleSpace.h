@@ -6,7 +6,7 @@
 */
 
 #import <Foundation/Foundation.h>
-#import "World.h"
+#import "Space.h"
 
 @class Mask;
 
@@ -24,10 +24,10 @@
  * and SimpleBody would be added to a SimpleWorld automatically).
  * */
 
-@interface SimpleWorld : World
+@interface SimpleSpace : Space
 @property(nonatomic) ccTime step;
 
 - (id)initWithGravity:(CGPoint)gravity step:(ccTime)step;
 
-+ (id)worldWithGravity:(CGPoint)gravity step:(ccTime)step;
++ (id)spaceWithGravity:(CGPoint)gravity step:(ccTime)step;
 @end

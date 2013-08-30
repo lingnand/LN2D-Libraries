@@ -5,12 +5,12 @@
     @author lingnan
 */
 
-#import "B2DWorld_protected.h"
+#import "B2DSpace_protected.h"
 #import "Body_protect.h"
 #import "B2DBody_protected.h"
 
-@implementation B2DWorld {
-    B2DWorldContactListener *_worldContactListener;
+@implementation B2DSpace {
+    B2DSpaceContactListener *_spaceContactListener;
 }
 
 /**
@@ -42,24 +42,24 @@
 * // we can rename it to something like RUBEWorldCache
 */
 
-+ (NSMutableDictionary *)worldMap {
-    static NSMutableDictionary *worldMap = nil;
-    if (!worldMap) {
-        worldMap = [NSMutableDictionary dictionary];
++ (NSMutableDictionary *)spaceMap {
+    static NSMutableDictionary *spaceMap = nil;
+    if (!spaceMap) {
+        spaceMap = [NSMutableDictionary dictionary];
     }
-    return worldMap;
+    return spaceMap;
 }
 
-+ (id)worldWithB2World:(b2World *)world {
++ (id)spaceWithB2World:(b2World *)world {
     return [[self alloc] initWithB2World:world ptmRatio:DEFAULT_PTM_RATIO];
 }
 
-+ (id)worldFromB2World:(b2World *)world {
-    id w = [self worldMap][[NSValue valueWithPointer:(void *) world]];
++ (id)spaceFromB2World:(b2World *)world {
+    id w = [self spaceMap][[NSValue valueWithPointer:(void *) world]];
     return [w isKindOfClass:[self class]] ? w : nil;
 }
 
-+ (id)worldWitGravity:(CGPoint)gravity ptmRatio:(float)ptmRatio {
++ (id)spaceWitGravity:(CGPoint)gravity ptmRatio:(float)ptmRatio {
     return [[self alloc] initWithGravity:gravity ptmRatio:ptmRatio];
 }
 
@@ -67,7 +67,7 @@
     return [self initWithPhysicalGravity:b2Vec2(point.x / ptmRatio, point.y / ptmRatio) ptmRatio:ptmRatio];
 }
 
-+ (id)worldWithPhysicalGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
++ (id)spaceWithPhysicalGravity:(b2Vec2)gravity ptmRatio:(float)ptmRatio {
     return [[self alloc] initWithPhysicalGravity:gravity ptmRatio:ptmRatio];
 }
 
@@ -82,7 +82,7 @@
 /** Designated initializer */
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio {
     // we should ensure that there's only ever one such world being initiated
-    id w = [self.class worldFromB2World:world];
+    id w = [self.class spaceFromB2World:world];
     if (w) {
         self = w;
     } else if (self = [super init]) {
@@ -117,25 +117,25 @@
     if (world != _world) {
         // delete the old world
         if (_world) {
-            [self.class worldMap][[NSValue valueWithPointer:_world]] = nil;
+            [self.class spaceMap][[NSValue valueWithPointer:_world]] = nil;
             for (Body *b in self.allBodies) {
-                b.world = nil;
+                b.space = nil;
             }
             delete _world;
         }
         _world = world;
         NSValue *value = [NSValue valueWithPointer:world];
         // create a new world
-        id ow = [self.class worldMap][value];
-        [self.class worldMap][value] = self;
+        id ow = [self.class spaceMap][value];
+        [self.class spaceMap][value] = self;
         if (ow) {
-            NSAssert([ow isKindOfClass:[B2DWorld class]], @"the world is associated with some unknown class");
+            NSAssert([ow isKindOfClass:[B2DSpace class]], @"the world is associated with some unknown class");
             // 1. set the delegate pointer that's all
             for (Body *b in ow) {
                 [b setWorldDirect:self];
             }
             // 2. remove all the components
-            [((World *) ow).bodies removeAllObjects];
+            [((Space *) ow).bodies removeAllObjects];
         } else {
             // inflate the new world with B2DBody..
             b2Body *b = world->GetBodyList();
@@ -146,7 +146,7 @@
             }
         }
         // reset up the contact listener
-        world->SetContactListener(self.worldContactListener);
+        world->SetContactListener(self.spaceContactListener);
     }
 }
 
@@ -154,23 +154,23 @@
     [B2DBody bodyWithB2Body:b];
 }
 
-- (B2DWorldContactListener *)worldContactListener {
-    if (!_worldContactListener)
-        self.worldContactListener = new B2DWorldContactListener();
-    return _worldContactListener;
+- (B2DSpaceContactListener *)spaceContactListener {
+    if (!_spaceContactListener)
+        self.spaceContactListener = new B2DSpaceContactListener();
+    return _spaceContactListener;
 }
 
-- (void)setWorldContactListener:(B2DWorldContactListener *)worldContactListener {
-    if (worldContactListener != _worldContactListener) {
-        delete _worldContactListener;
-        _worldContactListener = worldContactListener;
-        self.world->SetContactListener(worldContactListener);
+- (void)setSpaceContactListener:(B2DSpaceContactListener *)spaceContactListener {
+    if (spaceContactListener != _spaceContactListener) {
+        delete _spaceContactListener;
+        _spaceContactListener = spaceContactListener;
+        self.world->SetContactListener(spaceContactListener);
     }
 }
 
 - (void)dealloc {
     self.world = nil;
-    self.worldContactListener = nil;
+    self.spaceContactListener = nil;
 }
 
 - (void)activate {

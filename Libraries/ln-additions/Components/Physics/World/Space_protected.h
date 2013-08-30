@@ -1,6 +1,6 @@
-#import "World.h"
+#import "Space.h"
 
-@interface World()
+@interface Space ()
 @property (nonatomic, strong) NSMutableSet *bodies;
 @end
 

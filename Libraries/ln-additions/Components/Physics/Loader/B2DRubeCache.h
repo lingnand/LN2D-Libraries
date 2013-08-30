@@ -6,8 +6,8 @@
 */
 
 
-@class B2DWorld;
-@class B2DRUBEWorld;
+@class B2DSpace;
+@class B2DRUBESpace;
 
 /**
 * NOTICE:
@@ -23,7 +23,7 @@
 
 @interface B2DRUBECache : NSObject
 
-@property (nonatomic, readonly) B2DRUBEWorld *world;
+@property (nonatomic, readonly) B2DRUBESpace *space;
 /** bodyName -body array pairs
 * if the given bodyName is not found; return nil
 * otherwise an array containing all matching bodies
@@ -34,11 +34,11 @@
 /** imageName - image array pairs */
 @property (nonatomic, readonly) NSDictionary *images;
 
-+ (id)cacheForNewWorldWithFileName:(NSString *)filename;
++ (id)cacheForNewSpaceWithFileName:(NSString *)filename;
 
-+ (id)cacheForWorld:(B2DRUBEWorld *)world WithFileName:(NSString *)filename;
++ (id)cacheForSpace:(B2DRUBESpace *)space withFileName:(NSString *)filename;
 
-- (id)initWithWorld:(B2DRUBEWorld *)world fileName:(NSString *)filename;
+- (id)initWithSpace:(B2DRUBESpace *)space fileName:(NSString *)filename;
 
 - (id)objectForKeyedSubscript:(id)key;
 

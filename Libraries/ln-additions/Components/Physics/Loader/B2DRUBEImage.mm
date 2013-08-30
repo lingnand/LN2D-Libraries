@@ -7,7 +7,7 @@
 
 #import "CCComponent.h"
 #import "B2DRUBEImage.h"
-#import "B2DWorld.h"
+#import "B2DSpace.h"
 #import "CCNode+LnAdditions.h"
 #import "B2DRUBEBody.h"
 #include "b2dJson.h"
@@ -42,7 +42,7 @@
 }
 
 - (CGPoint)center {
-    return CGPointFromb2Vec2(_b2_center, self.associatedBody.world);
+    return CGPointFromb2Vec2(_b2_center, self.associatedBody.space);
 }
 
 - (B2DBody *)associatedBody {
@@ -58,7 +58,7 @@
         // these will not change during simulation so we can set them now
         // this scale is the height of the image in WORLD units
         // scale / PTM_RATIO / sprite.contentSize.height
-        _image.scale = CGLengthFromb2Length(self.physicalScale, self.associatedBody.world) / _image.contentSize.height;
+        _image.scale = CGLengthFromb2Length(self.physicalScale, self.associatedBody.space) / _image.contentSize.height;
         _image.flipX = self.flipX;
         _image.color = self.color;
         _image.opacity = self.opacity;

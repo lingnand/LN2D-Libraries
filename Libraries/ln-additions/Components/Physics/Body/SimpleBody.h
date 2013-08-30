@@ -7,9 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #import "Body.h"
+#import "BodilyMask.h"
 
-@class BodilyMask;
-@class SimpleWorld;
+@class SimpleSpace;
 
 
 /** A simpleBody is the simplest implementation that fulfills the requirement
@@ -24,10 +24,10 @@
  @interface SimpleBody : Body <Masked>
 /** The acceleration attribute is added to allow more precise control (steady) */
 @property(nonatomic) CGPoint acceleration;
-@property(nonatomic) CGPoint worldAcceleration;
+@property(nonatomic) CGPoint spaceAcceleration;
 @property(nonatomic) CGFloat restitution;
 @property (nonatomic, strong) BodilyMask *mask;
-@property(nonatomic, weak) SimpleWorld *world;
+@property(nonatomic, weak) SimpleSpace *space;
 
 - (id)copyWithZone:(NSZone *)zone;
 @end

@@ -1,5 +1,5 @@
 #import "Body.h"
 
 @interface Body()
-- (void)setWorldDirect:(World *)world;
+- (void)setWorldDirect:(Space *)world;
 @end

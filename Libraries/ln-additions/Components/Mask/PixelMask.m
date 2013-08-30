@@ -28,7 +28,7 @@
 
 - (BOOL)contains:(CGPoint)point {
     if (![super contains:point] || !self.maskData) return NO;
-    point = ccpSub(CC_POINT_POINTS_TO_PIXELS(CGPointApplyAffineTransform(point, self.body.worldToHostTransform)), self.maskData.window.origin);
+    point = ccpSub(CC_POINT_POINTS_TO_PIXELS(CGPointApplyAffineTransform(point, self.body.spaceToHostTransform)), self.maskData.window.origin);
     return (BOOL) CFBitVectorGetBitAtIndex(self.maskData.bitset, (CFIndex) (point.x + point.y * self.maskData.window.size.width));
 }
 
@@ -37,9 +37,9 @@
     BodilyMask *obm = (BodilyMask *) other;
 
     // we will first convert both rects into world space (as this is the definite common point of the two nodes)
-    CGAffineTransform hostToWorldTransform = self.body.hostToWorldTransform;
+    CGAffineTransform hostToWorldTransform = self.body.hostToSpaceTransform;
     CGRect windowInWorldSpace = CGRectApplyAffineTransform(CC_RECT_PIXELS_TO_POINTS(self.maskData.window), hostToWorldTransform);
-    CGAffineTransform otherhostToWorldTransform = obm.body.hostToWorldTransform;
+    CGAffineTransform otherhostToWorldTransform = obm.body.hostToSpaceTransform;
     CGRect otherBBInWorldSpace = CGRectApplyAffineTransform(obm.body.host.unionBox, otherhostToWorldTransform);;
     CGRect intersectionInWorld = CGRectIntersection(windowInWorldSpace, otherBBInWorldSpace);
     CGRect intersectionInHost = CC_RECT_POINTS_TO_PIXELS(CGRectApplyAffineTransform(intersectionInWorld, CGAffineTransformInvert(hostToWorldTransform)));

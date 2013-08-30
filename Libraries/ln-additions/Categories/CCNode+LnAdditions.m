@@ -188,26 +188,9 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
     return CGRectApplyAffineTransform(self.unionBox, self.nodeToParentTransform);
 }
 
-- (CGRect)canvasBox {
-    CGRect canvas = [self rectInWorldSpace:(CGRect) {{0, 0}, self.contentSize}];
-    for (CCNode *node in self.children) {
-        canvas = CGRectUnion(canvas, node.canvasBox);
-    }
-    return canvas;
-}
-
-- (CGSize)canvasSize {
-    return self.canvasBox.size;
-}
-
-- (NSSet *)keyPathsForValuesAffectingCanvasBox:(NSString *)key {
+- (NSSet *)keyPathsForValuesAffectingUnionBox {
     return [NSSet setWithObjects:@"scaleX", @"scaleY", @"anchorPoint", @"children", @"contentSize", nil];
 }
-
-- (NSSet *)keyPathsForValuesAffectingCanvasSize:(NSString *)key {
-    return [NSSet setWithObject:@"canvasBox"];
-}
-
 
 #pragma mark - Components
 
@@ -258,11 +241,6 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
     Body *b = self.body;
     if ([b isKindOfClass:[SimpleBody class]])
         ((SimpleBody *)b).mask = mask;
-}
-
-/** converting a rect in the current nodespace to the world nodespace */
-- (CGRect)rectInWorldSpace:(CGRect)rect {
-    return CGRectApplyAffineTransform(rect, [self nodeToWorldTransform]);
 }
 
 #pragma mark - Position overriding

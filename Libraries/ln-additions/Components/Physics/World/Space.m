@@ -5,15 +5,15 @@
     @author lingnan
 */
 
-#import "World_protected.h"
+#import "Space_protected.h"
 #import "Body.h"
 #import "Body_protect.h"
 #import "CCNode+LnAdditions.h"
 
-@implementation World
+@implementation Space
 @dynamic gravity;
 
-+ (id)world {
++ (id)space {
     return [self new];
 }
 
@@ -58,12 +58,12 @@
 - (BOOL)addBody:(Body *)body {
     // adding a body is a mutual process: the world must be able to manage this body
     // and this body must be willing to be managed by this world
-    if (![self isKindOfClass:body.worldClass] || ![body isKindOfClass:self.bodyClass])
+    if (![self isKindOfClass:body.spaceClass] || ![body isKindOfClass:self.bodyClass])
         return NO;
 
-    if (body.world != self) {
-        if (body.world)
-            [body.world removeBody:body];
+    if (body.space != self) {
+        if (body.space)
+            [body.space removeBody:body];
         // additional steps to manage the body..?
         [self onAddingNewBody:body];
         [self.bodies addObject:body];
@@ -77,7 +77,7 @@
 }
 
 - (BOOL)removeBody:(Body *)body {
-    if (body.world != self)
+    if (body.space != self)
         return NO;
     [self onRemovingBody:body];
     [self.bodies removeObject:body];

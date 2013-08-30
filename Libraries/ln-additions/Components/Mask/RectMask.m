@@ -17,7 +17,7 @@
 }
 
 - (BOOL)intersectsOneSide:(Mask *)other {
-    return [super intersectsOneSide:other] && CGRectIntersectsRect(self.body.hostUnionBoxInWorld, ((BodilyMask *)other).body.hostUnionBoxInWorld);
+    return [super intersectsOneSide:other] && CGRectIntersectsRect(self.body.hostUnionBoxInSpace, ((BodilyMask *)other).body.hostUnionBoxInSpace);
 }
 
 - (MaskIntersectComplexity)complexity {

@@ -261,9 +261,15 @@ static char const *const gridCellDynamicHeightUserSet = "GridCellDynamicHeightUs
 }
 
 // the following is to be used with gridSize monitoring in GridNode family
+// why it only depends on unionBox - the positioning etc is cancelled off when we compute
+// the result in the parent (we applied a nodeToParentTransform for the unionBox and then
+// we minus away the position)
 + (NSSet *)keyPathsForValuesAffectingGridSize {
-    return [NSSet setWithObject:@"canvasSize"];
+    return [NSSet setWithObject:@"unionBox"];
 }
 
++ (NSSet *)keyPathsForValuesAffectingGridBox {
+    return [NSSet setWithObjects:@"gridSize", @"position", nil];
+}
 @end
 

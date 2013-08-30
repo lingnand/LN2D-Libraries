@@ -7,7 +7,7 @@
 
 #import "CCComponent.h"
 #import "B2DBody_protected.h"
-#import "B2DWorld_protected.h"
+#import "B2DSpace_protected.h"
 #import "b2Fixture.h"
 #import "B2DFixture_protected.h"
 #import "CCNode+LnAdditions.h"
@@ -99,12 +99,12 @@
                     fix.fix = self.body->CreateFixture(fix.currentFixtureDef);
             }
         }
-        if (!self.bodyWorldInSync) {
+        if (!self.bodySpaceInSync) {
             // default to instantiate a B2DWorld upper level
             if (body)
-                self.world = [B2DWorld worldWithB2World:body->GetWorld()];
+                self.space = [B2DSpace spaceWithB2World:body->GetWorld()];
             else
-                self.world = nil;
+                self.space = nil;
         }
     }
 }
@@ -163,21 +163,21 @@
 }
 
 - (CGPoint)position {
-    return CGPointApplyAffineTransform(self.worldPosition, self.worldToHostParentTransform);
+    return CGPointApplyAffineTransform(self.spacePosition, self.spaceToHostParentTransform);
 }
 
 - (void)setPosition:(CGPoint)position {
     // first get the position relative to the world
     // set the relative position in the physical world
-    self.worldPosition = CGPointApplyAffineTransform(position, self.hostParentToWorldTransform);
+    self.spacePosition = CGPointApplyAffineTransform(position, self.hostParentToSpaceTransform);
 }
 
-- (CGPoint)worldPosition {
-    return CGPointFromb2Vec2(self.worldPhysicalPosition, self.world);
+- (CGPoint)spacePosition {
+    return CGPointFromb2Vec2(self.worldPhysicalPosition, self.space);
 }
 
-- (void)setWorldPosition:(CGPoint)worldPosition {
-    self.worldPhysicalPosition = b2Vec2FromCGPoint(worldPosition, self.world);
+- (void)setSpacePosition:(CGPoint)spacePosition {
+    self.worldPhysicalPosition = b2Vec2FromCGPoint(spacePosition, self.space);
 }
 
 - (b2Vec2)worldPhysicalPosition {
@@ -204,20 +204,20 @@
 }
 
 - (CGPoint)velocity {
-    return CGPointVectorApplyAffineTransform(self.worldVelocity, self.worldToHostParentTransform);
+    return CGPointVectorApplyAffineTransform(self.spaceVelocity, self.spaceToHostParentTransform);
 }
 
 - (void)setVelocity:(CGPoint)velocity {
-    self.worldVelocity = CGPointVectorApplyAffineTransform(velocity, self.hostParentToWorldTransform);
+    self.spaceVelocity = CGPointVectorApplyAffineTransform(velocity, self.hostParentToSpaceTransform);
 }
 
 // velocity in the CC sense
-- (CGPoint)worldVelocity {
-    return CGPointFromb2Vec2(self.linearVelocity, self.world);
+- (CGPoint)spaceVelocity {
+    return CGPointFromb2Vec2(self.linearVelocity, self.space);
 }
 
-- (void)setWorldVelocity:(CGPoint)velocity {
-    self.linearVelocity = b2Vec2FromCGPoint(velocity, self.world);
+- (void)setSpaceVelocity:(CGPoint)velocity {
+    self.linearVelocity = b2Vec2FromCGPoint(velocity, self.space);
 }
 
 - (b2Vec2)linearVelocity {
@@ -330,8 +330,8 @@
         self.bodyDef->gravityScale = gravityScale;
 }
 
-- (BOOL)bodyWorldInSync {
-   return (!self.body && !self.world) || ([B2DWorld worldFromB2World:self.body->GetWorld()] == self.world);
+- (BOOL)bodySpaceInSync {
+   return (!self.body && !self.space) || ([B2DSpace spaceFromB2World:self.body->GetWorld()] == self.space);
 }
 
 - (void)dealloc {
@@ -456,8 +456,8 @@
 //}
 
 - (void)update:(ccTime)step {
-    CGPoint ccpos = CGPointFromb2Vec2(self.body->GetPosition(), self.world);
-    self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self worldToHostParentTransform]);
+    CGPoint ccpos = CGPointFromb2Vec2(self.body->GetPosition(), self.space);
+    self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self spaceToHostParentTransform]);
     // an rotation itself can be expressed as an affinetransformation, which means
     // that independent of the relative observer, it's always the same operation
     self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());

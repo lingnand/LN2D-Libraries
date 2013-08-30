@@ -13,11 +13,11 @@
 #include "b2WorldCallbacks.h"
 
 
-class B2DWorldContactListener: public b2ContactListener
+class B2DSpaceContactListener : public b2ContactListener
 {
 public:
-    B2DWorldContactListener();
-    ~B2DWorldContactListener();
+    B2DSpaceContactListener();
+    ~B2DSpaceContactListener();
     virtual void BeginContact(b2Contact* contact);
     virtual void EndContact(b2Contact* contact);
     virtual void PreSolve(b2Contact* contact, const b2Manifold* oldManifold);

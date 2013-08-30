@@ -8,8 +8,8 @@
 #include "B2DRUBECache.h"
 #include "b2dJson.h"
 #include "b2dJsonImage.h"
-#import "B2DWorld_protected.h"
-#import "B2DRUBEWorld.h"
+#import "B2DSpace_protected.h"
+#import "B2DRUBESpace.h"
 #import "B2DRUBEImage.h"
 #import "CCNode+LnAdditions.h"
 #import "NSArray+LnAdditions.h"
@@ -25,15 +25,15 @@
     NSMutableDictionary *_images;
 }
 
-+ (id)cacheForNewWorldWithFileName:(NSString *)filename {
-    return [[self alloc] initWithWorld:nil fileName:filename];
++ (id)cacheForNewSpaceWithFileName:(NSString *)filename {
+    return [[self alloc] initWithSpace:nil fileName:filename];
 }
 
-+ (id)cacheForWorld:(B2DRUBEWorld *)world WithFileName:(NSString *)filename {
-    return [[self alloc] initWithWorld:world fileName:filename];
++ (id)cacheForSpace:(B2DRUBESpace *)space withFileName:(NSString *)filename {
+    return [[self alloc] initWithSpace:space fileName:filename];
 }
 
-- (id)initWithWorld:(B2DRUBEWorld *)world fileName:(NSString *)filename {
+- (id)initWithSpace:(B2DRUBESpace *)space fileName:(NSString *)filename {
     if (self = [super init]) {
         // initialize the b2djson object
         NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:filename];
@@ -42,8 +42,8 @@
         _json = new b2dJson;
         std::string errMsg;
 
-        if (world)
-            _json->readIntoWorldFromFile(world.world, [fullpath UTF8String], errMsg);
+        if (space)
+            _json->readIntoWorldFromFile(space.world, [fullpath UTF8String], errMsg);
         else {
             b2World *b2world = _json->readFromFile([fullpath UTF8String], errMsg);
             NSAssert(b2world, [NSString stringWithUTF8String:errMsg.c_str()]);
@@ -55,10 +55,10 @@
 //                NSLog(@"name of body = %s, pointer = %p", _json->getBodyName(b).c_str(), b);
 //                b = b->GetNext();
 //            }
-            world = [B2DRUBEWorld worldWithB2World:b2world];
+            space = [B2DRUBESpace spaceWithB2World:b2world];
 
         }
-        _world = world;
+        _space = space;
     }
     return self;
 }
@@ -67,7 +67,7 @@
     if (!_bodies) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         // get all the bodies in the world
-        for (B2DRUBEBody *b in self.world.allBodies) {
+        for (B2DRUBEBody *b in self.space.allBodies) {
             // if there's no name associated with this body it would be ""
             [self pushKey:[NSString stringWithUTF8String:_json->getBodyName(b.body).c_str()]
                     value:b

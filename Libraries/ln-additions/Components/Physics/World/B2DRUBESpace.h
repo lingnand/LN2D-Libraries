@@ -8,6 +8,6 @@
 #import <Foundation/Foundation.h>
 
 
-@interface B2DRUBEWorld : B2DWorld
-- (B2DRUBECache *)cacheForThisWorldWithFileName:(NSString *)name;
+@interface B2DRUBESpace : B2DSpace
+- (B2DRUBECache *)cacheForThisSpaceWithFileName:(NSString *)name;
 @end

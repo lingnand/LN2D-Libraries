@@ -1,4 +1,4 @@
-#include "B2DWorldContactListener.h"
+#include "B2DSpaceContactListener.h"
 #include "b2Contact.h"
 #import "CCComponent.h"
 #import "B2DBody.h"
@@ -12,21 +12,21 @@
     @author lingnan
 */
 
-B2DWorldContactListener::B2DWorldContactListener() : b2ContactListener() {
+B2DSpaceContactListener::B2DSpaceContactListener() : b2ContactListener() {
 
 }
 
-B2DWorldContactListener::~B2DWorldContactListener() {
+B2DSpaceContactListener::~B2DSpaceContactListener() {
 
 }
 
 /// Called when two fixtures begin to touch.
-void B2DWorldContactListener::BeginContact(b2Contact *contact) {
+void B2DSpaceContactListener::BeginContact(b2Contact *contact) {
     triggerHandlers(contact, @selector(beginContact:));
 }
 
 /// Called when two fixtures cease to touch.
-void B2DWorldContactListener::EndContact(b2Contact *contact) {
+void B2DSpaceContactListener::EndContact(b2Contact *contact) {
     triggerHandlers(contact, @selector(endContact:));
 }
 
@@ -40,7 +40,7 @@ void B2DWorldContactListener::EndContact(b2Contact *contact) {
 /// Note: if you set the number of contact points to zero, you will not
 /// get an EndContact callback. However, you may get a BeginContact callback
 /// the next step.
-void B2DWorldContactListener::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
+void B2DSpaceContactListener::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
     B2_NOT_USED(contact);
     B2_NOT_USED(oldManifold);
     triggerHandlers(contact, @selector(preSolve:));
@@ -52,13 +52,13 @@ void B2DWorldContactListener::PreSolve(b2Contact *contact, const b2Manifold *old
 /// arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
 /// in a separate data structure.
 /// Note: this is only called for contacts that are touching, solid, and awake.
-void B2DWorldContactListener::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+void B2DSpaceContactListener::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
     B2_NOT_USED(contact);
     B2_NOT_USED(impulse);
     triggerHandlers(contact, @selector(postSolve:));
 }
 
-void B2DWorldContactListener::triggerHandlers(b2Contact *contact, SEL selector) {
+void B2DSpaceContactListener::triggerHandlers(b2Contact *contact, SEL selector) {
     b2Fixture *aFixture = contact->GetFixtureA();
     B2DBody *a = [B2DBody bodyFromB2Body:aFixture->GetBody()];
     b2Fixture *bFixture = contact->GetFixtureB();

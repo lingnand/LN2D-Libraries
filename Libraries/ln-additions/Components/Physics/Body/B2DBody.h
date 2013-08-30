@@ -10,7 +10,7 @@
 #import "b2Math.h"
 #import "b2Body.h"
 
-@class B2DWorld;
+@class B2DSpace;
 @class B2DFixture;
 @class B2DContactListener;
 
@@ -31,7 +31,7 @@
 @property (nonatomic) BOOL bullet;
 @property (nonatomic) BOOL active;
 @property (nonatomic) float gravityScale;
-@property(nonatomic, weak) B2DWorld *world;
+@property(nonatomic, weak) B2DSpace *space;
 @property(nonatomic) B2DContactListener *contactListener;
 
 

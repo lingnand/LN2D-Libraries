@@ -10,7 +10,7 @@
 #import "CCNode+LnAdditions.h"
 #import "NodalMask.h"
 #import "BodilyMask.h"
-#import "SimpleWorld.h"
+#import "SimpleSpace.h"
 
 @implementation SimpleBody {
     BodilyMask *_mask;
@@ -57,29 +57,29 @@
     _position = position;
 }
 
-- (CGPoint)worldPosition {
+- (CGPoint)spacePosition {
     // returns the real position of the host in the world coordinate
-    return CGPointApplyAffineTransform(self.position, self.hostParentToWorldTransform);
+    return CGPointApplyAffineTransform(self.position, self.hostParentToSpaceTransform);
 }
 
-- (void)setWorldPosition:(CGPoint)worldPosition {
-    self.position = CGPointApplyAffineTransform(worldPosition, self.worldToHostParentTransform);
+- (void)setSpacePosition:(CGPoint)spacePosition {
+    self.position = CGPointApplyAffineTransform(spacePosition, self.spaceToHostParentTransform);
 }
 
-- (CGPoint)worldVelocity {
-    return CGPointVectorApplyAffineTransform(self.velocity, self.hostParentToWorldTransform);
+- (CGPoint)spaceVelocity {
+    return CGPointVectorApplyAffineTransform(self.velocity, self.hostParentToSpaceTransform);
 }
 
-- (void)setWorldVelocity:(CGPoint)worldVelocity {
-    self.velocity = CGPointVectorApplyAffineTransform(worldVelocity, self.worldToHostParentTransform);
+- (void)setSpaceVelocity:(CGPoint)spaceVelocity {
+    self.velocity = CGPointVectorApplyAffineTransform(spaceVelocity, self.spaceToHostParentTransform);
 }
 
-- (CGPoint)worldAcceleration {
-    return CGPointVectorApplyAffineTransform(self.acceleration, self.hostParentToWorldTransform);
+- (CGPoint)spaceAcceleration {
+    return CGPointVectorApplyAffineTransform(self.acceleration, self.hostParentToSpaceTransform);
 }
 
-- (void)setWorldAcceleration:(CGPoint)worldAcceleration {
-    self.acceleration = CGPointVectorApplyAffineTransform(worldAcceleration, self.worldToHostParentTransform);
+- (void)setSpaceAcceleration:(CGPoint)spaceAcceleration {
+    self.acceleration = CGPointVectorApplyAffineTransform(spaceAcceleration, self.spaceToHostParentTransform);
 }
 
 #pragma mark - BodilyMask related operations

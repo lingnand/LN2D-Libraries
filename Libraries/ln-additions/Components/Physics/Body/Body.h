@@ -8,7 +8,7 @@
 #import <Foundation/Foundation.h>
 #import "CCComponent.h"
 
-@class World;
+@class Space;
 @class ContactListener;
 
 typedef NS_ENUM(NSUInteger, BodyType)
@@ -24,10 +24,10 @@ typedef NS_ENUM(NSUInteger, BodyType)
 * of the host
 */
 @interface Body : CCComponent {
-    __weak World *_world;
+    __weak Space *_space;
 }
 
-/** The type information is needed by worlds to update the bodies correctly */
+/** The type information is needed by spaces to update the bodies correctly */
 @property(nonatomic) BodyType type;
 
 /** These properties need to be overriden in the immediate subclass to
@@ -35,28 +35,28 @@ typedef NS_ENUM(NSUInteger, BodyType)
  /** relative to the immediate parent */
 @property(nonatomic) CGPoint position;
 @property(nonatomic) CGPoint velocity;
-/** relative to the world */
-@property(nonatomic) CGPoint worldPosition;
-@property(nonatomic) CGPoint worldVelocity;
+/** relative to the space */
+@property(nonatomic) CGPoint spacePosition;
+@property(nonatomic) CGPoint spaceVelocity;
 
 /** the absolute position and velocity have been implemented, so no need to override */
 /** relative to the whole application */
-@property(nonatomic) CGPoint absolutePosition;
-@property(nonatomic) CGPoint absoluteVelocity;
+@property(nonatomic) CGPoint worldPosition;
+@property(nonatomic) CGPoint worldVelocity;
 
 /**
-* world is an object that represents the outermost container to the
+* Space is an object that represents the outermost container to the
 * bodies. The positioning etc. might closely relate to which node the
-* world component is attached to
+* space component is attached to
 *
 * Note that the subclass might want to override the type of this property
-* to be attached to more specific implementation of world.
-* In that case MAKE SURE that the specific implementation of world does
+* to be attached to more specific implementation of space.
+* In that case MAKE SURE that the specific implementation of space does
 * have the capacity of managing that body type
 */
-@property(nonatomic, weak) World *world;
-/** gives back the class of the world attribute for this world obj*/
-@property(nonatomic, readonly) Class worldClass;
+@property(nonatomic, weak) Space *space;
+/** gives back the class of the space attribute for this space obj*/
+@property(nonatomic, readonly) Class spaceClass;
 
 /** a dedicated contact listener that handles the collision on this body
 * this property is implemented on the basis of lazy initialization so
@@ -65,19 +65,22 @@ typedef NS_ENUM(NSUInteger, BodyType)
 
 + (id)body;
 
-- (CGAffineTransform)hostParentToWorldTransform;
+/** When the space is invalid (nil or not attached to any host or not attached
+ * to a host in the outer layers) these transforms will be equivalent to the
+  * world version */
+- (CGAffineTransform)hostParentToSpaceTransform;
 
-- (CGAffineTransform)worldToHostParentTransform;
+- (CGAffineTransform)spaceToHostParentTransform;
 
-- (CGAffineTransform)hostToWorldTransform;
+- (CGAffineTransform)hostToSpaceTransform;
 
-- (CGAffineTransform)worldToHostTransform;
+- (CGAffineTransform)spaceToHostTransform;
 
-- (CGRect)hostContentBoxInWorld;
+- (CGRect)hostContentBoxInSpace;
 
-- (CGRect)hostUnionBoxInWorld;
+- (CGRect)hostUnionBoxInSpace;
 
-- (void)setClosestWorld;
+- (void)setClosestSpace;
 
 - (id)copyWithZone:(NSZone *)zone;
 @end

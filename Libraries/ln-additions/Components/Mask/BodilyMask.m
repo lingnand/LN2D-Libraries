@@ -21,6 +21,6 @@
     if (!self.body.host || ![other isKindOfClass:[BodilyMask class]]) return NO;
     BodilyMask *obm = (BodilyMask *) other;
     // we'll only compare intersection in the same world
-    return obm.body.host && obm.body.world == self.body.world;
+    return obm.body.host && obm.body.space == self.body.space;
 }
 @end
