@@ -165,8 +165,11 @@
     CCComponent *oldComp = self.generalTable[key];
     if (oldComp) {
         for (NSPredicate *p in self.predicateLocks) {
-            if ([p evaluateWithObject:component] && self.predicateTable[p] != oldComp)
-                return NO;
+            if ([p evaluateWithObject:component]) {
+                CCComponent *locked = [self componentForPredicateInPredicateCache:p];
+                if (locked && self.predicateTable[p] != oldComp)
+                    return NO;
+            }
         }
         // now we are sure that we can remove the oldComp and add the new component
         [self removeComponent:oldComp];
@@ -197,7 +200,7 @@
 - (BOOL)componentMatchingLock:(CCComponent *)comp {
     if (comp) {
         for (NSPredicate *p in self.predicateLocks) {
-            if ([p evaluateWithObject:comp])
+            if ([p evaluateWithObject:comp] && [self componentForPredicateInPredicateCache:p])
                 return YES;
         }
     }
@@ -207,19 +210,23 @@
 - (id)componentForPredicate:(NSPredicate *)predicate {
     CCComponent *comp = nil;
     if ([self isCachablePredicate:predicate]) {
-        comp = self.predicateTable[predicate];
-        // we need to validate if the component indeed still matches up with the predicate
-        if (comp && ![predicate evaluateWithObject:comp]) {
-            // remove the associated locks if there's any
-            [self.predicateLocks removeObject:predicate];
-            [self.predicateTable removeObjectForKey:predicate];
+        comp = [self componentForPredicateInPredicateCache:predicate];
+        if (!comp && ![self.predicateQueue containsObject:predicate])
             comp = [self componentMatchingPredicateOnLookup:predicate];
-        } else if (!comp && ![self.predicateQueue containsObject:predicate])
-            comp = [self componentMatchingPredicateOnLookup:predicate];
-    } else {
+    } else
         // we don't bother for caching if it's block based: we can't cache
         // block based predicate
         comp = [self filteredComponentsUsingPredicate:predicate].anyObject;
+    return comp;
+}
+
+- (CCComponent *)componentForPredicateInPredicateCache:(NSPredicate *)predicate {
+    CCComponent *comp = self.predicateTable[predicate];
+    if (comp && ![predicate evaluateWithObject:comp]) {
+        // remove the associated locks if there's any
+        [self.predicateLocks removeObject:predicate];
+        [self.predicateTable removeObjectForKey:predicate];
+        return nil;
     }
     return comp;
 }

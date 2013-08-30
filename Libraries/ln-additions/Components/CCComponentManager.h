@@ -44,11 +44,6 @@
 *   main advantage of this approach is that it does not lock out other components, thus
 *   allowing more flexibility.
 *
-* Special notice:
-*   The caching mechanism for predicates does involve extra validating step but it doesn't
-*   work for uncachable locks. So if you set some component for a uncachable predicate lock,
-*   change the component so that it does not match up with that component lock
-*
 */
 @interface CCComponentManager : NSObject <NSCopying>
 
