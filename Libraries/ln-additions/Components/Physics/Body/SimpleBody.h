@@ -8,6 +8,9 @@
 #import <Foundation/Foundation.h>
 #import "Body.h"
 
+@class BodilyMask;
+@class SimpleWorld;
+
 
 /** A simpleBody is the simplest implementation that fulfills the requirement
  * of Body - using an update method that updates the position of the node
@@ -18,11 +21,13 @@
   * return the same thing absolutePosition/Velocity
   * */
 
- @interface SimpleBody : Body
+ @interface SimpleBody : Body <Masked>
 /** The acceleration attribute is added to allow more precise control (steady) */
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic) CGPoint worldAcceleration;
 @property(nonatomic) CGFloat restitution;
+@property (nonatomic, strong) BodilyMask *mask;
+@property(nonatomic, weak) SimpleWorld *world;
 
 - (id)copyWithZone:(NSZone *)zone;
 @end

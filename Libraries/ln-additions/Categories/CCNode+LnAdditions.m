@@ -7,7 +7,7 @@
 
 #import "CCNode+LnAdditions.h"
 #import "JRSwizzle.h"
-#import "NodeMask.h"
+#import "NodalMask.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
@@ -164,6 +164,30 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 
 #pragma mark - Worldspace size calculation
 
+// we should really return the box measured at this level / in the coordinates system of this
+// node. In other words, how large is the node as measured in the current space..?
+- (CGRect)unionBox {
+    CGRect un = (CGRect) {{0, 0}, self.contentSize};
+    for (CCNode *node in self.children) {
+        // we have to be careful about the anchor points as well
+        un = CGRectUnion(un, CGRectApplyAffineTransform(node.unionBox, node.nodeToParentTransform));
+    }
+    // we obtain the rect
+    // note that this rect might not only include the rect of the subnodes in the first
+    // quadron. In fact, it's the union of all the node's size in this coordinate system
+    return un;
+}
+
+// the unioned boundingBox in the world coordinates
+- (CGRect)unionBoxInWorld {
+    return CGRectApplyAffineTransform(self.unionBox, self.nodeToWorldTransform);
+}
+
+// this is the unioned space viewed in the parent space
+- (CGRect)unionBoxInParent {
+    return CGRectApplyAffineTransform(self.unionBox, self.nodeToParentTransform);
+}
+
 - (CGRect)canvasBox {
     CGRect canvas = [self rectInWorldSpace:(CGRect) {{0, 0}, self.contentSize}];
     for (CCNode *node in self.children) {
@@ -208,18 +232,12 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 
 #pragma mark - Body
 
-// default returns a normal body
+// default returns a simplebody
 - (Body *)body {
-    Body *m = self.readableBody;
-    if (!m) {
-        m = [SimpleBody body];
-        self.body = m;
-    }
+    Body *m = [self.componentManager componentForClass:[Body class]];
+    if (!m)
+        self.body = m = [Body body];
     return m;
-}
-
-- (Body *)readableBody {
-    return [self.componentManager componentForClass:[Body class]];
 }
 
 - (void)setBody:(Body *)body {
@@ -228,18 +246,18 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 
 #pragma mark - Mask
 
-- (Mask *)mask {
-    // lazily instantiate
-    Mask *m = [self.componentManager componentForClass:[Mask class]];
-    if (!m) {
-        // default to a nodeMask that basically forwards calls to children if there's any
-        self.mask = m = [NodeMask mask];
-    }
-    return m;
+- (BodilyMask *)mask {
+    Body *b = self.body;
+    if ([b isKindOfClass:[SimpleBody class]])
+        return ((SimpleBody *)b).mask;
+    return nil;
 }
 
-- (void)setMask:(Mask *)mask {
-    [self.componentManager setComponent:mask forClassLock:[Mask class]];
+- (void)setMask:(BodilyMask *)mask {
+    // get the body and set the mask
+    Body *b = self.body;
+    if ([b isKindOfClass:[SimpleBody class]])
+        ((SimpleBody *)b).mask = mask;
 }
 
 /** converting a rect in the current nodespace to the world nodespace */

@@ -7,9 +7,9 @@
 #import "MaskData.h"
 
 
-@interface BitMaskData : MaskData
-@property (nonatomic) CGRect window;
-@property (nonatomic) CFMutableBitVectorRef bitset;
+@interface PixelMaskData : MaskData
+@property (nonatomic, readonly) CGRect window;
+@property (nonatomic, readonly) CFMutableBitVectorRef bitset;
 
 + (UIImage *)convertSpriteToImage:(CCSprite *)sprite;
 

@@ -13,8 +13,8 @@
 #import "SequenceStringGenerator.h"
 #import "NSObject+REResponder.h"
 #import "CCNode+LnAdditions.h"
-#import "BitMask.h"
-#import "BitMaskData.h"
+#import "PixelMask.h"
+#import "PixelMaskData.h"
 #import "CCSprite+LnAdditions.h"
 
 @interface DisplayRandomizer ()
@@ -57,7 +57,7 @@
         if (masked) {
             MaskDataCache *cache = [MaskDataCache sharedCache];
             for (NSString *str in rgen.allValues) {
-                cache[str] = [BitMaskData dataWithFrameName:str alphaThreshold:alpha maskSuffix:maskSuffix];
+                cache[str] = [PixelMaskData dataWithFrameName:str alphaThreshold:alpha maskSuffix:maskSuffix];
             }
         }
     }

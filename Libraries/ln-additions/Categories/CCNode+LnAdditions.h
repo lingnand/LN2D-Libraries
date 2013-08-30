@@ -35,6 +35,12 @@
 
 - (void)addChildren:(id <NSFastEnumeration>)children;
 
+- (CGRect)unionBox;
+
+- (CGRect)unionBoxInWorld;
+
+- (CGRect)unionBoxInParent;
+
 /**
     This is the rect of the node measured in the WORLD coordinate.
     It takes care
@@ -84,7 +90,7 @@
 @property (nonatomic, strong) CCComponentManager *componentManager;
 
 /** @group Mask */
-@property(nonatomic, strong) Mask *mask;
+@property(nonatomic, strong) BodilyMask *mask;
 
 /** @group Body */
 @property(nonatomic) Body *body;

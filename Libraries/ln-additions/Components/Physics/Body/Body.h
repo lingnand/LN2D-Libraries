@@ -69,6 +69,14 @@ typedef NS_ENUM(NSUInteger, BodyType)
 
 - (CGAffineTransform)worldToHostParentTransform;
 
+- (CGAffineTransform)hostToWorldTransform;
+
+- (CGAffineTransform)worldToHostTransform;
+
+- (CGRect)hostContentBoxInWorld;
+
+- (CGRect)hostUnionBoxInWorld;
+
 - (void)setClosestWorld;
 
 - (id)copyWithZone:(NSZone *)zone;

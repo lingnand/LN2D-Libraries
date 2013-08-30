@@ -91,5 +91,9 @@
     return IntersectAND;
 }
 
+- (id)copyWithZone:(NSZone *)zone {
+    return [[[self class] allocWithZone:zone] init];
+}
+
 
 @end

@@ -3,18 +3,18 @@
 //
 
 
-#import "BitMaskData.h"
+#import "PixelMaskData.h"
 #import "NSString+LnAddition.h"
 
 
-@implementation BitMaskData {
+@implementation PixelMaskData {
 
 }
 
 -(id)initWithImage:(UIImage *)image alphaThreshold:(UInt8)alphaThreshold {
     if (self = [super init]) {
-        NSUInteger width = (NSUInteger) (CC_CONTENT_SCALE_FACTOR() * [image size].width);
-        NSUInteger height = (NSUInteger) (CC_CONTENT_SCALE_FACTOR() * [image size].height);
+        NSUInteger width = (NSUInteger) (CC_CONTENT_SCALE_FACTOR() * image.size.width);
+        NSUInteger height = (NSUInteger) (CC_CONTENT_SCALE_FACTOR() * image.size.height);
         NSUInteger size = width * height;
 
         // set up the bit vector
@@ -51,8 +51,8 @@
 
         NSUInteger w_width = maxX - minX + 1, w_height = maxY - minY + 1, w_size = w_width * w_height;
 
-        self.window = CGRectMake(minX, minY, w_width, w_height);
-        self.bitset = CFBitVectorCreateMutable(CFAllocatorGetDefault(), w_size);
+        _window = CGRectMake(minX, minY, w_width, w_height);
+        _bitset = CFBitVectorCreateMutable(CFAllocatorGetDefault(), w_size);
         CFBitVectorSetCount(self.bitset, w_size);
         for (NSUInteger x = 0; x < w_width; x++) {
             for (NSUInteger y = 0; y < w_height; y++) {

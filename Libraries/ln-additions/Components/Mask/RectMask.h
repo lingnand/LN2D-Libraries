@@ -6,9 +6,9 @@
 */
 
 #import <Foundation/Foundation.h>
-#import "Mask.h"
+#import "BodilyMask.h"
 
 
-@interface RectMask : Mask
+@interface RectMask : BodilyMask
 
 @end

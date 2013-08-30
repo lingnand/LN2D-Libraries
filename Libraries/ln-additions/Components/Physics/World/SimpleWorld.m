@@ -11,6 +11,7 @@
 #import "CompositeMask.h"
 #import "Contact.h"
 #import "ContactListener.h"
+#import "BodilyMask.h"
 
 @interface SimpleWorld ()
 @property(nonatomic) ccTime elapsed;
@@ -53,16 +54,16 @@
     [self unscheduleUpdate];
 }
 
-- (CCNode *)sortLineageHeadOfNode:(CCNode *)n usingHeadDictionary:(NSMutableDictionary *)cache lineageSet:(NSMutableSet *)set {
+- (SimpleBody *)sortLineageHeadOfNode:(CCNode *)n usingLineageHeadBodyDictionary:(NSMutableDictionary *)cache lineageBodySet:(NSMutableSet *)set {
     if (!n)
         return nil;
     NSValue *value = [NSValue valueWithPointer:(__bridge void *) n];
     id r = cache[value];
     if (!r) {
         // set the result
-        r = [self sortLineageHeadOfNode:n.parent usingHeadDictionary:cache lineageSet:set];
+        r = [self sortLineageHeadOfNode:n.parent usingLineageHeadBodyDictionary:cache lineageBodySet:set];
         if (!r && [self.allBodies containsObject:n.body])
-            r = n;
+            r = n.body;
         // we should accumulate the result in the lineage set
         [set addObject:r];
         cache[value] = r ? r : [NSNull null];
@@ -80,18 +81,19 @@
         // for each body
         NSSet *activeDynamicBodies = [self.allBodies filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"type == %d && activated == YES", BodyTypeDynamic]];
         if (activeDynamicBodies.count) {
-            NSMutableDictionary *lineageHeads = [NSMutableDictionary dictionary];
-            NSMutableSet *lineages = [NSMutableSet set];
-            NSMutableSet *collisionSet;
-            NSMutableDictionary *positionChanges = [NSMutableDictionary dictionary];
-            NSMutableDictionary *collideContacts = [NSMutableDictionary dictionary];
+            NSMutableDictionary *lineageHeadBodies = [NSMutableDictionary dictionary];
+            NSMutableSet *lineageBodies = [NSMutableSet set];
+            NSMutableSet *collisionBodiesSet;
+            NSMutableDictionary *positionChangesTable = [NSMutableDictionary dictionary];
+            NSMutableDictionary *collidedBodiesTable = [NSMutableDictionary dictionary];
             for (SimpleBody *b in self.allBodies)
-                [self sortLineageHeadOfNode:b.host usingHeadDictionary:lineageHeads lineageSet:lineages];
+                [self sortLineageHeadOfNode:b.host usingLineageHeadBodyDictionary:lineageHeadBodies lineageBodySet:lineageBodies];
+
 
             for (SimpleBody *b in activeDynamicBodies) {
                 // first retrieve the head it corresponds to
-                collisionSet = lineages.mutableCopy;
-                [collisionSet removeObject:lineageHeads[[NSValue valueWithPointer:(__bridge void *) b.host]]];
+                collisionBodiesSet = lineageBodies.mutableCopy;
+                [collisionBodiesSet removeObject:lineageHeadBodies[[NSValue valueWithPointer:(__bridge void *) b.host]]];
 
                 // the displacement of body
                 CGPoint worldv = b.worldVelocity;
@@ -103,21 +105,21 @@
                 // save the old position
                 CGPoint oldPos = b.worldPosition;
 
-                NSMutableSet *collideContact = [NSMutableSet set];
-                CCNode *collidedNode;
+                NSMutableSet *collidedBodies = [NSMutableSet set];
+                SimpleBody *collidedBody;
 
                 // first adjust the x direction
                 b.worldPosition = ccpAdd(oldPos, ccp(ds.x, 0));
-                while ((collidedNode = [self node:b.host intersectsWithNodesInSet:collisionSet]) && ds_mag.x > 0) {
-                    [collideContact addObject:[Contact contactWithBody:b otherBody:collidedNode.body]];
+                while ((collidedBody = [self body:b intersectsWithBodiesInSet:collisionBodiesSet]) && ds_mag.x > 0) {
+                    [collidedBodies addObject:collidedBody];
                     collideVec.x = 1;
                     b.worldPosition = ccpAdd(b.worldPosition, ccp(-ds_direction.x * b.restitution, 0));
                     ds_mag.x -= b.restitution;
                 }
                 // then adjust the y direction
                 b.worldPosition = ccpAdd(b.worldPosition, ccp(0, ds.y));
-                while ((collidedNode = [self node:b.host intersectsWithNodesInSet:collisionSet]) && ds_mag.y > 0) {
-                    [collideContact addObject:[Contact contactWithBody:b otherBody:collidedNode.body]];
+                while ((collidedBody = [self body:b intersectsWithBodiesInSet:collisionBodiesSet]) && ds_mag.y > 0) {
+                    [collidedBodies addObject:collidedBody];
                     collideVec.y = 1;
                     b.worldPosition = ccpAdd(b.worldPosition, ccp(0, -ds_direction.y * b.restitution));
                     ds_mag.y -= b.restitution;
@@ -128,11 +130,11 @@
 
                 // save the positional changes in the dictionary and restore the old position
                 NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                positionChanges[value] = [NSValue valueWithCGPoint:b.worldPosition];
+                positionChangesTable[value] = [NSValue valueWithCGPoint:b.worldPosition];
                 b.worldPosition = oldPos;
 
                 // save the collision contact set
-                collideContacts[value] = collideContact;
+                collidedBodiesTable[value] = collidedBodies;
 
                 // we reset the world acceleration to be the gravity
                 b.worldAcceleration = self.gravity;
@@ -141,10 +143,9 @@
             // loop through all the dynamic bodies and apply the changes
             for (SimpleBody *b in activeDynamicBodies) {
                 NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                b.worldPosition = [positionChanges[value] CGPointValue];
-                for (Contact *c in collideContacts[value]) {
-                    [b.contactListener beginContact:c];
-                }
+                b.worldPosition = [positionChangesTable[value] CGPointValue];
+                for (SimpleBody *o in collidedBodiesTable[value])
+                    [b.contactListener beginContact:[Contact contactWithBody:b otherBody:o]];
             }
         }
     }
@@ -152,10 +153,10 @@
 
 // A little bit like the compositemask; difference is that it returns the specific instance
 // that causes the collision
-- (CCNode *)node:(CCNode *)n intersectsWithNodesInSet:(NSSet *)set {
-    for (CCNode *node in set) {
-        if ([node.mask intersects:n.mask])
-            return node;
+- (SimpleBody *)body:(SimpleBody *)b intersectsWithBodiesInSet:(NSSet *)set {
+    for (SimpleBody *body in set) {
+        if ([body.mask intersects:b.mask])
+            return body;
     }
     return nil;
 }

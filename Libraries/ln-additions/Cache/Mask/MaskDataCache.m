@@ -13,7 +13,7 @@
 #import "MaskDataCache.h"
 #import "NSString+LnAddition.h"
 #import "Mask.h"
-#import "BitMask.h"
+#import "PixelMask.h"
 #import "MaskData.h"
 
 @implementation MaskDataCache {

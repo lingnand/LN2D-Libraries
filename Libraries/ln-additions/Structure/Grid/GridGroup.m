@@ -107,7 +107,7 @@
 - (Mask *)mask {
     if (!_mask) {
         // default mask
-        self.mask = [CompositeMask maskWithNodeContainer:self];
+        self.mask = [CompositeMask maskWithContainer:self];
     }
     return _mask;
 }

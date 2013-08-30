@@ -8,9 +8,12 @@
 #import "CCComponent.h"
 #import "SimpleBody.h"
 #import "CCNode+LnAdditions.h"
-#import "NodeMask.h"
+#import "NodalMask.h"
+#import "BodilyMask.h"
+#import "SimpleWorld.h"
 
 @implementation SimpleBody {
+    BodilyMask *_mask;
 }
 @synthesize position = _position;
 @synthesize velocity = _velocity;
@@ -77,6 +80,22 @@
 
 - (void)setWorldAcceleration:(CGPoint)worldAcceleration {
     self.acceleration = CGPointVectorApplyAffineTransform(worldAcceleration, self.worldToHostParentTransform);
+}
+
+#pragma mark - BodilyMask related operations
+
+- (BodilyMask *)mask {
+    if (!_mask)
+        self.mask = [NodalMask mask];
+    return _mask;
+}
+
+- (void)setMask:(BodilyMask *)mask {
+    if (mask != _mask) {
+        _mask.body = nil;
+        _mask = mask;
+        mask.body = self;
+    }
 }
 
 - (id)copyWithZone:(NSZone *)zone {

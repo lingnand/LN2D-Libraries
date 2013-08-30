@@ -10,8 +10,10 @@
 
 @class Mask;
 
+/** masked defines a common interface to all nodes / virtual nodes that
+ * has their own definition of the shapes */
 @protocol Masked
-@property (nonatomic,strong) Mask *mask;
+- (Mask *)mask;
 @end
 
 typedef NS_ENUM(NSUInteger, MaskIntersectComplexity) {
@@ -27,13 +29,16 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
 };
 
 
-@interface Mask : CCComponent
+@interface Mask : NSObject <NSCopying>
 
 
 + (id)mask;
 
 /**
     Check if a WORLD point is inside the delegate of the current mask
+    Note that the world USUALLY follows the definition of the world in the body
+    that the mask is attached to. To a virtual mask this might involve one or multiple
+    worlds (tricky).
     @param point
         A point in the world coordinate
 */
@@ -63,4 +68,6 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
 - (MaskIntersectComplexity)complexity;
 
 - (MaskIntersectPolicy)intersectPolicy;
+
+- (id)copyWithZone:(NSZone *)zone;
 @end

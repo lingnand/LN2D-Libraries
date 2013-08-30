@@ -236,17 +236,19 @@ static char const *const gridCellDynamicHeightUserSet = "GridCellDynamicHeightUs
 }
 
 - (CGRect)gridBox {
-    CGSize size = self.gridSize;
-    return CGRectMake(self.position.x, self.position.y, size.width, size.height);
+    return (CGRect){self.position, self.gridSize};
 }
 
 - (CGSize)gridSize {
     if (self.isEmpty) {
+        // setting to minimum size is to prevent the gridLine width to change incorrectly
+        // i.e. expand due to an empty cell
         return CGSizeMake(CGFLOAT_MIN, CGFLOAT_MIN);
     }
-    CGSize canvasSize = self.canvasSize;
-    CGFloat width = (self.scaleX > 0 ? 1 - self.anchorPoint.x : -self.anchorPoint.x) * self.scaleX * canvasSize.width;
-    CGFloat height = (self.scaleY > 0 ? 1 - self.anchorPoint.y : -self.anchorPoint.y) * self.scaleY * canvasSize.height;
+    CGRect unionBoxInParent = self.unionBoxInParent;
+    // the position attribute of this node would indicate where the anchor point is in the parent space
+    CGFloat width = unionBoxInParent.origin.x + unionBoxInParent.size.width - self.position.x;
+    CGFloat height = unionBoxInParent.origin.y + unionBoxInParent.size.height - self.position.y;
     return CGSizeMake(width, height);
 }
 

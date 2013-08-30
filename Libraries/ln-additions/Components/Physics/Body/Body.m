@@ -61,20 +61,42 @@
 
 /** with respect to the real world */
 
-/** return the transform from the local coordinates into the world coordinates
- * if there's no world indicated (or the world is not attached in the correct hierarchy
- * , the outermost world is chosen */
-- (CGAffineTransform)hostParentToWorldTransform {
+- (CGAffineTransform)toWorldTransformFromNode:(CCNode *)n {
     CGAffineTransform t = CGAffineTransformIdentity;
 
-    for (CCNode *p = self.host.parent; p && p != self.world.host; p = p.parent)
+    for (CCNode *p = n; p && p != self.world.host; p = p.parent)
         t = CGAffineTransformConcat(t, p.nodeToParentTransform);
 
     return t;
 }
 
+/** return the transform from the local coordinates into the world coordinates
+ * if there's no world indicated (or the world is not attached in the correct hierarchy
+ * , the outermost world is chosen */
+- (CGAffineTransform)hostParentToWorldTransform {
+    return [self toWorldTransformFromNode:self.host.parent];
+}
+
 - (CGAffineTransform)worldToHostParentTransform {
     return CGAffineTransformInvert(self.hostParentToWorldTransform);
+}
+
+- (CGAffineTransform)hostToWorldTransform {
+    return [self toWorldTransformFromNode:self.host];
+}
+
+- (CGAffineTransform)worldToHostTransform {
+    return CGAffineTransformInvert(self.hostToWorldTransform);
+}
+
+// the contentSize box in the wired world
+- (CGRect)hostContentBoxInWorld {
+    return CGRectApplyAffineTransform((CGRect){{0,0},self.host.contentSize}, self.hostToWorldTransform);
+}
+
+// unionBox in the wired world
+- (CGRect)hostUnionBoxInWorld {
+    return CGRectApplyAffineTransform(self.host.unionBox, self.hostToWorldTransform);
 }
 
 - (void)setWorld:(World *)world {

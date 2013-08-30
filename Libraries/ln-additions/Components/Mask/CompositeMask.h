@@ -8,9 +8,11 @@
 
 
 @interface CompositeMask : Mask
-@property(nonatomic, strong) id<NSFastEnumeration> nodeContainer;
+@property(nonatomic, strong) id<NSFastEnumeration> container;
 
-- (id)initWithNodeContainer:(id<NSFastEnumeration>)container;
+- (id)initWithContainer:(id<NSFastEnumeration>)container;
 
-+ (id)maskWithNodeContainer:(id<NSFastEnumeration>)container;
+- (id)copyWithZone:(NSZone *)zone;
+
++ (id)maskWithContainer:(id<NSFastEnumeration>)container;
 @end

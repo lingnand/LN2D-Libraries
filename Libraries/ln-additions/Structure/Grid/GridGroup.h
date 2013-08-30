@@ -14,6 +14,7 @@
 @property(nonatomic) CGFloat gap;
 @property (nonatomic, weak) GridNode *grid;
 @property (nonatomic, readonly) CGFloat width;
+@property(nonatomic, strong) Mask *mask;
 
 /** @group Group creation */
 

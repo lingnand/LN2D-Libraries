@@ -7,10 +7,12 @@
 
 #import <Foundation/Foundation.h>
 #import "Mask.h"
+#import "BodilyMask.h"
 
-/** Node mask is designed to forward mask requests:
+/** NodalMask is designed to forward mask requests:
  * If the host has children, then it will default to using
   * a composite mask containing its children. Otherwise
   * it will use a simple RectMask*/
-@interface NodeMask : Mask
+@interface NodalMask : BodilyMask
+- (id)copyWithZone:(NSZone *)zone;
 @end
