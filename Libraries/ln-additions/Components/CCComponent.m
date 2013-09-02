@@ -74,29 +74,24 @@
                                          currParent = _parent;
                                          _parent = _oldParent;
                                      }
-                                     // we need to activate the host correction toggle for the parent
-                                     [_parent setHostCorrectionToggle:YES];
 
                                      if (newActivated)
                                          [self componentActivated];
                                      else
                                          [self componentDeactivated];
 
-                                     [_parent setHostCorrectionToggle:NO];
-
                                      if (_oldHost)
                                          _host = currHost;
                                      if (_oldParent)
                                          _parent = currParent;
+                                     _oldHost = nil;
+                                     _oldParent = nil;
 
                                      // notify the children that activated did get changed
                                      // the problem here is that the activated got fed with
                                      // the wrong value (fed with old Lead)
                                      for (CCComponent *c in self.componentStore)
                                          [c didChangeValueForKey:@"activated"];
-
-                                     _oldHost = nil;
-                                     _oldParent = nil;
                                  }
                              }
                          }];
@@ -105,53 +100,43 @@
     return self;
 }
 
-- (void)setHostCorrectionToggle:(BOOL)toggle {
-    // set the parent as well
-    if (toggle != _hostCorrectionToggle) {
-        if (self.parent)
-            [self.parent setHostCorrectionToggle:toggle];
-        _hostCorrectionToggle = toggle;
-    }
-}
-
-- (CCNode *)host {
-    CCComponent *p = (_hostCorrectionToggle && _oldParent) ? _oldParent : self.parent;
-    // defaults to return the host indicated by the parent
-    if (p)
-        return p.host;
-    return (_hostCorrectionToggle && _oldHost) ? _oldHost : _host;
-}
-
 /** This method is only useful for the root component */
 - (void)setHost:(CCNode *)host {
     // host node changed
     if (!self.parent) {
+        [self setHostDirect:host];
+    }
+}
+
+- (void)setHostDirect:(CCNode *)host {
+    if (_host != host) {
         [self setLead:host forStorage:&_host oldStorage:&_oldHost ofKey:@"host"];
+        // need to propagate the host changes all way down
+        [self.componentStore setValue:host forKey:@"hostDirect"];
     }
 }
 
 /** This is used by the parent to set the relationship */
 - (void)setParent:(CCComponent *)parent {
-    [self setLead:parent forStorage:&_parent oldStorage:&_oldParent ofKey:@"parent"];
+    if (_parent != parent)
+        [self setLead:parent forStorage:&_parent oldStorage:&_oldParent ofKey:@"parent"];
 }
 
 - (void)setLead:(id)newLead forStorage:(__weak id *)leadStorage oldStorage:(__weak id *)oldStorage ofKey:(NSString *)name {
-    if (newLead != *leadStorage) {
-        if (*leadStorage) {
-            id ol = *oldStorage = *leadStorage;
-            [self willChangeValueForKey:name];
-            *leadStorage = nil;
-            [self didChangeValueForKey:name];
-            *leadStorage = ol;
-            [self componentRemoved];
-            *leadStorage = *oldStorage = nil;
-        }
-        if (newLead) {
-            [self willChangeValueForKey:name];
-            *leadStorage = newLead;
-            [self componentAdded];
-            [self didChangeValueForKey:name];
-        }
+    if (*leadStorage) {
+        id ol = *oldStorage = *leadStorage;
+        [self willChangeValueForKey:name];
+        *leadStorage = nil;
+        [self didChangeValueForKey:name];
+        *leadStorage = ol;
+        [self componentRemoved];
+        *leadStorage = *oldStorage = nil;
+    }
+    if (newLead) {
+        [self willChangeValueForKey:name];
+        *leadStorage = newLead;
+        [self componentAdded];
+        [self didChangeValueForKey:name];
     }
 }
 
@@ -195,16 +180,13 @@
 }
 
 + (NSSet *)keyPathsForValuesAffectingActivated {
-    return [NSSet setWithObjects:@"enabled", @"host", nil];
-}
-
-+ (NSSet *)keyPathsForValuesAffectingHost {
-    return [NSSet setWithObject:@"parent"];
+    return [NSSet setWithObjects:@"enabled", @"host", @"parent", nil];
 }
 
 - (void)dealloc {
     // set all the children's parent to nil...?
     [self.componentStore setValue:nil forKey:@"parent"];
+    [self.componentStore setValue:nil forKey:@"hostDirect"];
 }
 
 #pragma mark - Operations
@@ -243,6 +225,7 @@
             }
         }
         comp.parent = nil;
+        comp.hostDirect = nil;
     }
 }
 
@@ -253,6 +236,7 @@
     [self.predicateLocks removeAllObjects];
     // nilling the relationship
     [self.componentStore setValue:nil forKey:@"parent"];
+    [self.componentStore setValue:nil forKey:@"hostDirect"];
     [self.componentStore removeAllObjects];
 }
 
@@ -336,10 +320,10 @@
         self.predicateQueue = fq;
     }
     [self.writableComponentStore addObject:component];
-    // unset the host (it's not used in a component hierarchy
-    component.host = nil;
     // set the delegate
     component.parent = self;
+    // setting the host
+    component.hostDirect = self.host;
 }
 
 - (BOOL)addChildren:(id <NSFastEnumeration>)comps {
