@@ -13,14 +13,9 @@
 
 @interface DisplayRandomizer : CCComponent
 
+@property (nonatomic, weak) CCSprite *host;
 
 + (id)randomizerWithFrameNameGenerator:(RandomStringGenerator *)rgen;
-
-+ (id)randomizerWithFrameNameGenerator:(RandomStringGenerator *)rgen
-                            maskSuffix:(NSString *)maskSuffix
-                        alphaThreshold:(UInt8)alpha;
-
-- (id)initWithFrameNameGenerator:(RandomStringGenerator *)rgen masked:(BOOL)masked maskSuffix:(NSString *)maskSuffix alphaThreshold:(UInt8)alpha;
 
 - (id)initWithFrameNameGenerator:(RandomStringGenerator *)generator;
 

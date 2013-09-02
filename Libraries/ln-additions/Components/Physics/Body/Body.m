@@ -10,19 +10,19 @@
 #import "Space.h"
 #include "NSObject+LnAdditions.h"
 #import "CCNode+LnAdditions.h"
-#import "ContactListener.h"
+#import "TranslationalBody.h"
 
 @implementation Body {
     Class _spaceClass;
 }
-@dynamic position,velocity, spacePosition, spaceVelocity;
+@dynamic position, velocity, spacePosition, spaceVelocity;
 
 + (id)body {
     // give back a simpleBody instance if the user does not specify a
     // concrete implementing class; SimpleBody is like a default implementation
     // of Body anyway
     if (self.class == [Body class])
-        return [SimpleBody body];
+        return [TranslationalBody body];
     return [self component];
 }
 
@@ -91,7 +91,7 @@
 
 // the contentSize box in the wired world
 - (CGRect)hostContentBoxInSpace {
-    return CGRectApplyAffineTransform((CGRect){{0,0},self.host.contentSize}, self.hostToSpaceTransform);
+    return CGRectApplyAffineTransform((CGRect) {{0, 0}, self.host.contentSize}, self.hostToSpaceTransform);
 }
 
 // unionBox in the wired world
@@ -117,31 +117,23 @@
     if (!self.space && p) {
         Space *w = nil;
         while ((p = p.parent)) {
-            if ((w = [p.componentManager componentForClass:self.spaceClass])) {
+            if ((w = [p.rootComponent childForClass:self.spaceClass])) {
                 if ([w addBody:self])
                     return;
-            } else if ([p.body.spaceClass isSubclassOfClass:self.spaceClass]) {
-                // we can ask for the body of the parent. Since it must have already checked
-                // for the whole place then it should get the correct result
-                // condition: the worldClass of this body must be kind of class of that of the parent's body
-                if ([p.body.space addBody:self])
+            }
+            // check if the parent has already wired with a space that's valid for this body as well
+            Body *b = [p.rootComponent childForClass:[Body class]];
+            if ([b.spaceClass isSubclassOfClass:self.spaceClass]) {
+                if ([b.space addBody:self])
                     return;
             }
         }
     }
 }
 
-/** Contact Listener */
-- (ContactListener *)contactListener {
-    if (!_contactListener)
-        // get the class of the contactListener
-        _contactListener = [[self classForPropertyNamed:@"contactListener"] listener];
 
-    return _contactListener;
-}
-
-- (void)onAddComponent {
-    [super onAddComponent];
+- (void)componentAdded {
+    [super componentAdded];
     // we really need to add the body to the closest world to ensure consistency
     [self setClosestSpace];
 }

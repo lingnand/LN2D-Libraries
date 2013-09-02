@@ -13,8 +13,10 @@
 #import "CCNode+LnAdditions.h"
 #import "B2DContactListener.h"
 
+
 @implementation B2DBody {
     b2BodyDef *_bodyDef;
+    BOOL inUpdateLoop;
 }
 
 
@@ -124,41 +126,16 @@
 }
 
 /** type information */
-- (b2BodyType)b2BodyTypeFromBodyType:(BodyType)type {
-    switch (type) {
-        case BodyTypeStatic: return b2_staticBody;
-        case BodyTypeKinematic: return b2_kinematicBody; 
-        case BodyTypeDynamic: return b2_dynamicBody; 
-    }
-    return b2_staticBody;
-}
 
-- (BodyType)bodyTypeFromB2BodyType:(b2BodyType)type {
-    switch (type) {
-        case b2_staticBody:return BodyTypeStatic; 
-        case b2_kinematicBody:return BodyTypeKinematic;
-        case b2_dynamicBody:return BodyTypeDynamic;
-    }
-    return BodyTypeStatic;
-}
-
-- (BodyType)type {
-    return [self bodyTypeFromB2BodyType:self.b2Type];
-}
-
-- (void)setType:(BodyType)type {
-    self.b2Type = [self b2BodyTypeFromBodyType:type];
-}
-
-- (b2BodyType)b2Type {
+- (b2BodyType)type {
     return self.body ? self.body->GetType() : self.bodyDef->type;
 }
 
-- (void)setB2Type:(b2BodyType)b2Type {
+- (void)setType:(b2BodyType)type {
     if (self.body) {
-        self.body->SetType(b2Type);
+        self.body->SetType(type);
     } else {
-        self.bodyDef->type = b2Type;
+        self.bodyDef->type = type;
     }
 }
 
@@ -190,6 +167,14 @@
     } else {
         self.bodyDef->position = worldPhysicalPosition;
     }
+}
+
+- (float)rotation {
+    return  - CC_RADIANS_TO_DEGREES(self.angle);
+}
+
+- (void)setRotation:(float)rotation {
+    self.angle = - CC_DEGREES_TO_RADIANS(rotation);
 }
 
 - (float)angle {
@@ -423,44 +408,54 @@
     return set;
 }
 
-- (void)activate {
-    [super activate];
+- (void)componentActivated {
+    [super componentActivated];
     // we didn't add the Initial option because the b2body position has a higher priority
-//    [self.host addObserver:self
-//                forKeyPath:@"position"
-//                   options:nil
-//                   context:nil];
+    [self.host addObserver:self forKeyPath:@"position" options:nil context:nil];
+    [self.host addObserver:self forKeyPath:@"rotation" options:nil context:nil];
     [self scheduleUpdate];
 }
 
-- (void)deactivate {
-    [super deactivate];
-//    [self.host removeObserver:self forKeyPath:@"position"];
+- (void)componentDeactivated {
+    [super componentDeactivated];
+    [self.host removeObserver:self forKeyPath:@"position"];
+    [self.host removeObserver:self forKeyPath:@"rotation"];
     [self unscheduleUpdate];
 }
 
-#pragma mark - Unit conversion (depending on the world)
+#pragma mark - Contact Listener
 
-//- (void)observeValueForKeyPath:(NSString *)keyPath
-//                      ofObject:(id)object
-//                        change:(NSDictionary *)change
-//                       context:(void *)context {
-//    if ([keyPath isEqualToString:@"position"]) {
-//        self.position = self.host.position;
-//    } else {
-//        [super observeValueForKeyPath:keyPath
-//                             ofObject:object
-//                               change:change
-//                              context:context];
-//    }
-//}
+- (B2DContactListener *)contactListener {
+    if (!_contactListener)
+        _contactListener = [B2DContactListener listener];
+    return _contactListener;
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath
+                      ofObject:(id)object
+                        change:(NSDictionary *)change
+                       context:(void *)context {
+    if (!inUpdateLoop) {
+        if ([keyPath isEqualToString:@"position"])
+            self.position = self.host.position;
+        else if ([keyPath isEqualToString:@"rotation"])
+            self.rotation = self.host.rotation;
+    } else {
+        [super observeValueForKeyPath:keyPath
+                             ofObject:object
+                               change:change
+                              context:context];
+    }
+}
 
 - (void)update:(ccTime)step {
-    CGPoint ccpos = CGPointFromb2Vec2(self.body->GetPosition(), self.space);
-    self.host.nodePosition = CGPointApplyAffineTransform(ccpos, [self spaceToHostParentTransform]);
+    // toggle the boolean so as not to trigger KVO update
+    inUpdateLoop = YES;
+    self.host.position = self.position;
     // an rotation itself can be expressed as an affinetransformation, which means
     // that independent of the relative observer, it's always the same operation
-    self.host.rotation = -1 * CC_RADIANS_TO_DEGREES(self.body->GetAngle());
+    self.host.rotation = self.rotation;
+    inUpdateLoop = NO;
 }
 
 - (id)copyWithZone:(NSZone *)zone {

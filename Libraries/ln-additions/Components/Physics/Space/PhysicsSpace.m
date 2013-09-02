@@ -77,7 +77,7 @@
         // for each dynamic body we should first compute the set that it should be checked against
         // have a dictionary to record the position changes that should take place
         // for each body
-        NSSet *activeDynamicBodies = [self.allBodies filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"type == %d && activated == YES", BodyTypeDynamic]];
+        NSSet *activeDynamicBodies = [self.allBodies filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"type == %d && activated == YES", MaskedBodyDynamic]];
         if (activeDynamicBodies.count) {
             NSMapTable *lineageHeadBodies = [NSMapTable weakToWeakObjectsMapTable];
             NSMutableSet *lineageBodies = [NSMutableSet set];

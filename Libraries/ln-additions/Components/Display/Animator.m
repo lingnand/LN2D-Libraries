@@ -35,7 +35,7 @@
     return self;
 }
 
-- (void)onAddComponent {
+- (void)componentAdded {
     // the delegate should initialize the appearance himself 
     // as animation is more of on-demand stuff
 }

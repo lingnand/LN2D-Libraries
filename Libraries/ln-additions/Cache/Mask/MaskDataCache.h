@@ -15,6 +15,5 @@
 
 + (MaskDataCache *)sharedCache;
 
-- (id)dataForFrameName:(NSString *)f
-     maskDataGenerator:(MaskData *(^)(NSString *frameName))generator;
+- (id)dataForSpriteFrame:(CCSpriteFrame *)f maskDataGenerator:(MaskData *(^)(CCSpriteFrame *frame))generator;
 @end

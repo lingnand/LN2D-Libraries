@@ -6,15 +6,13 @@
 #import "GridLine.h"
 
 @class GridNode;
-@class CompositeMask;
 
-@interface GridGroup : NSObject <NSFastEnumeration, Masked>
+@interface GridGroup : NSObject <NSFastEnumeration>
 
 @property(nonatomic) GridDimension type;
 @property(nonatomic) CGFloat gap;
 @property (nonatomic, weak) GridNode *grid;
 @property (nonatomic, readonly) CGFloat width;
-@property(nonatomic, strong) Mask *mask;
 
 /** @group Group creation */
 

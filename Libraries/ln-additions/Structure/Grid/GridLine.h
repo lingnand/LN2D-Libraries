@@ -7,11 +7,10 @@
 
 @class GridGroup;
 @class GridLine;
-@class CompositeMask;
 @class Mask;
 
 
-@interface GridLine : NSObject <NSFastEnumeration, Masked>
+@interface GridLine : NSObject <NSFastEnumeration>
 
 // when you set the width, it will follow the following rule
 // if width>=0, width will be set to the value and the line's dynamicity is changed to false
@@ -23,8 +22,6 @@
 @property(nonatomic) NSUInteger index;
 // default dynamicity of the line
 @property(nonatomic) BOOL dynamic;
-// default mask
-@property(nonatomic, strong) Mask *mask;
 
 
 /** @group Line creation */

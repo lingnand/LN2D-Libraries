@@ -13,11 +13,11 @@
 
 }
 - (BOOL)contains:(CGPoint)point {
-	return [super contains:point] && CGRectContainsPoint(self.body.host.unionBoxInParent, point);
+	return [super contains:point] && CGRectContainsPoint(self.parent.host.unionBoxInParent, point);
 }
 
 - (BOOL)intersectsOneSide:(Mask *)other {
-    return [super intersectsOneSide:other] && CGRectIntersectsRect(self.body.hostUnionBoxInSpace, ((BodilyMask *)other).body.hostUnionBoxInSpace);
+    return [super intersectsOneSide:other] && CGRectIntersectsRect(self.parent.hostUnionBoxInSpace, ((BodilyMask *)other).body.hostUnionBoxInSpace);
 }
 
 - (MaskIntersectComplexity)complexity {

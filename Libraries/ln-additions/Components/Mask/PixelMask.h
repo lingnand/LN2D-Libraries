@@ -11,7 +11,7 @@
 @class PixelMaskData;
 
 
-@interface PixelMask : BodilyMask
+@interface PixelMask : Mask
 @property (nonatomic, strong) PixelMaskData *maskData;
 
 - (id)initWithData:(PixelMaskData *)maskData;

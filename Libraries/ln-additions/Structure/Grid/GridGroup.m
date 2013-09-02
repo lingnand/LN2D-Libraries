@@ -5,14 +5,12 @@
 
 #import "GridGroup.h"
 #import "GridNode.h"
-#import "CompositeMask.h"
 
 @interface GridGroup ()
 @property(nonatomic, strong) NSMutableArray *lines;
 @end
 
 @implementation GridGroup
-@synthesize mask = _mask;
 
 #pragma mark - Lifecycle
 
@@ -103,14 +101,6 @@
 //}
 
 #pragma mark - Common properties
-
-- (Mask *)mask {
-    if (!_mask) {
-        // default mask
-        self.mask = [CompositeMask maskWithContainer:self];
-    }
-    return _mask;
-}
 
 - (void)setGrid:(GridNode *)grid {
     if (grid != _grid) {

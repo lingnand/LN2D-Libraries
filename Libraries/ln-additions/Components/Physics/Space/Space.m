@@ -35,7 +35,7 @@
     for (CCNode *c in n.children) {
         // we need to use the predicate to get all the components that matchs
         // the requirement
-        [self addBody:[c.componentManager componentForClass:self.bodyClass]];
+        [self addBody:[c.rootComponent childForClass:self.bodyClass]];
         // recurse downwards
         // if we already found suitable bodies in c, then we don't recurse down
         // -- we assume that the underlying nodes would be managed by the

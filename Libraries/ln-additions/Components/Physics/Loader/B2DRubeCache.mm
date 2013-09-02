@@ -9,7 +9,6 @@
 #include "b2dJson.h"
 #include "b2dJsonImage.h"
 #import "B2DSpace_protected.h"
-#import "B2DRUBESpace.h"
 #import "B2DRUBEImage.h"
 #import "CCNode+LnAdditions.h"
 #import "NSArray+LnAdditions.h"
@@ -29,11 +28,11 @@
     return [[self alloc] initWithSpace:nil fileName:filename];
 }
 
-+ (id)cacheForSpace:(B2DRUBESpace *)space withFileName:(NSString *)filename {
++ (id)cacheForSpace:(B2DSpace *)space withFileName:(NSString *)filename {
     return [[self alloc] initWithSpace:space fileName:filename];
 }
 
-- (id)initWithSpace:(B2DRUBESpace *)space fileName:(NSString *)filename {
+- (id)initWithSpace:(B2DSpace *)space fileName:(NSString *)filename {
     if (self = [super init]) {
         // initialize the b2djson object
         NSString *fullpath = [[CCFileUtils sharedFileUtils] fullPathFromRelativePath:filename];
@@ -55,7 +54,7 @@
 //                NSLog(@"name of body = %s, pointer = %p", _json->getBodyName(b).c_str(), b);
 //                b = b->GetNext();
 //            }
-            space = [B2DRUBESpace spaceWithB2World:b2world];
+            space = [B2DSpace spaceWithB2World:b2world];
 
         }
         _space = space;
@@ -67,7 +66,7 @@
     if (!_bodies) {
         NSMutableDictionary *dict = [NSMutableDictionary dictionary];
         // get all the bodies in the world
-        for (B2DRUBEBody *b in self.space.allBodies) {
+        for (B2DBody *b in self.space.allBodies) {
             // if there's no name associated with this body it would be ""
             [self pushKey:[NSString stringWithUTF8String:_json->getBodyName(b.body).c_str()]
                     value:b
@@ -79,9 +78,13 @@
         _json->getAllImages(b2dImages);
         for (uint i = 0; i < b2dImages.size(); i++) {
             b2dJsonImage *img = b2dImages[i];
-            B2DRUBEBody *body = [B2DRUBEBody bodyFromB2Body:img->body];
+            B2DBody *body = [B2DBody bodyFromB2Body:img->body];
             NSAssert(body, @"the image is referencing a body that is not captured in the all bodies array");
-            [body.imageManager addComponent:[B2DRUBEImage imageWithJsonImage:img]];
+            [body addChild:[B2DRUBEImage imageWithJsonImage:img]];
+            // we need to modify the body to make it using the information from the images correctly
+            body.onComponentActivated = ^(CCComponent *component) {
+                component.host.zOrder = [[component.children valueForKeyPath:@"@min.zOrder"] integerValue];
+            };
         }
     }
     return _bodies;
@@ -127,8 +130,8 @@
         bodyNodes = nil;
         if (bodies) {
             bodyNodes = [NSMutableArray arrayWithCapacity:bodies.count];
-            for (B2DRUBEBody *body in  bodies)
-                [bodyNodes addObject:[CCNode nodeWithComponentManager:[CCComponentManager managerWithComponent:body]]];
+            for (B2DBody *body in  bodies)
+                [bodyNodes addObject:[CCNode nodeWithRootComponent:[CCComponent componentWithChild:body]]];
             self.bodyNodesDict[name] = bodyNodes;
         }
     }

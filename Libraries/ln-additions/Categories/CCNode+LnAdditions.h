@@ -6,15 +6,15 @@
 
 
 #import <Foundation/Foundation.h>
-#import "CCComponentManager.h"
-#import "Mask.h"
-#import "SimpleBody.h"
 #import "CCNode.h"
 
+@class Body;
+@class CCComponent;
 
-@interface CCNode (LnAdditions) <Masked>
 
-+ (id)nodeWithComponentManager:(CCComponentManager *)manager;
+@interface CCNode (LnAdditions)
+
++ (id)nodeWithRootComponent:(CCComponent *)comp;
 
 /** @group Queries */
 - (BOOL)fullyOutsideScreen;
@@ -80,17 +80,10 @@
 /** @group Curries */
 - (id)nodeWithAnchorPoint:(CGPoint)anchor;
 
-/** @group Components */
-@property (nonatomic, strong) CCComponentManager *componentManager;
-
-/** @group Mask */
-@property(nonatomic, strong) BodilyMask *mask;
+/** @group Component */
+@property (nonatomic, strong) CCComponent *rootComponent;
 
 /** @group Body */
 @property(nonatomic) Body *body;
-
-/** @group Position */
-/** change the position of the node (note this is the original method implemented by cocos2d */
-@property(nonatomic) CGPoint nodePosition;
 
 @end

@@ -29,6 +29,12 @@
     }];
 }
 
++ (id)predicateWithConformsToProtocolFilter:(Protocol *)protocol {
+    return [[self predicateCacheTable] objectForKey:protocol valueGenerator:^id(id key) {
+        return [NSPredicate predicateWithFormat:@"SELF conformsToProtocol: %@", protocol];
+    }];
+}
+
 + (NSCache *)predicateCacheTable {
     static NSCache *predicateCacheTable = nil;
     if (!predicateCacheTable) {

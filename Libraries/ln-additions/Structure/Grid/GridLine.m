@@ -5,18 +5,13 @@
 
 #import "GridLine.h"
 #import "GridGroup.h"
-#import "CCNode+GridCell.h"
-#import "CompositeMask.h"
-#import "Mask.h"
 #import "GridNode.h"
-#import <objc/runtime.h>
 
 @interface GridLine ()
 @property(nonatomic, strong) NSMutableArray *cells;
 @end
 
 @implementation GridLine
-@synthesize mask = _mask;
 
 #pragma mark - Lifecycle
 
@@ -166,14 +161,6 @@
     }
 
     return self;
-}
-
-- (Mask *)mask {
-    if (!_mask) {
-        // default mask
-        self.mask = [CompositeMask maskWithContainer:self];
-    }
-    return _mask;
 }
 
 //- (void)dealloc {

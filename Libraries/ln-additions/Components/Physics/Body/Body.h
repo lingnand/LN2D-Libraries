@@ -11,13 +11,6 @@
 @class Space;
 @class ContactListener;
 
-typedef NS_ENUM(NSUInteger, BodyType)
-{
-    BodyTypeStatic,
-    BodyTypeKinematic,
-    BodyTypeDynamic
-};
-
 /**
 * A virtual class that defines a common interface to the body component
 * A body is like an actuator of the host, controls the position, velocity, etc.
@@ -26,10 +19,6 @@ typedef NS_ENUM(NSUInteger, BodyType)
 @interface Body : CCComponent {
     __weak Space *_space;
 }
-
-/** The type information is needed by spaces to update the bodies correctly */
-@property(nonatomic) BodyType type;
-
 /** These properties need to be overriden in the immediate subclass to
  * provide the correct implementation! */
  /** relative to the immediate parent */
@@ -57,11 +46,6 @@ typedef NS_ENUM(NSUInteger, BodyType)
 @property(nonatomic, weak) Space *space;
 /** gives back the class of the space attribute for this space obj*/
 @property(nonatomic, readonly) Class spaceClass;
-
-/** a dedicated contact listener that handles the collision on this body
-* this property is implemented on the basis of lazy initialization so
-* you can be safe to call methods directly on it */
-@property(nonatomic) ContactListener *contactListener;
 
 + (id)body;
 

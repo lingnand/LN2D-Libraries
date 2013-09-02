@@ -11,4 +11,6 @@
 + (id)predicateWithKindOfClassFilter:(Class)aClass;
 
 + (id)predicateWithRespondsToSelectorFilter:(SEL)selector;
+
++ (id)predicateWithConformsToProtocolFilter:(Protocol *)protocol;
 @end

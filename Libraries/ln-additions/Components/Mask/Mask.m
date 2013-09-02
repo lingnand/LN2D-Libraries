@@ -6,7 +6,7 @@
 
 
 #import "Mask.h"
-#import "CCNode+LnAdditions.h"
+#import "Body.h"
 
 
 @interface Mask()
@@ -21,7 +21,7 @@
 }
 
 - (BOOL)contains:(CGPoint)point {
-    return NO;
+    return self.parent.host != nil;
 }
 
 /**
@@ -76,7 +76,7 @@
     the intersectsNode method
 */
 - (BOOL)intersectsOneSide:(Mask *)other {
-    return NO;
+    return self.parent.host && other.parent.host && self.parent.space == other.parent.space;
 }
 
 /**
@@ -94,6 +94,5 @@
 - (id)copyWithZone:(NSZone *)zone {
     return [[[self class] allocWithZone:zone] init];
 }
-
 
 @end

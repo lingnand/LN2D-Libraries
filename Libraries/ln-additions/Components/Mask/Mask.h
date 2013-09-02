@@ -7,14 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #import "CCComponent.h"
+#import "Body.h"
 
 @class Mask;
-
-/** masked defines a common interface to all nodes / virtual nodes that
- * has their own definition of the shapes */
-@protocol Masked
-- (Mask *)mask;
-@end
 
 typedef NS_ENUM(NSUInteger, MaskIntersectComplexity) {
     ComplexityLow,
@@ -29,8 +24,10 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
 };
 
 
-@interface Mask : NSObject <NSCopying>
+@interface Mask : CCComponent <NSCopying>
 
+/** By attaching to the body mask can access information regarding world / body */
+@property (nonatomic, weak, readonly) Body *parent;
 
 + (id)mask;
 
@@ -52,7 +49,7 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
     1. OR: if either the two masks return YES, then return YES
     2. AND: only when both the two masks return YES
 
-    In most cases 2 should make more sense - a basic mask implementation involvs checking through all the areas
+    In most cases 2 should make more sense - a basic mask implementation involves checking through all the areas
     of the nodes and only return NO if none of the area is considered be to overlapped -- this means the basic
     mask operation is an OR operation; which is easy to get YES and hard to get NO. And when one of the masks
     returns YES and the other returns NO, that means (most probably) the second one has checked for more cases
@@ -70,4 +67,5 @@ typedef NS_ENUM(NSUInteger, MaskIntersectPolicy) {
 - (MaskIntersectPolicy)intersectPolicy;
 
 - (id)copyWithZone:(NSZone *)zone;
+
 @end

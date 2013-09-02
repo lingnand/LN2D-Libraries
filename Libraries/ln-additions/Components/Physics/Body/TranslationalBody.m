@@ -8,9 +8,6 @@
 #import "CCComponent.h"
 #import "TranslationalBody.h"
 #import "CCNode+LnAdditions.h"
-#import "NodalMask.h"
-#import "BodilyMask.h"
-#import "SimpleSpace.h"
 
 @implementation TranslationalBody {
 }
@@ -36,15 +33,15 @@
     self.position = ccpAdd(self.host.position, ccpMult(self.velocity, delta));
 }
 
-- (void)activate {
-    [super activate];
+- (void)componentActivated {
+    [super componentActivated];
     [self scheduleUpdate];
     // set the position (in case the component is added and the position is not in sync)
     self.host.position = self.position;
 }
 
-- (void)deactivate {
-    [super deactivate];
+- (void)componentDeactivated {
+    [super componentDeactivated];
     [self unscheduleUpdate];
 }
 
@@ -81,29 +78,12 @@
     self.acceleration = CGPointVectorApplyAffineTransform(spaceAcceleration, self.spaceToHostParentTransform);
 }
 
-#pragma mark - BodilyMask related operations
-
-- (void)setMask:(Mask *)mask {
-    if (mask != _mask) {
-        [self setDelegate:nil ofMask:_mask];
-        _mask = mask;
-        [self setDelegate:self ofMask:mask];
-    }
-}
-
-- (void)setDelegate:(Body *)body ofMask:(Mask *)mask {
-    if ([mask isKindOfClass:[BodilyMask class]]) {
-        ((BodilyMask *)mask).body = body;
-    }
-}
-
 - (id)copyWithZone:(NSZone *)zone {
     TranslationalBody *copy = (TranslationalBody *) [super copyWithZone:zone];
 
     if (copy != nil) {
         copy->_position = _position;
         copy->_acceleration = _acceleration;
-        copy->_restitution = _restitution;
         copy->_velocity = _velocity;
     }
 

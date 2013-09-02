@@ -18,8 +18,11 @@
 // we'll preseve using the original b2d units and syntax
 @interface B2DBody:Body
 
-@property (nonatomic) b2BodyType b2Type;
+@property (nonatomic) b2BodyType type;
 @property (nonatomic) b2Vec2 worldPhysicalPosition;
+/**  the angle rotation in the convention of CC; CW is positive; in degrees */
+@property (nonatomic) float rotation;
+/** the angle rotation in the convention of B2D; ACW is positive; in radians */
 @property (nonatomic) float angle;
 @property (nonatomic) b2Vec2 linearVelocity;
 @property (nonatomic) float angularVelocity;

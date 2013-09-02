@@ -7,7 +7,7 @@
 
 #import <Foundation/Foundation.h>
 #import "CCComponent.h"
-#import "SimpleBody.h"
+#import "TranslationalBody.h"
 
 typedef void (^SpawnBlock)();
 @class RandomPointGenerator;

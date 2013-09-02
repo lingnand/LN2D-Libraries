@@ -7,21 +7,23 @@
 
 #import "CCNode+LnAdditions.h"
 #import "JRSwizzle.h"
+#import "NSPredicate+LnAdditions.h"
+#import "Body.h"
+#import "CCComponent.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
-static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit";
+static char const *const nodeComponentKey = "CCNodeExtension.CCCompoonent";
 
 @implementation CCNode (LnAdditions)
-@dynamic componentManager;
-@dynamic mask;
+@dynamic rootComponent;
 @dynamic body;
 
 #pragma mark - More initializer
 
-+ (id)nodeWithComponentManager:(CCComponentManager *)manager {
-    CCNode *n = [self new];
-    n.componentManager = manager;
++ (id)nodeWithRootComponent:(CCComponent *)comp{
+    CCNode *n = [self node];
+    n.rootComponent = comp;
     return n;
 }
 
@@ -115,7 +117,7 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
     return [arr arrayByAddingObjectsFromArray:self.allDescendants];
 }
 
--(NSArray *)allAscendants {
+- (NSArray *)allAscendants {
     NSMutableArray *arr = [NSMutableArray array];
     CCNode *n = self;
     while ((n = n.parent)) {
@@ -156,7 +158,7 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
     self.anchorPoint = an;
 }
 
-- (void)addChildren:(id<NSFastEnumeration>)children {
+- (void)addChildren:(id <NSFastEnumeration>)children {
     for (CCNode *c in children)
         [self addChild:c];
 }
@@ -193,71 +195,35 @@ static char const *const nodeComponentKitKey = "CCNodeExtension.CCCompoonentKit"
 
 #pragma mark - Components
 
-- (CCComponentManager *)componentManager {
-    CCComponentManager *components = objc_getAssociatedObject(self, nodeComponentKitKey);
+- (CCComponent *)rootComponent {
+    CCComponent *component = objc_getAssociatedObject(self, nodeComponentKey);
     // lazy instantiation
-    if (!components) {
-        components = [[CCComponentManager alloc] init];
-        self.componentManager = components;
-    }
-    return components;
+    if (!component || component.host != self)
+        self.rootComponent = component = [CCComponent component];
+    return component;
 }
 
-- (void)setComponentManager:(CCComponentManager *)componentManager {
-    componentManager.delegate = self;
-    objc_setAssociatedObject(self, nodeComponentKitKey, componentManager, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+- (void)setRootComponent:(CCComponent *)rootComponent {
+    rootComponent.host = self;
+    objc_setAssociatedObject(self, nodeComponentKey, rootComponent, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
 }
 
 - (id)forwardingTargetForSelector:(SEL)aSelector {
-    return self.componentManager;
+    return self.rootComponent;
 }
 
 #pragma mark - Body
 
-// default returns a simplebody
+// lazy instantiation of a TranslationalBody
 - (Body *)body {
-    Body *m = [self.componentManager componentForClass:[Body class]];
+    Body *m = [self.rootComponent childForClass:[Body class]];
     if (!m)
         self.body = m = [Body body];
     return m;
 }
 
 - (void)setBody:(Body *)body {
-    [self.componentManager setComponent:body forClass:[Body class]];
+    [self.rootComponent setChild:body forClass:[Body class]];
 }
-
-#pragma mark - Mask
-
-- (BodilyMask *)mask {
-    Body *b = self.body;
-    if ([b isKindOfClass:[SimpleBody class]])
-        return ((SimpleBody *)b).mask;
-    return nil;
-}
-
-- (void)setMask:(BodilyMask *)mask {
-    // get the body and set the mask
-    Body *b = self.body;
-    if ([b isKindOfClass:[SimpleBody class]])
-        ((SimpleBody *)b).mask = mask;
-}
-
-#pragma mark - Position overriding
-
-- (void)setNodePosition:(CGPoint)nodePosition {
-    self.body.position = nodePosition;
-}
-
-- (CGPoint)nodePosition {
-    return self.body.position;
-}
-
-+ (void)load {
-    if (self.class == [CCNode class]) {
-        [self jr_swizzleMethod:@selector(position) withMethod:@selector(nodePosition) error:nil];
-        [self jr_swizzleMethod:@selector(setPosition:) withMethod:@selector(setNodePosition:) error:nil];
-    }
-}
-
 
 @end

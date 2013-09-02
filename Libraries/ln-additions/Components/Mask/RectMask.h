@@ -9,6 +9,6 @@
 #import "BodilyMask.h"
 
 
-@interface RectMask : BodilyMask
+@interface RectMask : Mask
 
 @end

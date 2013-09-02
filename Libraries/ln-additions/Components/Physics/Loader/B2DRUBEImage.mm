@@ -9,8 +9,7 @@
 #import "B2DRUBEImage.h"
 #import "B2DSpace.h"
 #import "CCNode+LnAdditions.h"
-#import "B2DRUBEBody.h"
-#include "b2dJson.h"
+#import "B2DBody.h"
 
 @implementation B2DRUBEImage {
     b2Vec2 _b2_center;
@@ -75,13 +74,13 @@
     return _image;
 }
 
-- (void)activate {
-    [super activate];
+- (void)componentActivated {
+    [super componentActivated];
     [self.host addChild:self.image];
 }
 
-- (void)deactivate {
-    [super deactivate];
+- (void)componentDeactivated {
+    [super componentDeactivated];
     [self.host removeChild:self.image cleanup:YES];
 }
 

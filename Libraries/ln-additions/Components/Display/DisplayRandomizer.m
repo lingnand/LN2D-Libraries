@@ -18,12 +18,7 @@
 #import "CCSprite+LnAdditions.h"
 
 @interface DisplayRandomizer ()
-
 @property(nonatomic, strong) FiniteRandomGenerator *rStrGenerator;
-@property (nonatomic)BOOL masked;
-
-@property(nonatomic, copy) NSString *maskSuffix;
-@property(nonatomic) UInt8 alphaThreshold;
 @end
 
 @implementation DisplayRandomizer {
@@ -34,38 +29,15 @@
     return [[self alloc] initWithFrameNameGenerator:rgen];
 }
 
-+ (id)randomizerWithFrameNameGenerator:(RandomStringGenerator *)rgen maskSuffix:(NSString *)maskSuffix alphaThreshold:(UInt8)alpha {
-    return [self randomizerWithFrameNameGenerator:rgen masked:YES maskSuffix:maskSuffix alphaThreshold:alpha];
-}
-
-- (id)initWithFrameNameGenerator:(RandomStringGenerator *)generator {
-    return [self initWithFrameNameGenerator:generator masked:NO maskSuffix:nil alphaThreshold:0];
-}
-
-+ (id)randomizerWithFrameNameGenerator:(RandomStringGenerator *)rgen masked:(BOOL)masked maskSuffix:(NSString *)maskSuffix alphaThreshold:(UInt8)alpha {
-    return [[self alloc] initWithFrameNameGenerator:rgen masked:masked maskSuffix:maskSuffix alphaThreshold:alpha];
-}
-
-- (id)initWithFrameNameGenerator:(RandomStringGenerator *)rgen masked:(BOOL)masked maskSuffix:(NSString *)maskSuffix alphaThreshold:(UInt8)alpha {
+- (id)initWithFrameNameGenerator:(RandomStringGenerator *)rgen {
     self = [super init];
     if (self) {
         self.rStrGenerator = rgen;
-        self.masked = masked;
-        self.maskSuffix = maskSuffix;
-        self.alphaThreshold = alpha;
-        // load up all the masks
-        if (masked) {
-            MaskDataCache *cache = [MaskDataCache sharedCache];
-            for (NSString *str in rgen.allValues) {
-                cache[str] = [PixelMaskData dataWithFrameName:str alphaThreshold:alpha maskSuffix:maskSuffix];
-            }
-        }
     }
     return self;
 }
 
-- (void)onAddComponent {
-    NSAssert([self.host isKindOfClass:[CCSprite class]], @"Must be a CCSprite for a DisplayRandomizer to work!");
+- (void)componentAdded {
     // initialize the display for the delegate
     [self setNextDisplayFrame];
 }
@@ -79,10 +51,7 @@
 }
 
 - (void)setDisplayFrameWithName:(NSString *)name {
-    if (self.masked)
-        [(CCSprite *) self.host setDisplayFrameWithFrameName:name maskSuffix:self.maskSuffix maskAlphaThreshold:self.alphaThreshold];
-    else
-        [(CCSprite *) self.host setDisplayFrameWithFrameName:name];
+    [self.host setDisplayFrame:[[CCSpriteFrameCache sharedSpriteFrameCache] spriteFrameByName:name]];
 }
 
 - (id)copyWithZone:(NSZone *)zone {
@@ -90,9 +59,6 @@
 
     if (copy != nil) {
         copy.rStrGenerator = self.rStrGenerator;
-        copy.masked = self.masked;
-        copy.maskSuffix = self.maskSuffix;
-        copy.alphaThreshold = self.alphaThreshold;
     }
 
     return copy;

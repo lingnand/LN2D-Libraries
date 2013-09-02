@@ -7,8 +7,9 @@
 
 #import <Foundation/Foundation.h>
 #include "b2dJsonImage.h"
-#import "B2DRUBEBody.h"
 #include "b2dJson.h"
+
+@class B2DBody;
 
 
 /** A wrapper around b2dJsonImage */

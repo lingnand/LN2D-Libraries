@@ -25,6 +25,8 @@ NSString * NSStringFromCGRange(CGRange range) {
     return [NSString stringWithFormat:@"{%f,%f}", range.location, range.length];
 }
 
+#pragma mark - Random generators
+
 NS_INLINE
 
 double randomDouble() {

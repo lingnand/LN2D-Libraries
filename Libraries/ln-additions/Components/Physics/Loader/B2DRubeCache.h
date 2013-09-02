@@ -7,7 +7,6 @@
 
 
 @class B2DSpace;
-@class B2DRUBESpace;
 
 /**
 * NOTICE:
@@ -23,7 +22,7 @@
 
 @interface B2DRUBECache : NSObject
 
-@property (nonatomic, readonly) B2DRUBESpace *space;
+@property (nonatomic, readonly) B2DSpace *space;
 /** bodyName -body array pairs
 * if the given bodyName is not found; return nil
 * otherwise an array containing all matching bodies
@@ -36,9 +35,9 @@
 
 + (id)cacheForNewSpaceWithFileName:(NSString *)filename;
 
-+ (id)cacheForSpace:(B2DRUBESpace *)space withFileName:(NSString *)filename;
++ (id)cacheForSpace:(B2DSpace *)space withFileName:(NSString *)filename;
 
-- (id)initWithSpace:(B2DRUBESpace *)space fileName:(NSString *)filename;
+- (id)initWithSpace:(B2DSpace *)space fileName:(NSString *)filename;
 
 - (id)objectForKeyedSubscript:(id)key;
 

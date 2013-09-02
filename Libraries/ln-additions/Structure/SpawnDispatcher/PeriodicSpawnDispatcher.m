@@ -30,11 +30,11 @@
     return self;
 }
 
-- (void)activate {
+- (void)componentActivated {
     [self scheduleUpdate];
 }
 
-- (void)deactivate {
+- (void)componentDeactivated {
     [self unscheduleUpdate];
 }
 

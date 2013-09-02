@@ -8,4 +8,5 @@
 #import <Foundation/Foundation.h>
 
 @interface CCSpriteFrameCache (LnAdditions)
+- (NSString *)nameOfSpriteFrame:(CCSpriteFrame *)frame;
 @end
