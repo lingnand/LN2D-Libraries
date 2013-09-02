@@ -16,17 +16,17 @@
  * of Body - using an update method that updates the position of the node
   * through velocity and acceleration increments
   * A simpleBody is also designed to be able to operate without a proper world.
-  * In this situation, it just handles all the velocity, etc. without any regard
-  * for collision (obviously not); furthermore, in this situation the worldPosition/Velocity
-  * return the same thing absolutePosition/Velocity
+  * In this situation the worldPosition/Velocity return the same thing as
+  * absolutePosition/Velocity
   * */
 
- @interface SimpleBody : Body <Masked>
+ @interface TranslationalBody : Body <Masked>
 /** The acceleration attribute is added to allow more precise control (steady) */
 @property(nonatomic) CGPoint acceleration;
 @property(nonatomic) CGPoint spaceAcceleration;
 @property(nonatomic) CGFloat restitution;
-@property (nonatomic, strong) BodilyMask *mask;
+/** The mask property must be set for it to be checked against in the world */
+@property (nonatomic, strong) Mask *mask;
 @property(nonatomic, weak) SimpleSpace *space;
 
 - (id)copyWithZone:(NSZone *)zone;

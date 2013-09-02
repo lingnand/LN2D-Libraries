@@ -8,6 +8,7 @@
 #import "B2DSpace_protected.h"
 #import "Body_protect.h"
 #import "B2DBody_protected.h"
+#import "B2DRUBECache.h"
 
 @implementation B2DSpace {
     B2DSpaceContactListener *_spaceContactListener;
@@ -173,13 +174,13 @@
     self.spaceContactListener = nil;
 }
 
-- (void)activate {
-    [super activate];
+- (void)componentActivated {
+    [super componentActivated];
     [self scheduleUpdate];
 }
 
-- (void)deactivate {
-    [super deactivate];
+- (void)componentDeactivated {
+    [super componentDeactivated];
     [self unscheduleUpdate];
 }
 
@@ -211,5 +212,8 @@
     body.body = nil;
 }
 
+- (B2DRUBECache *)cacheForThisSpaceWithFileName:(NSString *)name {
+    return [B2DRUBECache cacheForSpace:self withFileName:name];
+}
 @end
 

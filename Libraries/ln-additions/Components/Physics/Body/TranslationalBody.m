@@ -6,14 +6,13 @@
 */
 
 #import "CCComponent.h"
-#import "SimpleBody.h"
+#import "TranslationalBody.h"
 #import "CCNode+LnAdditions.h"
 #import "NodalMask.h"
 #import "BodilyMask.h"
 #import "SimpleSpace.h"
 
-@implementation SimpleBody {
-    BodilyMask *_mask;
+@implementation TranslationalBody {
 }
 @synthesize position = _position;
 @synthesize velocity = _velocity;
@@ -41,7 +40,7 @@
     [super activate];
     [self scheduleUpdate];
     // set the position (in case the component is added and the position is not in sync)
-    self.host.nodePosition = self.position;
+    self.host.position = self.position;
 }
 
 - (void)deactivate {
@@ -53,7 +52,7 @@
 
 /** with respect to immediate parent */
 - (void)setPosition:(CGPoint)position {
-    self.host.nodePosition = position;
+    self.host.position = position;
     _position = position;
 }
 
@@ -84,22 +83,22 @@
 
 #pragma mark - BodilyMask related operations
 
-- (BodilyMask *)mask {
-    if (!_mask)
-        self.mask = [NodalMask mask];
-    return _mask;
+- (void)setMask:(Mask *)mask {
+    if (mask != _mask) {
+        [self setDelegate:nil ofMask:_mask];
+        _mask = mask;
+        [self setDelegate:self ofMask:mask];
+    }
 }
 
-- (void)setMask:(BodilyMask *)mask {
-    if (mask != _mask) {
-        _mask.body = nil;
-        _mask = mask;
-        mask.body = self;
+- (void)setDelegate:(Body *)body ofMask:(Mask *)mask {
+    if ([mask isKindOfClass:[BodilyMask class]]) {
+        ((BodilyMask *)mask).body = body;
     }
 }
 
 - (id)copyWithZone:(NSZone *)zone {
-    SimpleBody *copy = (SimpleBody *) [super copyWithZone:zone];
+    TranslationalBody *copy = (TranslationalBody *) [super copyWithZone:zone];
 
     if (copy != nil) {
         copy->_position = _position;

@@ -21,7 +21,7 @@
     return [Body class];
 }
 
-- (void)onAddComponent {
+- (void)componentAdded {
     // find all children bodies that might be working for this world;
     // only if this world is empty
     if (!self.bodies.count)
@@ -35,12 +35,7 @@
     for (CCNode *c in n.children) {
         // we need to use the predicate to get all the components that matchs
         // the requirement
-        // should we lazily initiate the body first..? Otherwise some nodes that
-        // have not loaded any bodies will be left out (but consider this scenario..
-        // when a world is added then all the bodies below that level are initiated
-        // so that if you add bodies to the nodes below this world it becomes
-        // expensive.....
-        [self addBody:c.body];
+        [self addBody:[c.componentManager componentForClass:self.bodyClass]];
         // recurse downwards
         // if we already found suitable bodies in c, then we don't recurse down
         // -- we assume that the underlying nodes would be managed by the

@@ -42,8 +42,11 @@
 
 - (id)initWithB2World:(b2World *)world ptmRatio:(float)ptmRatio;
 
+/** This can be overriden in the subclass to provide the implementation of
+ * inflating the world with bodies */
 - (void)addBodyForB2Body:(b2Body *)b;
 
+- (B2DRUBECache *)cacheForThisSpaceWithFileName:(NSString *)name;
 @end
 
 // define some functions to transform the coordinates

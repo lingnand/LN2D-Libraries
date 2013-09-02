@@ -5,19 +5,18 @@
     @author lingnan
 */
 
-#import "SimpleSpace.h"
+#import "PhysicsSpace.h"
 #import "CCNode+LnAdditions.h"
-#import "NSCache+LnAdditions.h"
-#import "CompositeMask.h"
 #import "Contact.h"
 #import "ContactListener.h"
-#import "BodilyMask.h"
+#import "MaskedBody.h"
+#import "NSMapTable+LnAdditions.h"
 
-@interface SimpleSpace ()
+@interface PhysicsSpace ()
 @property(nonatomic) ccTime elapsed;
 @end
 
-@implementation SimpleSpace {
+@implementation PhysicsSpace {
 
 }
 @synthesize gravity = _gravity;
@@ -41,32 +40,31 @@
 }
 
 - (Class)bodyClass {
-    return [SimpleBody class];
+    return [MaskedBody class];
 }
 
-- (void)activate {
-    [super activate];
+- (void)componentActivated {
+    [super componentActivated];
     [self scheduleUpdate];
 }
 
-- (void)deactivate {
-    [super deactivate];
+- (void)componentDeactivated {
+    [super componentDeactivated];
     [self unscheduleUpdate];
 }
 
-- (SimpleBody *)sortLineageHeadOfNode:(CCNode *)n usingLineageHeadBodyDictionary:(NSMutableDictionary *)cache lineageBodySet:(NSMutableSet *)set {
+- (MaskedBody *)sortLineageHeadOfNode:(CCNode *)n inBodiesSet:(NSSet *)bodies usingLineageHeadBodyDictionary:(NSMapTable *)cache lineageBodySet:(NSMutableSet *)set {
     if (!n)
         return nil;
-    NSValue *value = [NSValue valueWithPointer:(__bridge void *) n];
-    id r = cache[value];
+    id r = cache[n];
     if (!r) {
         // set the result
-        r = [self sortLineageHeadOfNode:n.parent usingLineageHeadBodyDictionary:cache lineageBodySet:set];
-        if (!r && [self.allBodies containsObject:n.body])
+        r = [self sortLineageHeadOfNode:n.parent inBodiesSet:bodies usingLineageHeadBodyDictionary:cache lineageBodySet:set];
+        if (!r && [bodies containsObject:n.body])
             r = n.body;
         // we should accumulate the result in the lineage set
         [set addObject:r];
-        cache[value] = r ? r : [NSNull null];
+        cache[n] = r ? r : [NSNull null];
     }
     return r == [NSNull null] ? nil : r;
 }
@@ -81,19 +79,19 @@
         // for each body
         NSSet *activeDynamicBodies = [self.allBodies filteredSetUsingPredicate:[NSPredicate predicateWithFormat:@"type == %d && activated == YES", BodyTypeDynamic]];
         if (activeDynamicBodies.count) {
-            NSMutableDictionary *lineageHeadBodies = [NSMutableDictionary dictionary];
+            NSMapTable *lineageHeadBodies = [NSMapTable weakToWeakObjectsMapTable];
             NSMutableSet *lineageBodies = [NSMutableSet set];
             NSMutableSet *collisionBodiesSet;
-            NSMutableDictionary *positionChangesTable = [NSMutableDictionary dictionary];
-            NSMutableDictionary *collidedBodiesTable = [NSMutableDictionary dictionary];
-            for (SimpleBody *b in self.allBodies)
-                [self sortLineageHeadOfNode:b.host usingLineageHeadBodyDictionary:lineageHeadBodies lineageBodySet:lineageBodies];
+            NSMapTable *positionChangesTable = [NSMapTable weakToStrongObjectsMapTable];
+            NSMapTable *collidedBodiesTable = [NSMapTable weakToStrongObjectsMapTable];
+            for (MaskedBody *b in self.allBodies)
+                [self sortLineageHeadOfNode:b.host inBodiesSet:self.allBodies usingLineageHeadBodyDictionary:lineageHeadBodies lineageBodySet:lineageBodies];
 
 
-            for (SimpleBody *b in activeDynamicBodies) {
+            for (MaskedBody *b in activeDynamicBodies) {
                 // first retrieve the head it corresponds to
                 collisionBodiesSet = lineageBodies.mutableCopy;
-                [collisionBodiesSet removeObject:lineageHeadBodies[[NSValue valueWithPointer:(__bridge void *) b.host]]];
+                [collisionBodiesSet removeObject:lineageHeadBodies[b.host]];
 
                 // the displacement of body
                 CGPoint worldv = b.spaceVelocity;
@@ -106,7 +104,7 @@
                 CGPoint oldPos = b.spacePosition;
 
                 NSMutableSet *collidedBodies = [NSMutableSet set];
-                SimpleBody *collidedBody;
+                TranslationalBody *collidedBody;
 
                 // first adjust the x direction
                 b.spacePosition = ccpAdd(oldPos, ccp(ds.x, 0));
@@ -129,22 +127,20 @@
                 b.spaceVelocity = ccp(worldv.x * !collideVec.x, worldv.y * !collideVec.y);
 
                 // save the positional changes in the dictionary and restore the old position
-                NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                positionChangesTable[value] = [NSValue valueWithCGPoint:b.spacePosition];
+                positionChangesTable[b] = [NSValue valueWithCGPoint:b.spacePosition];
                 b.spacePosition = oldPos;
 
                 // save the collision contact set
-                collidedBodiesTable[value] = collidedBodies;
+                collidedBodiesTable[b] = collidedBodies;
 
                 // we reset the world acceleration to be the gravity
                 b.spaceAcceleration = self.gravity;
             }
 
             // loop through all the dynamic bodies and apply the changes
-            for (SimpleBody *b in activeDynamicBodies) {
-                NSValue *value = [NSValue valueWithPointer:(__bridge void *) b];
-                b.spacePosition = [positionChangesTable[value] CGPointValue];
-                for (SimpleBody *o in collidedBodiesTable[value])
+            for (MaskedBody *b in activeDynamicBodies) {
+                b.spacePosition = [positionChangesTable[b] CGPointValue];
+                for (MaskedBody *o in collidedBodiesTable[b])
                     [b.contactListener beginContact:[Contact contactWithBody:b otherBody:o]];
             }
         }
@@ -153,8 +149,8 @@
 
 // A little bit like the compositemask; difference is that it returns the specific instance
 // that causes the collision
-- (SimpleBody *)body:(SimpleBody *)b intersectsWithBodiesInSet:(NSSet *)set {
-    for (SimpleBody *body in set) {
+- (MaskedBody *)body:(MaskedBody *)b intersectsWithBodiesInSet:(NSSet *)set {
+    for (MaskedBody *body in set) {
         if ([body.mask intersects:b.mask])
             return body;
     }
