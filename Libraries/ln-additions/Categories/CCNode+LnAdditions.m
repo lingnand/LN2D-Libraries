@@ -6,10 +6,7 @@
 
 
 #import "CCNode+LnAdditions.h"
-#import "JRSwizzle.h"
-#import "NSPredicate+LnAdditions.h"
 #import "Body.h"
-#import "CCComponent.h"
 #import <objc/runtime.h>
 
 // dynamically access the components array
@@ -21,7 +18,7 @@ static char const *const nodeComponentKey = "CCNodeExtension.CCCompoonent";
 
 #pragma mark - More initializer
 
-+ (id)nodeWithRootComponent:(CCComponent *)comp{
++ (id)nodeWithRootComponent:(CCComponent *)comp {
     CCNode *n = [self node];
     n.rootComponent = comp;
     return n;
@@ -218,12 +215,12 @@ static char const *const nodeComponentKey = "CCNodeExtension.CCCompoonent";
 - (Body *)body {
     Body *m = [self.rootComponent childForClass:[Body class]];
     if (!m)
-        self.body = m = [Body body];
+        [self.rootComponent addChild:m = [Body body]];
     return m;
 }
 
 - (void)setBody:(Body *)body {
-    [self.rootComponent setChild:body forClass:[Body class]];
+    [self.rootComponent setChild:body forClassLock:[Body class]];
 }
 
 @end

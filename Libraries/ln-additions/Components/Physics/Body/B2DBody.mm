@@ -10,9 +10,11 @@
 #import "B2DSpace_protected.h"
 #import "b2Fixture.h"
 #import "B2DFixture_protected.h"
-#import "CCNode+LnAdditions.h"
 #import "B2DContactListener.h"
 
+@interface B2DBody ()
+@property(nonatomic, strong) NSArray *monitoredNodes;
+@end
 
 @implementation B2DBody {
     b2BodyDef *_bodyDef;
@@ -150,30 +152,44 @@
 }
 
 - (CGPoint)spacePosition {
-    return CGPointFromb2Vec2(self.worldPhysicalPosition, self.space);
+    return CGPointFromb2Vec2(self.spacePhysicalPosition, self.space);
 }
 
 - (void)setSpacePosition:(CGPoint)spacePosition {
-    self.worldPhysicalPosition = b2Vec2FromCGPoint(spacePosition, self.space);
+    self.spacePhysicalPosition = b2Vec2FromCGPoint(spacePosition, self.space);
 }
 
-- (b2Vec2)worldPhysicalPosition {
+- (b2Vec2)spacePhysicalPosition {
     return self.body ? _body->GetPosition() : self.bodyDef->position;
 }
 
-- (void)setWorldPhysicalPosition:(b2Vec2)worldPhysicalPosition {
+- (void)setSpacePhysicalPosition:(b2Vec2)spacePhysicalPosition {
     if (self.body) {
-        self.body->SetTransform(worldPhysicalPosition, self.angle);
+        self.body->SetTransform(spacePhysicalPosition, self.angle);
     } else {
-        self.bodyDef->position = worldPhysicalPosition;
+        self.bodyDef->position = spacePhysicalPosition;
     }
 }
 
 - (float)rotation {
-    return  - CC_RADIANS_TO_DEGREES(self.angle);
+    float rot = -CC_RADIANS_TO_DEGREES(self.angle);
+    for (CCNode *p = self.host.parent; p && p != self.space.host; p = p.parent) {
+        rot -= p.rotation;
+    }
+    return rot;
+    // need to convert to normal form
+//    int sign = SIGN(rot);
+//    float mag = ABS(rot);
+//    while (mag >= 360)
+//        mag -= 360;
+//    return sign * mag;
 }
 
 - (void)setRotation:(float)rotation {
+    // need to calculate all the rotation
+    for (CCNode *p = self.host.parent; p && p != self.space.host; p = p.parent) {
+        rotation += p.rotation;
+    }
     self.angle = - CC_DEGREES_TO_RADIANS(rotation);
 }
 
@@ -183,7 +199,7 @@
 
 - (void)setAngle:(float)angle {
     if (self.body)
-        self.body->SetTransform(self.worldPhysicalPosition, angle);
+        self.body->SetTransform(self.spacePhysicalPosition, angle);
     else
         self.bodyDef->angle = angle;
 }
@@ -408,19 +424,32 @@
     return set;
 }
 
+// NOTE: if you change the node hierarchy after adding the component then there's no way to
+// monitor the changes in the parents
+// in that case you have to deactivate and activate it again
 - (void)componentActivated {
     [super componentActivated];
     // we didn't add the Initial option because the b2body position has a higher priority
-    [self.host addObserver:self forKeyPath:@"position" options:nil context:nil];
-    [self.host addObserver:self forKeyPath:@"rotation" options:nil context:nil];
-    [self scheduleUpdate];
+    // monitor the whole hierarchy of nodes
+    self.monitoredNodes = [self.hostAncestorsUnderSpace arrayByAddingObject:self.host];
 }
 
 - (void)componentDeactivated {
     [super componentDeactivated];
-    [self.host removeObserver:self forKeyPath:@"position"];
-    [self.host removeObserver:self forKeyPath:@"rotation"];
-    [self unscheduleUpdate];
+    self.monitoredNodes = nil;
+}
+
+- (void)setMonitoredNodes:(NSArray *)monitoredNodes {
+    // first remove observer for all existing nodes
+    for (CCNode *n in _monitoredNodes) {
+        [n removeObserver:self forKeyPath:@"position"];
+        [n removeObserver:self forKeyPath:@"rotation"];
+    }
+    _monitoredNodes = monitoredNodes;
+    for (CCNode *n in monitoredNodes) {
+        [n addObserver:self forKeyPath:@"position" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+        [n addObserver:self forKeyPath:@"rotation" options:NSKeyValueObservingOptionNew | NSKeyValueObservingOptionOld context:nil];
+    }
 }
 
 #pragma mark - Contact Listener
@@ -436,10 +465,19 @@
                         change:(NSDictionary *)change
                        context:(void *)context {
     if (!inUpdateLoop) {
-        if ([keyPath isEqualToString:@"position"])
-            self.position = self.host.position;
-        else if ([keyPath isEqualToString:@"rotation"])
-            self.rotation = self.host.rotation;
+        if ([keyPath isEqualToString:@"position"]) {
+            CGPoint op = [change[NSKeyValueChangeOldKey] CGPointValue];
+            CGPoint np = [change[NSKeyValueChangeNewKey] CGPointValue];
+            if (op.x != np.x || op.y != np.y)
+                self.position = self.host.position;
+        }
+        else if ([keyPath isEqualToString:@"rotation"]) {
+            if ([change[NSKeyValueChangeOldKey] floatValue] != [change[NSKeyValueChangeNewKey] floatValue]) {
+                self.rotation = self.host.rotation;
+                // position might change as well
+                self.position = self.host.position;
+            }
+        }
     } else {
         [super observeValueForKeyPath:keyPath
                              ofObject:object
@@ -448,14 +486,11 @@
     }
 }
 
-- (void)update:(ccTime)step {
-    // toggle the boolean so as not to trigger KVO update
-    inUpdateLoop = YES;
-    self.host.position = self.position;
-    // an rotation itself can be expressed as an affinetransformation, which means
-    // that independent of the relative observer, it's always the same operation
-    self.host.rotation = self.rotation;
-    inUpdateLoop = NO;
+- (void)updateHost {
+    if (self.activated) {
+        self.host.position = self.position;
+        self.host.rotation = self.rotation;
+    }
 }
 
 - (id)copyWithZone:(NSZone *)zone {

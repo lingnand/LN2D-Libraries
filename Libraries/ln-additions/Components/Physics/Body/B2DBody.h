@@ -19,7 +19,7 @@
 @interface B2DBody:Body
 
 @property (nonatomic) b2BodyType type;
-@property (nonatomic) b2Vec2 worldPhysicalPosition;
+@property(nonatomic) b2Vec2 spacePhysicalPosition;
 /**  the angle rotation in the convention of CC; CW is positive; in degrees */
 @property (nonatomic) float rotation;
 /** the angle rotation in the convention of B2D; ACW is positive; in radians */
@@ -37,12 +37,17 @@
 @property(nonatomic, weak) B2DSpace *space;
 @property(nonatomic) B2DContactListener *contactListener;
 
+/** a flag used by the world during the update loop to stop the body from
+* receiving positional updates from hierarchies */
+@property(nonatomic) BOOL inUpdateLoop;
 
 - (id)initWithB2Body:(b2Body *)body;
 
 - (void)addFixture:(B2DFixture *)fixture;
 
 - (void)removeFixture:(B2DFixture *)fixture;
+
+- (void)updateHost;
 
 - (id)copyWithZone:(NSZone *)zone;
 

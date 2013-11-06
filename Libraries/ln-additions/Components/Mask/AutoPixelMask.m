@@ -12,6 +12,7 @@
 
 
 static int AutoPixelMaskMonitoringContext;
+
 @implementation AutoPixelMask {
 
 }
@@ -20,9 +21,8 @@ static int AutoPixelMaskMonitoringContext;
 + (SpriteFrameToPixelMaskDataTransformation)transformationWithMaskSuffix:(NSString *)suffix alphaThreshold:(UInt8)alphaThreshold {
     return ^PixelMaskData *(CCSpriteFrame *frame) {
         // first get the name of the mask frame
-        return frame ? [[MaskDataCache sharedCache] dataForSpriteFrame:frame maskDataGenerator:^MaskData *(CCSpriteFrame *frame) {
-            return [PixelMaskData dataWithFrameName:[[CCSpriteFrameCache sharedSpriteFrameCache]nameOfSpriteFrame:frame] alphaThreshold:alphaThreshold maskSuffix:suffix];
-             ;
+        return frame ? [[MaskDataCache sharedCache] dataForSpriteFrame:frame maskDataGenerator:^MaskData *(CCSpriteFrame *f) {
+            return [PixelMaskData dataWithFrameName:[[CCSpriteFrameCache sharedSpriteFrameCache] nameOfSpriteFrame:f] alphaThreshold:alphaThreshold maskSuffix:suffix];
         }] : nil;
     };
 }

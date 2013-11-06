@@ -8,7 +8,6 @@
 #import "CCComponent.h"
 #import "B2DRUBEImage.h"
 #import "B2DSpace.h"
-#import "CCNode+LnAdditions.h"
 #import "B2DBody.h"
 
 @implementation B2DRUBEImage {
@@ -65,10 +64,6 @@
         _image.rotation = self.rotation;
         // anchorPoint
         _image.anchorPoint = ccp(0.5, 0.5);
-        // positioning
-        // this might not be very good (as it might not be querying the real ptmRatio
-        // on the world (the world's ptm ratio might get changed at anytime
-        _image.position = self.center;
         _image.zOrder = self.zOrder;
     }
     return _image;
@@ -76,6 +71,12 @@
 
 - (void)componentActivated {
     [super componentActivated];
+    // positioning
+    // this might not be very good (as it might not be querying the real ptmRatio
+    // on the world (the world's ptm ratio might get changed at anytime
+    // we need to take account of the anchor point of the host
+    // the center property is essentially the displacement from the ANCHOR, not the lower-left corner
+    self.image.position = ccpAdd(self.host.anchorPointInPoints, self.center);
     [self.host addChild:self.image];
 }
 

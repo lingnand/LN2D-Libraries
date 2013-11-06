@@ -5,7 +5,6 @@
     @author lingnan
 */
 
-#import "CCComponent.h"
 #import "ContactListener_protected.h"
 
 
@@ -50,7 +49,7 @@
     // loop through all the callback blocks
     [self.contactCallBacks enumerateKeysAndObjectsUsingBlock:^(NSPredicate *predicate, ContactCallbackClosure *closure, BOOL *stop) {
         if ([predicate evaluateWithObject:contact])
-        BLOCK_SAFE_RUN(closure.beginContact,contact);
+        BLOCK_SAFE_RUN(closure.beginContact, contact);
     }];
 }
 

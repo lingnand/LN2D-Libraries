@@ -9,6 +9,7 @@
 #import "Body_protect.h"
 #import "B2DBody_protected.h"
 #import "B2DRUBECache.h"
+#import "CCNode+LnAdditions.h"
 
 @implementation B2DSpace {
     B2DSpaceContactListener *_spaceContactListener;
@@ -139,15 +140,20 @@
             [((Space *) ow).bodies removeAllObjects];
         } else {
             // inflate the new world with B2DBody..
-            b2Body *b = world->GetBodyList();
-            while (b) {
-                // add the body
-                [self addBodyForB2Body:b];
-                b = b->GetNext();
-            }
+            [self refreshBodies];
         }
         // reset up the contact listener
         world->SetContactListener(self.spaceContactListener);
+    }
+}
+
+// readd the b2bodies into the space's b2dbody list
+- (void)refreshBodies {
+    b2Body *b = self.world->GetBodyList();
+    while (b) {
+        // add the body
+        [self addBodyForB2Body:b];
+        b = b->GetNext();
     }
 }
 
@@ -193,6 +199,26 @@
 
     // step the world
     self.world->Step(step, velocityIterations, positionIterations);
+
+    // update the position for all the bodies within
+    // set the inupdateloop property for all the bodies
+    [self.allBodies setValue:[NSNumber numberWithBool:YES] forKey:@"inUpdateLoop"];
+    [self updatePositionForNode:self.host markSet:[[self.allBodies valueForKey:@"host"] mutableCopy]];
+    [self.allBodies setValue:[NSNumber numberWithBool:NO] forKey:@"inUpdateLoop"];
+}
+
+- (void)updatePositionForNode:(CCNode *)n markSet:(NSMutableSet *)set {
+    if (set.count == 0)
+        return;
+    if ([set containsObject:n]) {
+        // get the corresponding b2d instance
+        B2DBody *body = [n.rootComponent childForClass:[B2DBody class]];
+        [body updateHost];
+        [set removeObject:n];
+    }
+    for (CCNode *c in n.children) {
+        [self updatePositionForNode:c markSet:set];
+    }
 }
 
 #pragma mark - Override the addComponent and removeComponent to add B2D specific processings

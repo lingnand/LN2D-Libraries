@@ -41,9 +41,10 @@
         _json = new b2dJson;
         std::string errMsg;
 
-        if (space)
+        if (space) {
             _json->readIntoWorldFromFile(space.world, [fullpath UTF8String], errMsg);
-        else {
+            [space refreshBodies];
+        } else {
             b2World *b2world = _json->readFromFile([fullpath UTF8String], errMsg);
             NSAssert(b2world, [NSString stringWithUTF8String:errMsg.c_str()]);
 //            NSLog(@"Loaded JSON ok");

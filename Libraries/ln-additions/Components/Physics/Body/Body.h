@@ -49,6 +49,8 @@
 
 + (id)body;
 
+- (NSArray *)hostAncestorsUnderSpace;
+
 /** When the space is invalid (nil or not attached to any host or not attached
  * to a host in the outer layers) these transforms will be equivalent to the
   * world version */

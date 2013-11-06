@@ -64,10 +64,18 @@
 - (CGAffineTransform)toSpaceTransformFromNode:(CCNode *)n {
     CGAffineTransform t = CGAffineTransformIdentity;
 
-    for (CCNode *p = n; p && p != self.space.host; p = p.parent)
-        t = CGAffineTransformConcat(t, p.nodeToParentTransform);
+    for (; n && n != self.space.host; n = n.parent)
+        t = CGAffineTransformConcat(t, n.nodeToParentTransform);
 
     return t;
+}
+
+- (NSArray *)hostAncestorsUnderSpace {
+    NSMutableArray *arr = [NSMutableArray array];
+    for (CCNode *p = self.host.parent; p && p != self.space.host; p = p.parent) {
+        [arr addObject:p];
+    }
+    return arr;
 }
 
 /** return the transform from the local coordinates into the world coordinates
