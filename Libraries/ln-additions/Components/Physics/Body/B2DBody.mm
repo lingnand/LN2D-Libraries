@@ -473,9 +473,7 @@
         }
         else if ([keyPath isEqualToString:@"rotation"]) {
             if ([change[NSKeyValueChangeOldKey] floatValue] != [change[NSKeyValueChangeNewKey] floatValue]) {
-                self.rotation = self.host.rotation;
-                // position might change as well
-                self.position = self.host.position;
+                [self updateBody];
             }
         }
     } else {
@@ -491,6 +489,11 @@
         self.host.position = self.position;
         self.host.rotation = self.rotation;
     }
+}
+
+- (void)updateBody {
+    self.position = self.host.position;
+    self.rotation = self.host.rotation;
 }
 
 - (id)copyWithZone:(NSZone *)zone {

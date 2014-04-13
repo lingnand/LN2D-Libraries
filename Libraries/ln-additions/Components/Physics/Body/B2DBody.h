@@ -49,6 +49,8 @@
 
 - (void)updateHost;
 
+- (void)updateBody;
+
 - (id)copyWithZone:(NSZone *)zone;
 
 + (id)bodyWithB2Body:(b2Body *)body;
