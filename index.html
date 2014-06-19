@@ -1,42 +1,37 @@
-<!doctype html>
-<!-- The Time Machine GitHub pages theme was designed and developed by Jon Rohan, on Feb 7, 2012. -->
-<!-- Follow him for fun. http://twitter.com/jonrohan. Tail his code on http://github.com/jonrohan -->
+<!DOCTYPE html>
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-  <link rel="stylesheet" href="stylesheets/stylesheet.css" media="screen"/>
-  <link rel="stylesheet" href="stylesheets/pygment_trac.css"/>
-  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
-  <script type="text/javascript" src="javascripts/script.js"></script>
+  <head>
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="LN2D-Libraries : Component-based game library for iOS/Mac" />
 
-  <title>LN2D-Libraries</title>
-  <meta name="description" content="Component-based game library for iOS/Mac">
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-  <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>LN2D-Libraries</title>
+  </head>
 
-</head>
+  <body>
 
-<body>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/lynnard/LN2D-Libraries">View on GitHub</a>
 
-  <div class="wrapper">
-    <header>
-      <h1 class="title">LN2D-Libraries</h1>
-    </header>
-    <div id="container">
-      <p class="tagline">Component-based game library for iOS/Mac</p>
-      <div id="main" role="main">
-        <div class="download-bar">
-        <div class="inner">
-          <a href="https://github.com/lynnard/LN2D-Libraries/tarball/master" class="download-button tar"><span>Download</span></a>
-          <a href="https://github.com/lynnard/LN2D-Libraries/zipball/master" class="download-button zip"><span>Download</span></a>
-          <a href="https://github.com/lynnard/LN2D-Libraries" class="code">View LN2D-Libraries on GitHub</a>
-        </div>
-        <span class="blc"></span><span class="trc"></span>
-        </div>
-        <article class="markdown-body">
-          <h1>
+          <h1 id="project_title">LN2D-Libraries</h1>
+          <h2 id="project_tagline">Component-based game library for iOS/Mac</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/lynnard/LN2D-Libraries/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/lynnard/LN2D-Libraries/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1>
 <a name="ln2d-libraries" class="anchor" href="#ln2d-libraries"><span class="octicon octicon-link"></span></a>LN2D-Libraries</h1>
 
 <p><a href="http://ln2d.lynnard.tk">LN2D</a> is a library designed for anyone to easily create game objects/scenes for iOS/Mac.</p>
@@ -318,26 +313,18 @@ grid[1][0] = [CCSprite spriteAnchoredAtOriginWithSpriteFrameName:@"backgroundLay
 <p>For example, say I want to program a new <code>Player</code> object to represent the player in the game. I can composite it as <code>Animator</code>+<code>B2DBody</code> (of course adding <code>B2DSpace</code> to the outer container node).</p>
 
 <p>Similarly, for an enemy class <code>Enemy</code>, I can composite it as <code>Animator</code>+<code>B2DBody</code>+<code>Spawner</code> and instantiate a number of its instances in a <code>SpawnDispatcher</code> to have a respawn-able, randomly changing, and recycled group of enemies.</p>
-        </article>
-      </div>
+      </section>
     </div>
-    <footer>
-      <div class="owner">
-      <p><a href="https://github.com/lynnard" class="avatar"><img src="https://avatars0.githubusercontent.com/u/1991754?s=60" width="48" height="48"/></a> <a href="https://github.com/lynnard">lynnard</a> maintains <a href="https://github.com/lynnard/LN2D-Libraries">LN2D-Libraries</a></p>
 
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">LN2D-Libraries maintained by <a href="https://github.com/lynnard">lynnard</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
 
-      </div>
-      <div class="creds">
-        <small>This page generated using <a href="http://pages.github.com/">GitHub Pages</a><br/>theme by <a href="https://twitter.com/jonrohan/">Jon Rohan</a></small>
-      </div>
-    </footer>
-  </div>
-  <div class="current-section">
-    <a href="#top">Scroll to top</a>
-    <a href="https://github.com/lynnard/LN2D-Libraries/tarball/master" class="tar">tar</a><a href="https://github.com/lynnard/LN2D-Libraries/zipball/master" class="zip">zip</a><a href="" class="code">source code</a>
-    <p class="name"></p>
-  </div>
+    
 
-  
-</body>
+  </body>
 </html>
