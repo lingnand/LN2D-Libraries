@@ -39,7 +39,285 @@
           <h1>
 <a name="ln2d-libraries" class="anchor" href="#ln2d-libraries"><span class="octicon octicon-link"></span></a>LN2D-Libraries</h1>
 
-<p>A set of libraries for working with Cocos2D. Some settings are borrowed from Kobold2D.</p>
+<p><a href="http://ln2d.lynnard.tk">LN2D</a> is a library designed for anyone to easily create game objects/scenes for iOS/Mac.</p>
+
+<h2>
+<a name="dependencies" class="anchor" href="#dependencies"><span class="octicon octicon-link"></span></a>Dependencies</h2>
+
+<ul>
+<li>
+<a href="http://cocos2d.org/">Cocos2D</a>: the base library containing the lower level code</li>
+</ul><h2>
+<a name="architecture" class="anchor" href="#architecture"><span class="octicon octicon-link"></span></a>Architecture</h2>
+
+<p>LN2D uses a component-based architecture that makes intuitive sense in the following scenarios</p>
+
+<ul>
+<li>hierarchical composition of multiple game objects</li>
+<li>interfacing between models and views</li>
+<li>dynamic addition/removing of <em>capabilities</em> from a game object
+
+<ul>
+<li>each <em>capability</em> is realized via one or a set of components</li>
+</ul>
+</li>
+<li>reuse of existing components</li>
+</ul><p>While the prevalent form of game architecture in the industry is still based on object hierarchies at the moment, component-based approaches are gathering more and more momentum due to the flexibility and dynamism afforded by such frameworks. Some of the notable ones include:</p>
+
+<ul>
+<li><a href="http://code.google.com/p/cistron/">cistron</a></li>
+<li><a href="http://gamadu.com/artemis/">artemis</a></li>
+</ul><h2>
+<a name="game-object" class="anchor" href="#game-object"><span class="octicon octicon-link"></span></a>Game object</h2>
+
+<p>Each game object is composed of two parts</p>
+
+<ol>
+<li>a view (achieved via the native <code>CCNode</code> functionalities from <a href="http://cocos2d.org/">Cocos2D</a>)</li>
+<li>a component hierarchy (<code>CCComponent</code>) for logic and model</li>
+</ol><p>In implementation, this is achieved by having a property of type <code>CCComponent</code> called <code>rootComponent</code> for each <code>CCNode</code>. So for example if you want to add a component to a given node:</p>
+
+<pre><code>[node.rootComponent addChild:someComponent];
+</code></pre>
+
+<h2>
+<a name="cccomponent" class="anchor" href="#cccomponent"><span class="octicon octicon-link"></span></a>CCComponent</h2>
+
+<p>Each <code>CCComponent</code> can contain an infinite number of sub <code>CCComponent</code>s.</p>
+
+<p>Each of these sub-components can be <em>enabled/disabled</em> dynamically on the go by toggling its <code>enabled</code> property.</p>
+
+<p>Note that the library makes a distinction between <em>enabled</em> and <em>activated</em>:</p>
+
+<ul>
+<li>when a component is enabled, it might not get activated
+
+<ul>
+<li>an example is that a component depending on some sub-components won't be activated unless those sub-components are enabled and activated first</li>
+</ul>
+</li>
+<li>when it's disabled, it will definitely be deactivated</li>
+</ul><p>You can specify the exact condition for <em>activation</em> by overriding <code>activated</code> and also its dependencies by overriding the <code>keyPathsForValuesAffectingActivated</code> method.</p>
+
+<h3>
+<a name="queryingaddingremoving-sub-components" class="anchor" href="#queryingaddingremoving-sub-components"><span class="octicon octicon-link"></span></a>Querying/adding/removing sub components</h3>
+
+<h4>
+<a name="key-interface" class="anchor" href="#key-interface"><span class="octicon octicon-link"></span></a>Key interface</h4>
+
+<p>Associate a sub-component with a key. The old component associated with the key will be removed.</p>
+
+<pre><code>setChild:forKey:
+childForKey:
+removeChildForKey:
+</code></pre>
+
+<h4>
+<a name="tag-number-interface" class="anchor" href="#tag-number-interface"><span class="octicon octicon-link"></span></a>Tag (number) interface</h4>
+
+<p>Associate a sub-component with a tag. The old component associated with the tag will be removed.</p>
+
+<pre><code>setChild:forTag:
+childForTag:
+removeChildForTag
+</code></pre>
+
+<h4>
+<a name="class-interface" class="anchor" href="#class-interface"><span class="octicon octicon-link"></span></a>Class interface</h4>
+
+<p>Associate a sub-component with a <code>class</code>.  This is useful as it allows us to assign <em>responsibilities</em> for each sub-component. For example we can assign a subclass of <code>Body</code> component to the class <code>Body</code> to handle all physics related calculation concerning the body of a game object. A different subclass of <code>Body</code>, when added to the same object, is thus able to <em>replace</em> the old component handling the body calculation.</p>
+
+<pre><code>childForClass:
+setChild:forClass:
+setChild:forClassLock:
+</code></pre>
+
+<p>Note: the <code>ClassLock</code> version removes all components matching the given class argument before adding the child and associate it with that class.</p>
+
+<h4>
+<a name="selector-interface" class="anchor" href="#selector-interface"><span class="octicon octicon-link"></span></a>Selector interface</h4>
+
+<p>Associate a sub-component with a <code>SEL</code>. Similar to before, this is useful for differentiating components by their responsibilities. In particular, this looks at what message the component responds to.</p>
+
+<pre><code>childForSelector:
+setChild:forSelector:
+setChild:forSelectorLock:
+</code></pre>
+
+<p>Again, the <code>Lock</code> version removes all components responding to the same message.</p>
+
+<h4>
+<a name="general-predicate-interface" class="anchor" href="#general-predicate-interface"><span class="octicon octicon-link"></span></a>General predicate interface</h4>
+
+<p>In fact, the <a href="#class-interface">class interface</a> and <a href="#selector-interface">selector interface</a> are just variants of the predicate interface. The predicate interface allows us to associate components with <em>an arbitrary predicate</em>, including <em>block</em>-based ones.</p>
+
+<pre><code>childForPredicate:
+setChild:forPredicate:
+setChild:forPredicateLock:
+</code></pre>
+
+<p>To make all these possible, the implementation makes use of a complex predicate caching mechanism to cache recent predicate queries and return results faster.</p>
+
+<h3>
+<a name="life-cycle" class="anchor" href="#life-cycle"><span class="octicon octicon-link"></span></a>Life-cycle</h3>
+
+<ul>
+<li>
+<code>componentAdded</code>: determines what to do when the component is added into a component hierarchy</li>
+<li>
+<code>componentRemoved</code>: triggered with the component is removed from a component hierarchy</li>
+<li>
+<code>componentActivated</code>: triggered when the component is activated</li>
+<li>
+<code>componentDeactivated</code>: triggered when the component is deactivated</li>
+</ul><p>The implementation uses Key Value Observing techniques to make sure that the dependencies specified by <code>keyPathsForValuesAffectingActivated</code> are monitored all the time and these methods are called (especially <code>componentActivated</code> and <code>componentDeactivated</code>) whenever the condition turns true/false.</p>
+
+<h3>
+<a name="message-passing" class="anchor" href="#message-passing"><span class="octicon octicon-link"></span></a>Message passing</h3>
+
+<p>By default components can intercept messages sent to their masters. This happens when the master does not respond to a message, in which case the first component that responds to the message is selected as the receiver. </p>
+
+<h3>
+<a name="components-included-in-the-library" class="anchor" href="#components-included-in-the-library"><span class="octicon octicon-link"></span></a>Components included in the library</h3>
+
+<h4>
+<a name="physics" class="anchor" href="#physics"><span class="octicon octicon-link"></span></a>Physics</h4>
+
+<p>LN2D provides a variety of physics environment for you to easily plug in to your game application.</p>
+
+<p>For each physics environment, there is a dedicated <code>Body</code> component that should be attached to the objects which you wish to drive. The <code>Body</code> component defines the physical properties about the object, including mass, velocity, acceleration, etc. It might also have a <code>ContactListener</code> which triggers a function when it collides with certain objects (as informed by the physics environment).</p>
+
+<p>In addition, you should also set up a <code>Space</code> component and attach it to the outermost node that contains all the physical objects with <code>Body</code>s. The <code>Body</code> component interacts with the <code>Space</code> component, gets the environmental properties, e.g., gravity, collision, relative positioning, and updates its master properly.</p>
+
+<p>By using such a design, we are also able to localise the environments e.g., you can have an environment for one group of nodes, and another for some other group.</p>
+
+<h5>
+<a name="simple-physics-environment" class="anchor" href="#simple-physics-environment"><span class="octicon octicon-link"></span></a>Simple physics environment</h5>
+
+<p><code>TranslationalBody</code> provides the simplest implementation of a body. You can define its starting <code>position</code>, <code>velocity</code> and <code>acceleration</code>, and it will update the position of its master at every tick.</p>
+
+<p>If you need simple gravity, you should attach a <code>PhysicsSpace</code> on the outermost node containing the nodes with <code>TranslationalBody</code>s. The <code>PhysicsSpace</code> will automatically search for the bodies and wire up the connections so that there is nothing more for you to do.</p>
+
+<p>If you also need collision, you should replace the use of <code>TranslationalBody</code> with <code>MaskedBody</code>. Each <code>MaskedBody</code> is initialised with a <code>Mask</code> that defines the boundary of the object for collision checking by <code>PhysicsSpace</code>. You should also attach a <code>ContactListener</code> to the <code>MaskedBody</code>, which is just a simple wrap-up of functions to be called when the body makes a contact with another <code>MaskedBody</code>.</p>
+
+<h6>
+<a name="mask" class="anchor" href="#mask"><span class="octicon octicon-link"></span></a>Mask</h6>
+
+<p>There are a variety of masks (you can also write your own). The library comes with a number of them that should cater to most use cases.</p>
+
+<ul>
+<li>
+<code>RectMask</code>: uses <code>CCNode</code>'s <code>boundingBox</code> as the mask</li>
+<li>
+<code>PixelMask</code>: uses an image as the mask
+
+<ul>
+<li>for each pixel, if it's above an <code>alphaThreshold</code> then it's considered a <em>solid</em> point that makes up the object</li>
+<li>these information is saved in a <code>PixelMaskData</code>, which transforms an image to a <code>BitMask</code> (the underlying data structure for fast intersection checking)</li>
+<li>for performance, the library provides a <code>MaskDataCache</code> that recycles the <code>PixelMaskData</code> so that the same image doesn't get processed twice (wasting CPU as well as storage)</li>
+<li>you initialize a <code>PixelMask</code> by asking the cache for the <code>PixelMaskData</code>; then you attach the <code>PixelMask</code> to the <code>MaskedBody</code>; the remaining will be automatically worked out by the system</li>
+</ul>
+</li>
+<li>
+<code>AutoPixelMask</code>: an even simpler alternative to <code>PixelMask</code>, <code>AutoPixelMask</code> attaches to the <code>MaskedBody</code> of a <code>CCSprite</code> and use the displaying sprite as the mask; you need to do nothing about setting up the mask anymore
+
+<ul>
+<li>an added benefit is that whenever the <code>CCSprite</code> changes its displaying frame, the <code>AutoPixelMask</code> adjusts accordingly</li>
+<li>this is very useful for sprite animations</li>
+</ul>
+</li>
+</ul><h5>
+<a name="box2d-environment" class="anchor" href="#box2d-environment"><span class="octicon octicon-link"></span></a>Box2D environment</h5>
+
+<p>LN2D provides a complete component interface of the <a href="http://box2d.org">Box2D</a> physics engine.</p>
+
+<p>Each node to be managed should include a <code>B2DBody</code> component (objective-C wrapper of <code>b2Body</code>); it supports <code>B2DFixture</code> (wrapper of <code>b2Fixture</code>) and <code>B2DContactListener</code>.</p>
+
+<p>The world container node should have a <code>B2DSpace</code> component (wrapper of <code>b2World</code>).</p>
+
+<p>If you use <a href="https://www.iforce2d.net/rube/">R.U.B.E.</a> to edit Box2D worlds, there is also <code>B2DRUBECache</code> for you to easily load RUBE generated json file into components.</p>
+
+<p>An example usage is shown below</p>
+
+<pre><code>    B2DRUBECache *cache = [B2DRUBECache cacheForSpace:space withFileName:@"player.json"];
+    cache.space.ptmRatio = 50;
+    [layer.rootComponent addChild:cache.space];
+    // add Box2D objects as CCNodes with loaded B2DBody components
+    [layer addChildren:[cache allBodyNodes]];
+</code></pre>
+
+<h4>
+<a name="spawner" class="anchor" href="#spawner"><span class="octicon octicon-link"></span></a>Spawner</h4>
+
+<p><code>Spawner</code> is a component designed to simplify the logic concerning spawning and respawning certain game objects (e.g., enemies). It takes a <code>RandomPointGenerator</code> (a helper class that generates random points given a range/region) and simply moves its master to a random point generated by the <code>RandomPointGenerator</code> when its <code>spawn</code> method is called.</p>
+
+<h4>
+<a name="display" class="anchor" href="#display"><span class="octicon octicon-link"></span></a>Display</h4>
+
+<h5>
+<a name="animator" class="anchor" href="#animator"><span class="octicon octicon-link"></span></a>Animator</h5>
+
+<p><code>Animator</code> is component that handles the task of animating a <code>CCSprite</code>. You can set animations with the method <code>setAnimation:forTag:repeatForever:restoreOriginal:</code>, and after that you can simply playback an animation by its tag i.e. <code>run:</code>.</p>
+
+<h5>
+<a name="displayrandomizer" class="anchor" href="#displayrandomizer"><span class="octicon octicon-link"></span></a>DisplayRandomizer</h5>
+
+<p><code>DisplayRandomizer</code> shuffles the sprite frame for a <code>CCSprite</code>. It taks a <code>RandomStringGenerator</code> that generates the name of the sprite frame that its master should display at random, and after that you can simply call its <code>setNextDisplayFrame</code> to shuffle the display frame of its master. This is useful for recycling sprites e.g., you can an enemy class with a few different appearances, you can spawn them at random using <code>Spawner</code> and set a random appearance with <code>DisplayRandomizer</code>.</p>
+
+<h2>
+<a name="structure" class="anchor" href="#structure"><span class="octicon octicon-link"></span></a>Structure</h2>
+
+<p>Structures are subclasses of <code>CCNode</code> that act as powerful metaphors for easily combining and creating advanced nodes from basic elements.</p>
+
+<h3>
+<a name="gridnode" class="anchor" href="#gridnode"><span class="octicon octicon-link"></span></a>GridNode</h3>
+
+<p>A <code>GridNode</code> is a node that holds a rectangular grid of sub <code>CCNode</code>s. With <code>GridNode</code> you can easily create tile maps, floors, etc.</p>
+
+<p>The best thing about this structure is that it utilizes the <em>objective</em> feature of the language as much as possible. For example:</p>
+
+<pre><code>GridNode *grid = [GridNode gridWithGap:0];
+grid.rows[0] = [GridLine lineWithWidth:50];
+grid[0][0] = [CCSprite spriteAnchoredAtOriginWithSpriteFrameName:@"backgroundLayer/bridge_flat_base1.png"];
+grid[1][0] = [CCSprite spriteAnchoredAtOriginWithSpriteFrameName:@"backgroundLayer/bridge_flat_repeat1.png"];
+[grid.rows[0] insertCell:[CCSprite spriteAnchoredAtOriginWithSpriteFrameName:@"backgroundLayer/bridge_flat_repeat1.png"] atIndex:0];
+[grid.cols addLine:grid.cols.cutFirst];
+</code></pre>
+
+<p>The above demonstrates just a few things <code>GridNode</code> is capable of.</p>
+
+<p>Some points to note:</p>
+
+<ul>
+<li>
+<code>grid[x][y]</code> points to a cell at <code>x</code>'th column and <code>y</code>'th row</li>
+<li>
+<code>grid.rows[y]</code> represents the <code>y</code>'th row of the grid as a <code>GridLine</code> object with an interface similar to that of a <code>NSArray</code>
+
+<ul>
+<li>you can add/insert/set/remove elements, and these changes propagate to the entire grid - columns are inserted/updated/removed when necessary, etc.</li>
+</ul>
+</li>
+<li>similarly, <code>grid.cols[x]</code> represents the <code>x</code>'th column as a <code>GridLine</code>
+</li>
+</ul><h3>
+<a name="spawndispatcher" class="anchor" href="#spawndispatcher"><span class="octicon octicon-link"></span></a>SpawnDispatcher</h3>
+
+<p><code>SpawnDispatcher</code> is a group of structures that manages spawn-able objects. </p>
+
+<h4>
+<a name="periodicspawndispatcher" class="anchor" href="#periodicspawndispatcher"><span class="octicon octicon-link"></span></a>PeriodicSpawnDispatcher</h4>
+
+<p><code>PeriodicSpawnDispatcher</code> periodically (with the period you specify) <em>spawns</em> its children with a tag equal to the specified value; here <em>spawn</em> means sending the children a message to respawn themselves (usually they have a <code>Spawner</code> component that will respond to the message).</p>
+
+<h2>
+<a name="usage" class="anchor" href="#usage"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<p>A typical usage of LN2D revolves around <em>compositing</em> the range of components. When a functionality does not yet exist in the component library, you should write a new <code>CCComponent</code> so that you can reuse the same functionality in the future.</p>
+
+<p>For example, say I want to program a new <code>Player</code> object to represent the player in the game. I can composite it as <code>Animator</code>+<code>B2DBody</code> (of course adding <code>B2DSpace</code> to the outer container node).</p>
+
+<p>Similarly, for an enemy class <code>Enemy</code>, I can composite it as <code>Animator</code>+<code>B2DBody</code>+<code>Spawner</code> and instantiate a number of its instances in a <code>SpawnDispatcher</code> to have a respawn-able, randomly changing, and recycled group of enemies.</p>
         </article>
       </div>
     </div>
